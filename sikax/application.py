@@ -24,6 +24,7 @@ def _arguments(argv: List[str]) -> argparse.Namespace:
     analyseur.add_argument("--theme", choices=THEMES, help="thème de l'interface")
     analyseur.add_argument("--version", action="version", version=f"{__app_name__} {__version__}")
     analyseur.add_argument("--autotest", action="store_true", help="vérifie l'installation sans ouvrir de fenêtre, puis quitte")
+    analyseur.add_argument("--rapport", metavar="FICHIER", help="avec --autotest : écrit aussi le compte rendu dans ce fichier")
     return analyseur.parse_args(argv)
 
 
@@ -63,7 +64,7 @@ def installer_traduction_qt(application: QApplication, langue: str) -> None:
     QLocale.setDefault(QLocale(langue))
 
 
-def autotest() -> int:
+def autotest(rapport: Optional[str] = None) -> int:
     """Vérifie l'installation sans rien afficher. Code de retour 0 si tout réussit.
 
     1. Ressources : fichiers de langue, thèmes et exemples sont trouvés.
@@ -71,18 +72,37 @@ def autotest() -> int:
     3. Interface : Qt démarre, la fenêtre principale se construit (sans être
        montrée), ouvre un exemple, calcule et produit une image du schéma.
 
-    C'est le contrôle exécuté sur la distribution après sa fabrication.
+    C'est le contrôle exécuté sur la distribution après sa fabrication. Une
+    application sans console (``Sikax.exe``) n'a pas de sortie standard : le
+    compte rendu peut alors être écrit dans le fichier ``rapport``.
     """
+    import traceback
+
     from .calcul import lancer_etude
     from .chemins import dossier_locales, dossier_themes
     from .fichiers import EXTENSION, charger
 
     echecs = 0
+    lignes: List[str] = []
+
+    def noter(texte: str) -> None:
+        lignes.append(texte)
+        if sys.stdout is not None:
+            try:
+                print(texte)
+            except (OSError, UnicodeError):
+                pass
+        if rapport:
+            try:
+                with open(rapport, "w", encoding="utf-8") as fichier:
+                    fichier.write("\n".join(lignes) + "\n")
+            except OSError:
+                pass
 
     def verifier(condition: bool, texte: str) -> None:
         nonlocal echecs
         echecs += 0 if condition else 1
-        print(f"{'OK    ' if condition else 'ÉCHEC '} {texte}")
+        noter(f"{'OK    ' if condition else 'ÉCHEC '} {texte}")
 
     dossier = dossier_exemples()
     fichiers = sorted(dossier.glob(f"*{EXTENSION}")) if dossier.is_dir() else []
@@ -118,8 +138,9 @@ def autotest() -> int:
         fenetre.close()
     except Exception as erreur:
         verifier(False, f"interface : {type(erreur).__name__} : {erreur}")
+        noter(traceback.format_exc())
 
-    print("Tout est en ordre." if not echecs else f"{echecs} vérification(s) en échec.")
+    noter("Tout est en ordre." if not echecs else f"{echecs} vérification(s) en échec.")
     return 1 if echecs else 0
 
 
@@ -128,7 +149,7 @@ def lancer(argv: Optional[List[str]] = None) -> int:
     options = _arguments(list(sys.argv[1:] if argv is None else argv))
     journal.configurer()
     if options.autotest:
-        return autotest()
+        return autotest(options.rapport)
 
     application = creer_application()
     reglages = QSettings(__organisation__, __app_name__)

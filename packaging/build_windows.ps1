@@ -1,4 +1,4 @@
-<#
+﻿<#
     Fabrique la distribution Windows de Sikax.
 
         powershell -ExecutionPolicy Bypass -File packaging\build_windows.ps1
@@ -54,7 +54,11 @@ Executer $py @("-m", "PyInstaller", "packaging\sikax.spec", "--noconfirm", "--cl
 # 4. Contrôle de la distribution : l'exécutable se vérifie lui-même, sans fenêtre.
 Write-Host "== Contrôle de dist\Sikax\Sikax.exe" -ForegroundColor Cyan
 $exe = Join-Path $racine "dist\Sikax\Sikax.exe"
-$controle = Start-Process -FilePath $exe -ArgumentList "--autotest" -Wait -PassThru -WindowStyle Hidden
+$rapport = Join-Path $racine "build\autotest.txt"
+if (Test-Path $rapport) { Remove-Item $rapport }
+# Sikax.exe n'a pas de console : il écrit son compte rendu dans un fichier.
+$controle = Start-Process -FilePath $exe -ArgumentList "--autotest", "--rapport", "`"$rapport`"" -Wait -PassThru -WindowStyle Hidden
+if (Test-Path $rapport) { Get-Content $rapport -Encoding UTF8 | ForEach-Object { Write-Host "   $_" } }
 if ($controle.ExitCode -ne 0) { throw "La distribution ne passe pas son auto-contrôle (code $($controle.ExitCode))." }
 foreach ($dossier in @("locales", "resources\icons", "resources\themes", "resources\exemples")) {
     if (-not (Test-Path (Join-Path $racine "dist\Sikax\$dossier"))) { throw "Dossier manquant dans la distribution : $dossier" }
