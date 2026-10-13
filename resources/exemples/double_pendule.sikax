@@ -1,0 +1,177 @@
+{
+  "format": "sikax",
+  "version": 1,
+  "application": {
+    "nom": "Sikax",
+    "version": "1.0.0"
+  },
+  "dimension": 2,
+  "meta": {
+    "titre": "Double pendule",
+    "auteur": "Sikax",
+    "description": "",
+    "modifie_le": "2026-10-12T20:51:11+00:00"
+  },
+  "unites": {
+    "longueur": "mm",
+    "angle": "deg"
+  },
+  "solides": [
+    {
+      "id": "S0",
+      "nom": "Bâti",
+      "bati": true,
+      "couleur": "#7C8696",
+      "pose": {
+        "x": 0.0,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "A",
+          "x": 0.0,
+          "y": 0.0
+        }
+      ],
+      "segments": [],
+      "inertie": {
+        "masse": 0.0,
+        "g": [
+          0.0,
+          0.0
+        ],
+        "jz": 0.0
+      }
+    },
+    {
+      "id": "S1",
+      "nom": "Bras 1",
+      "bati": false,
+      "couleur": "#3B82F6",
+      "pose": {
+        "x": 0.0,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "A",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "B",
+          "x": 0.3,
+          "y": 0.0
+        }
+      ],
+      "segments": [
+        [
+          "P1",
+          "P2"
+        ]
+      ],
+      "inertie": {
+        "masse": 1.0,
+        "g": [
+          0.15,
+          0.0
+        ],
+        "jz": 0.0075
+      }
+    },
+    {
+      "id": "S2",
+      "nom": "Bras 2",
+      "bati": false,
+      "couleur": "#F97316",
+      "pose": {
+        "x": 0.3,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "B",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "C",
+          "x": 0.3,
+          "y": 0.0
+        }
+      ],
+      "segments": [
+        [
+          "P1",
+          "P2"
+        ]
+      ],
+      "inertie": {
+        "masse": 1.0,
+        "g": [
+          0.15,
+          0.0
+        ],
+        "jz": 0.0075
+      }
+    }
+  ],
+  "liaisons": [
+    {
+      "id": "L1",
+      "nom": "Pivot A",
+      "type": "pivot",
+      "solide_a": "S0",
+      "point_a": "P1",
+      "solide_b": "S1",
+      "point_b": "P1",
+      "modele_spatial": "pivot_z",
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    },
+    {
+      "id": "L2",
+      "nom": "Pivot B",
+      "type": "pivot",
+      "solide_a": "S1",
+      "point_a": "P2",
+      "solide_b": "S2",
+      "point_b": "P1",
+      "modele_spatial": "pivot_z",
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    }
+  ],
+  "actions": [],
+  "moteurs": [],
+  "etude": {
+    "type": "dynamique",
+    "duree": 4.0,
+    "pas": 0.005,
+    "pesanteur": true,
+    "gravite": [
+      0.0,
+      -9.81
+    ],
+    "inertie": true,
+    "tolerance": 1e-10,
+    "precision": 1e-08
+  },
+  "affichage": {
+    "grille": true,
+    "pas_grille": 0.01,
+    "aimantation": true,
+    "noms_points": true,
+    "noms_liaisons": false,
+    "centres_gravite": true,
+    "echelle_forces": 0.0
+  }
+}

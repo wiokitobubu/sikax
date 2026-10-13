@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.venv-*/
+.pytest_cache/
+*.egg-info/
+
+# Fabrication de la distribution
+build/
+dist/
+
+# Sauvegardes écrites par Sikax à côté des projets
+*.sikax.bak
+
+# Systèmes et éditeurs
+.DS_Store
+Thumbs.db
+.idea/
+.ruff_cache/

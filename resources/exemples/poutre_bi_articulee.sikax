@@ -1,0 +1,166 @@
+{
+  "format": "sikax",
+  "version": 1,
+  "application": {
+    "nom": "Sikax",
+    "version": "1.0.0"
+  },
+  "dimension": 2,
+  "meta": {
+    "titre": "Poutre bi-articulée (hyperstatique)",
+    "auteur": "Sikax",
+    "description": "",
+    "modifie_le": "2026-10-12T20:51:11+00:00"
+  },
+  "unites": {
+    "longueur": "mm",
+    "angle": "deg"
+  },
+  "solides": [
+    {
+      "id": "S0",
+      "nom": "Bâti",
+      "bati": true,
+      "couleur": "#7C8696",
+      "pose": {
+        "x": 0.0,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "A",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "C",
+          "x": 1.0,
+          "y": 0.0
+        }
+      ],
+      "segments": [],
+      "inertie": {
+        "masse": 0.0,
+        "g": [
+          0.0,
+          0.0
+        ],
+        "jz": 0.0
+      }
+    },
+    {
+      "id": "S1",
+      "nom": "Poutre",
+      "bati": false,
+      "couleur": "#3B82F6",
+      "pose": {
+        "x": 0.0,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "A",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "B",
+          "x": 0.5,
+          "y": 0.0
+        },
+        {
+          "id": "P3",
+          "nom": "C",
+          "x": 1.0,
+          "y": 0.0
+        }
+      ],
+      "segments": [
+        [
+          "P1",
+          "P2"
+        ],
+        [
+          "P2",
+          "P3"
+        ]
+      ],
+      "inertie": {
+        "masse": 0.0,
+        "g": [
+          0.0,
+          0.0
+        ],
+        "jz": 0.0
+      }
+    }
+  ],
+  "liaisons": [
+    {
+      "id": "L1",
+      "nom": "Pivot A",
+      "type": "pivot",
+      "solide_a": "S0",
+      "point_a": "P1",
+      "solide_b": "S1",
+      "point_b": "P1",
+      "modele_spatial": "pivot_z",
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    },
+    {
+      "id": "L2",
+      "nom": "Pivot C",
+      "type": "pivot",
+      "solide_a": "S0",
+      "point_a": "P2",
+      "solide_b": "S1",
+      "point_b": "P3",
+      "modele_spatial": "pivot_z",
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    }
+  ],
+  "actions": [
+    {
+      "id": "A1",
+      "nom": "Charge",
+      "type": "force",
+      "actif": true,
+      "solide": "S1",
+      "point": "P2",
+      "repere": "global",
+      "fx": 0.0,
+      "fy": -1000.0
+    }
+  ],
+  "moteurs": [],
+  "etude": {
+    "type": "statique",
+    "duree": 2.0,
+    "pas": 0.01,
+    "pesanteur": false,
+    "gravite": [
+      0.0,
+      -9.81
+    ],
+    "inertie": true,
+    "tolerance": 1e-10,
+    "precision": 1e-08
+  },
+  "affichage": {
+    "grille": true,
+    "pas_grille": 0.01,
+    "aimantation": true,
+    "noms_points": true,
+    "noms_liaisons": false,
+    "centres_gravite": true,
+    "echelle_forces": 0.0
+  }
+}

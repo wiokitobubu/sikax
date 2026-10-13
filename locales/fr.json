@@ -1,0 +1,681 @@
+{
+  "_meta": {
+    "langue": "Français",
+    "code": "fr",
+    "note": "Langue de référence de Sikax. Les textes entre accolades, comme {nom}, sont remplacés à l'affichage : les conserver tels quels dans les traductions."
+  },
+
+  "commun": {
+    "annuler": "Annuler",
+    "fermer": "Fermer"
+  },
+
+  "fenetre": {
+    "sans_titre": "Sans titre"
+  },
+
+  "accueil": {
+    "titre": "Un nouveau mécanisme",
+    "texte": "Dessinez un premier solide avec l'outil Solide (touche B), ou ouvrez un mécanisme tout fait par Fichier → Exemples."
+  },
+
+  "menu": {
+    "fichier": "&Fichier",
+    "edition": "&Édition",
+    "affichage": "&Affichage",
+    "modele": "&Modèle",
+    "etude": "É&tude",
+    "aide": "A&ide",
+    "recents": "Projets récents",
+    "exemples": "Exemples",
+    "langue": "Langue",
+    "panneaux": "Panneaux"
+  },
+
+  "barre": {
+    "principale": "Barre principale",
+    "outils": "Outils de modélisation"
+  },
+
+  "panneau": {
+    "arbre": "Modèle",
+    "proprietes": "Propriétés",
+    "etude": "Étude",
+    "validation": "Validation",
+    "courbes": "Courbes",
+    "resultats": "Efforts",
+    "journal": "Journal",
+    "inspecteur": "Propriétés et étude",
+    "analyse": "Validation et résultats"
+  },
+
+  "action": {
+    "nouveau": "&Nouveau",
+    "ouvrir": "&Ouvrir…",
+    "enregistrer": "&Enregistrer",
+    "enregistrer_sous": "Enregistrer &sous…",
+    "exporter_image": "Exporter le schéma en image…",
+    "exporter_resultats": "Exporter les résultats (CSV)…",
+    "quitter": "&Quitter",
+    "annuler": "&Annuler",
+    "retablir": "&Rétablir",
+    "supprimer": "Supprimer",
+    "deselectionner": "Tout désélectionner",
+    "theme_sombre": "Thème sombre",
+    "ajuster": "Ajuster la vue",
+    "zoom_plus": "Zoom avant",
+    "zoom_moins": "Zoom arrière",
+    "affichage_grille": "Grille",
+    "affichage_aimantation": "Aimantation sur la grille",
+    "affichage_noms_points": "Noms des points",
+    "affichage_noms_liaisons": "Noms des liaisons",
+    "affichage_centres_gravite": "Centres de gravité",
+    "montrer_reactions": "Efforts de liaison",
+    "montrer_vitesses": "Vecteurs vitesse",
+    "montrer_trajectoires": "Trajectoires des points",
+    "outil_selection": "Sélectionner",
+    "outil_manipuler": "Manipuler le mécanisme",
+    "outil_barre": "Solide (barre)",
+    "outil_point": "Point",
+    "outil_pivot": "Liaison pivot",
+    "outil_glissiere": "Liaison glissière",
+    "outil_encastrement": "Liaison encastrement",
+    "outil_ponctuelle": "Liaison ponctuelle (appui simple)",
+    "outil_force": "Force",
+    "outil_couple": "Couple",
+    "outil_ressort": "Ressort-amortisseur",
+    "outil_moteur": "Moteur",
+    "pivots_automatiques": "Pivots automatiques",
+    "lancer": "Lancer l'étude",
+    "arreter": "Arrêter le calcul",
+    "equilibre": "Rechercher la position d'équilibre",
+    "adopter_configuration": "Prendre la position affichée comme configuration initiale",
+    "effacer_resultats": "Effacer les résultats",
+    "lecture": "Lire / mettre en pause l'animation",
+    "a_propos": "À propos de Sikax",
+    "type": {
+      "force": "Force",
+      "couple": "Couple",
+      "ressort": "Ressort-amortisseur"
+    }
+  },
+
+  "aide_action": {
+    "theme_sombre": "Basculer entre le thème clair et le thème sombre",
+    "ajuster": "Cadrer la vue sur tout le mécanisme",
+    "affichage_aimantation": "Accrocher les points sur la grille",
+    "montrer_reactions": "Afficher les efforts de liaison calculés",
+    "montrer_vitesses": "Afficher les vecteurs vitesse des points",
+    "montrer_trajectoires": "Afficher la trajectoire de tous les points",
+    "outil_selection": "Sélectionner un objet ; glisser un point pour modifier la géométrie",
+    "outil_manipuler": "Déplacer le mécanisme en respectant ses liaisons (configuration initiale)",
+    "outil_barre": "Dessiner un solide point par point",
+    "outil_point": "Ajouter un point au solide sélectionné, ou au bâti",
+    "outil_pivot": "Pivot : articulation entre deux solides",
+    "outil_glissiere": "Glissière : guidage en translation le long d'un axe",
+    "outil_encastrement": "Encastrement : deux solides rendus solidaires",
+    "outil_ponctuelle": "Ponctuelle : un point reste sur une droite (appui simple)",
+    "outil_force": "Force appliquée en un point",
+    "outil_couple": "Couple appliqué à un solide",
+    "outil_ressort": "Ressort-amortisseur entre deux points",
+    "outil_moteur": "Imposer le mouvement d'une pivot ou d'une glissière",
+    "pivots_automatiques": "Créer une pivot quand un nouveau solide part d'un point existant",
+    "lancer": "Calculer l'étude définie dans le panneau Étude",
+    "equilibre": "Amener le mécanisme dans une position d'équilibre stable",
+    "adopter_configuration": "Le mécanisme repartira de la position affichée dans l'animation"
+  },
+
+  "contexte": {
+    "motoriser": "Motoriser cette liaison",
+    "inverser": "Inverser les solides A et B",
+    "ajouter_point": "Ajouter un point à ce solide"
+  },
+
+  "arbre": {
+    "solides": "Solides",
+    "liaisons": "Liaisons",
+    "actions": "Actions mécaniques",
+    "moteurs": "Moteurs"
+  },
+
+  "outil": {
+    "selection": {"aide": "Cliquez pour sélectionner. Glissez un point ou une liaison pour modifier la géométrie. Molette : zoom · clic droit maintenu : déplacer la vue."},
+    "manipuler": {
+      "aide": "Glissez un solide : le mécanisme suit en respectant ses liaisons. La position obtenue devient la configuration initiale.",
+      "rien": "Cliquez sur un solide mobile pour le déplacer."
+    },
+    "barre": {
+      "aide": "Cliquez pour placer le premier point du solide.",
+      "suite": "Cliquez pour ajouter un point · Entrée, double-clic ou clic droit pour terminer · Échap pour abandonner."
+    },
+    "point": {"aide": "Cliquez pour ajouter un point au solide sélectionné (au bâti si aucun solide n'est sélectionné)."},
+    "liaison": {
+      "aide_point": "Cliquez sur un point : la liaison relie les deux solides présents à cet endroit, ou le solide et le bâti.",
+      "aide_axe": "Cliquez sur un point puis glissez pour orienter l'axe (par pas de 15° ; Maj pour un angle libre).",
+      "aucun_point": "Aucun point ici : placez la liaison sur un point d'un solide.",
+      "bati_seul": "Ce point appartient au bâti seul : placez la liaison sur un point d'un solide mobile.",
+      "deja_liee": "Ces deux solides sont déjà reliés ici par « {nom} »."
+    },
+    "force": {
+      "aide": "Cliquez sur un point d'un solide puis glissez pour donner la direction et la norme de la force (1 pixel = 1 N).",
+      "aucun_point": "Cliquez sur un point d'un solide mobile pour y appliquer la force."
+    },
+    "couple": {
+      "aide": "Cliquez sur un solide mobile pour lui appliquer un couple.",
+      "aucun_solide": "Cliquez sur un solide mobile."
+    },
+    "ressort": {
+      "aide": "Cliquez sur le premier point d'attache du ressort.",
+      "second": "Cliquez sur le second point d'attache, sur un autre solide.",
+      "aucun_point": "Cliquez sur un point existant.",
+      "meme_solide": "Les deux points d'attache doivent appartenir à deux solides différents."
+    },
+    "moteur": {
+      "aide": "Cliquez sur une liaison pivot ou glissière pour la motoriser.",
+      "aucune_liaison": "Cliquez sur une liaison pivot ou glissière.",
+      "non_pilotable": "La liaison « {nom} » ne peut pas être motorisée : seules les pivots et les glissières le peuvent."
+    },
+    "message": {
+      "fermeture_impossible": "Cette géométrie ne permet plus d'assembler le mécanisme : vérifiez les longueurs."
+    }
+  },
+
+  "liaison": {
+    "type": {
+      "pivot": "Pivot",
+      "glissiere": "Glissière",
+      "encastrement": "Encastrement",
+      "ponctuelle": "Ponctuelle"
+    }
+  },
+
+  "spatial": {
+    "encastrement": "Encastrement",
+    "pivot_z": "Pivot d'axe z",
+    "pivot_glissant_z": "Pivot glissant d'axe z",
+    "rotule": "Rotule (sphérique)",
+    "lineaire_annulaire_z": "Linéaire annulaire d'axe z",
+    "glissiere_x": "Glissière",
+    "pivot_glissant_x": "Pivot glissant (axe de la glissière)",
+    "appui_plan_y": "Appui plan",
+    "ponctuelle_y": "Ponctuelle (sphère-plan)",
+    "lineaire_annulaire_x": "Linéaire annulaire (sphère-cylindre)",
+    "lineaire_rectiligne_y": "Linéaire rectiligne (cylindre-plan)"
+  },
+
+  "champ": {
+    "nom": "Nom",
+    "couleur": "Couleur",
+    "type": "Type",
+    "actif": "Actif (pris en compte dans le calcul)",
+    "x": "x",
+    "y": "y",
+    "angle": "Angle",
+    "masse": "Masse",
+    "gx": "Centre de gravité : x local",
+    "gy": "Centre de gravité : y local",
+    "jz": "Moment d'inertie en G",
+    "modele_spatial": "Modèle spatial",
+    "direction_axe": "Direction de l'axe",
+    "angle_articulaire": "Angle de B par rapport à A",
+    "deplacement": "Déplacement le long de l'axe",
+    "amortissement": "Amortissement visqueux",
+    "vitesse_initiale": "Vitesse initiale",
+    "fx": "Fx",
+    "fy": "Fy",
+    "mz": "Moment Mz",
+    "repere": "Repère",
+    "raideur": "Raideur",
+    "longueur_libre": "Longueur libre",
+    "longueur_actuelle": "Longueur actuelle",
+    "expression_admise": "nombre ou expression de t",
+    "nombre_attendu": "Un nombre est attendu.",
+    "valeur_trop_petite": "Valeur trop petite."
+  },
+
+  "unite": {
+    "degre": "degrés (°)",
+    "radian": "radians (rad)"
+  },
+
+  "affichage": {
+    "grille": "Afficher la grille",
+    "aimantation": "Aimanter sur la grille",
+    "noms_points": "Afficher les noms des points",
+    "noms_liaisons": "Afficher les noms des liaisons",
+    "centres_gravite": "Afficher les centres de gravité"
+  },
+
+  "proprietes": {
+    "projet": {
+      "titre": "Projet",
+      "aide": "Aucun objet sélectionné : réglages du projet.",
+      "nom": "Titre",
+      "auteur": "Auteur",
+      "description": "Description du mécanisme…"
+    },
+    "unites": "Unités d'affichage",
+    "unite_longueur": "Longueurs",
+    "unite_angle": "Angles",
+    "affichage": "Affichage",
+    "pas_grille": "Pas de la grille",
+    "solide": {
+      "bati": "Bâti : solide de référence, fixe.",
+      "mobile": "Solide mobile",
+      "note_bati": "Le bâti est fixe : il n'a ni inertie ni position à régler. Ses points servent d'ancrage aux liaisons."
+    },
+    "inertie": "Inertie",
+    "barres": "Calculer G et l'inertie (barres homogènes)",
+    "barres_aide": "Répartit la masse saisie sur les segments du solide, considérés comme des barres minces homogènes, puis calcule le centre de gravité et le moment d'inertie.",
+    "pose": "Position du repère du solide",
+    "pose_note": "Ce solide est lié à d'autres : déplacez-le avec l'outil Manipuler ou par la position d'une liaison.",
+    "point": {
+      "titre": "Point {nom}",
+      "de": "Point du solide « {solide} »",
+      "position": "Position dans le repère global",
+      "note": "Modifier ces coordonnées change la géométrie du solide."
+    },
+    "resultats": "Résultats à l'instant affiché",
+    "liaison": {
+      "entre": "A : {a}  ·  B : {b}",
+      "modele_aide": "Réalisation de la liaison dans l'espace. Elle ne change pas le mouvement plan mais détermine l'hyperstatisme réel du mécanisme.",
+      "mobilites": "Mobilités de B / A",
+      "inconnues": "Inconnues de liaison",
+      "aucune": "aucune",
+      "axe": "Axe de la liaison",
+      "inverser": "Inverser A et B",
+      "inverser_aide": "L'axe est lié au solide A (actuellement « {a} »). Inverser le lie à l'autre solide.",
+      "position": "Position actuelle",
+      "position_aide": "Modifier cette valeur déplace le mécanisme : c'est une façon de régler la configuration initiale.",
+      "inaccessible": "Cette position ne peut pas être atteinte par le mécanisme.",
+      "dynamique": "Paramètres pour l'étude dynamique",
+      "motoriser": "Motoriser cette liaison",
+      "voir_moteur": "Voir le moteur « {nom} »",
+      "torseur": "Action de {a} sur {b}, au point de liaison"
+    },
+    "action": {
+      "applique_en": "Appliquée en",
+      "applique_a": "Appliqué à",
+      "entre": "Entre",
+      "composantes": "Composantes",
+      "repere_global": "Global (direction fixe)",
+      "repere_local": "Lié au solide (force suiveuse)",
+      "expression_aide": "Une valeur peut dépendre du temps : par exemple 100*sin(2*pi*t).",
+      "au_repos": "Longueur libre = longueur actuelle"
+    },
+    "moteur": {
+      "sur": "Moteur de la liaison « {liaison} »",
+      "relatif": "Mouvement compté depuis la configuration initiale",
+      "relatif_aide": "Coché : la loi donne le déplacement à partir de la position de départ. Décoché : la loi donne directement la valeur de l'angle ou du déplacement.",
+      "voir_liaison": "Voir la liaison « {nom} »",
+      "loi": "Loi de mouvement",
+      "tours_minute": "Soit"
+    }
+  },
+
+  "loi": {
+    "vitesse_constante": "Vitesse constante",
+    "uniformement_accelere": "Mouvement uniformément accéléré",
+    "sinusoidale": "Sinusoïdale",
+    "trapeze": "Trapèze de vitesse",
+    "blocage": "Blocage (position fixe)",
+    "expression": "Expression libre",
+    "aide": {
+      "vitesse_constante": "f(t) = position initiale + vitesse × t",
+      "uniformement_accelere": "f(t) = position initiale + vitesse initiale × t + ½ × accélération × t²",
+      "sinusoidale": "f(t) = décalage + amplitude × sin(2π × fréquence × t + phase)",
+      "trapeze": "Accélération constante, palier à vitesse maximale, puis décélération, sur la course demandée.",
+      "blocage": "La liaison est maintenue à une position fixe : le moteur fournit l'effort de maintien.",
+      "expression": "f(t) est donnée par une formule ; vitesse et accélération en sont déduites exactement.",
+      "fonctions": "Variable t (s). Constantes : pi, e, g. Fonctions : sin, cos, tan, asin, acos, atan, exp, log, sqrt, abs, min, max, lisse(t, t0, t1), rampe(t, t0, t1), si(condition, a, b). Les angles sont en radians ; rad(30) convertit des degrés."
+    },
+    "param": {
+      "vitesse": "Vitesse",
+      "position_initiale": "Position initiale",
+      "acceleration": "Accélération",
+      "vitesse_initiale": "Vitesse initiale",
+      "amplitude": "Amplitude",
+      "frequence": "Fréquence",
+      "phase": "Phase",
+      "decalage": "Décalage",
+      "course": "Course",
+      "vitesse_max": "Vitesse maximale",
+      "depart": "Instant de départ",
+      "position": "Position",
+      "expression": "f(t) ="
+    }
+  },
+
+  "etude": {
+    "titre": "Étude",
+    "nature": "Type d'étude",
+    "type": {
+      "statique": "Statique (PFS)",
+      "cinematique": "Cinématique",
+      "dynamique": "Dynamique (PFD)"
+    },
+    "description": {
+      "statique": "Équilibre du mécanisme dans la configuration affichée : torseurs de liaison et efforts de maintien des moteurs, par le principe fondamental de la statique.",
+      "cinematique": "Le mouvement est imposé par les moteurs. Positions, vitesses et accélérations sont calculées, puis les efforts de liaison et l'effort moteur nécessaire.",
+      "dynamique": "Le mouvement est calculé en intégrant le principe fondamental de la dynamique : le mécanisme évolue librement sous l'effet des actions et de la pesanteur."
+    },
+    "duree": "Durée",
+    "pas": "Pas d'échantillonnage",
+    "inertie": "Tenir compte de l'inertie (PFD)",
+    "inertie_aide": "Coché : les efforts sont calculés par le principe fondamental de la dynamique. Décoché : calcul quasi statique, les effets d'inertie sont négligés.",
+    "pesanteur": "Pesanteur",
+    "pesanteur_active": "Prendre en compte la pesanteur",
+    "lancer": "Lancer l'étude",
+    "arreter": "Arrêter le calcul",
+    "equilibre": "Position d'équilibre",
+    "equilibre_aide": "Déplace le mécanisme vers une position d'équilibre stable sous les actions appliquées.",
+    "calcul_en_cours": "Calcul en cours…",
+    "interrompu": "Calcul interrompu.",
+    "modele_modifie": "Le modèle a été modifié pendant le calcul : résultats ignorés. Relancez l'étude.",
+    "bilan": "Étude {type} terminée : {instants} instant(s) calculé(s) en {duree} s.",
+    "equilibre_trouve": "Position d'équilibre trouvée.",
+    "equilibre_introuvable": "Aucune position d'équilibre trouvée à partir de cette configuration.",
+    "configuration_adoptee": "La position à t = {t} s est maintenant la configuration initiale."
+  },
+
+  "lecteur": {
+    "lire": "Lire l'animation",
+    "pause": "Mettre en pause",
+    "debut": "Revenir au début",
+    "fin": "Aller à la fin",
+    "boucle": "Lecture en boucle",
+    "vitesse": "Vitesse de lecture"
+  },
+
+  "validation": {
+    "plan": "Dans le plan",
+    "espace": "Dans l'espace",
+    "verdict": {
+      "vide": "Aucune liaison pour le moment.",
+      "isostatique": "Isostatique",
+      "hyperstatique": "Hyperstatique d'ordre {h}"
+    },
+    "graphe": "{solides} solides · {liaisons} liaisons · γ = {boucles}",
+    "detail": "{nom} : Ic = {ic}, Ec = {d}γ = {ec}, rang = {rang}  →  m = Ic − rang = {m} ;  h = Ec − rang = {h}  (vérification : Is − Es + m = {is_} − {es} + {m}).",
+    "aide_vide": "Dessinez des solides et reliez-les par des liaisons : la mobilité m et le degré d'hyperstatisme h s'affichent ici, calculés à partir du graphe des liaisons.",
+    "moteurs": {
+      "complet": "{moteurs} moteur(s) pour {m} mobilité(s) : le mouvement est entièrement imposé, l'étude cinématique est possible.",
+      "structure": "Aucune mobilité : le mécanisme est une structure. Lancez une étude statique.",
+      "libre": "{moteurs} moteur(s), {pilotees} mobilité(s) pilotée(s), {libres} mobilité(s) libre(s). Ajoutez des moteurs pour une étude cinématique, ou lancez une étude dynamique."
+    },
+    "boucles_hyperstatiques": "Liaisons des boucles surabondantes : {liaisons}.",
+    "liaison_hyperstatique": "Cette liaison appartient à une boucle hyperstatique.",
+    "colonne": {
+      "liaison": "Liaison",
+      "type": "Type",
+      "modele": "Modèle spatial",
+      "plan": "ddl / Is (plan)",
+      "espace": "ddl / Is (espace)"
+    },
+    "colonne_aide": {
+      "liaison": "Nom de la liaison",
+      "type": "Type de la liaison dans le plan",
+      "modele": "Liaison normalisée qui réalise cette liaison dans l'espace",
+      "plan": "Degrés de liberté et inconnues statiques de la liaison dans le plan (leur somme vaut 3)",
+      "espace": "Degrés de liberté et inconnues statiques de la liaison dans l'espace (leur somme vaut 6)"
+    },
+    "resume": "Plan : m = {m}, h = {h}   ·   Espace : h = {h3}"
+  },
+
+  "topologie": {
+    "avertissement": {
+      "aucun_solide": "Le mécanisme ne contient aucun solide mobile.",
+      "solides_isoles": "Solide(s) sans aucune liaison : {solides}.",
+      "solides_flottants": "Solide(s) non relié(s) au bâti : {solides}.",
+      "configuration_singuliere": "Configuration proche d'une singularité (points alignés) : mobilité et hyperstatisme peuvent y changer.",
+      "moteurs_surabondants": "{nombre} moteur(s) en trop : ils imposent plus de mouvements que le mécanisme n'a de mobilités."
+    }
+  },
+
+  "courbes": {
+    "abscisse": "Abscisse : {nom}",
+    "temps": "temps",
+    "axe_temps": "t (s)",
+    "revenir_au_temps": "Revenir au temps",
+    "utiliser_abscisse": "Utiliser comme abscisse",
+    "tout_decocher": "Tout décocher",
+    "exporter_csv": "Exporter (CSV)",
+    "aucun_resultat": "Lancez une étude pour tracer des courbes.",
+    "aucune_grandeur": "Cochez des grandeurs dans la liste pour les tracer.",
+    "etude_statique": "Étude statique : un seul instant. Les valeurs sont dans l'onglet Efforts.",
+    "famille": {
+      "moteur": "Moteurs",
+      "liaison": "Liaisons",
+      "point": "Points",
+      "solide": "Solides",
+      "action": "Actions mécaniques",
+      "energie": "Énergies"
+    }
+  },
+
+  "grandeur": {
+    "x": "Position x",
+    "y": "Position y",
+    "angle": "Angle",
+    "vx": "Vitesse Vx",
+    "vy": "Vitesse Vy",
+    "v": "Vitesse (norme)",
+    "omega": "Vitesse angulaire ω",
+    "ax": "Accélération ax",
+    "ay": "Accélération ay",
+    "a": "Accélération (norme)",
+    "alpha": "Accélération angulaire",
+    "X": "Effort X",
+    "Y": "Effort Y",
+    "N": "Moment N",
+    "R": "Effort ‖R‖",
+    "Fn": "Effort normal",
+    "vitesse_angulaire": "Vitesse angulaire relative",
+    "deplacement": "Déplacement",
+    "vitesse": "Vitesse",
+    "effort": "Effort",
+    "puissance": "Puissance",
+    "position": "Position imposée",
+    "fx": "Fx",
+    "fy": "Fy",
+    "f": "Norme",
+    "mz": "Moment",
+    "longueur": "Longueur",
+    "px": "Point de réduction x",
+    "py": "Point de réduction y",
+    "effort_couple": "Couple moteur",
+    "effort_force": "Force motrice",
+    "energie_mecanique": "Énergie mécanique",
+    "energie_cinetique": "Énergie cinétique",
+    "energie_potentielle": "Énergie potentielle"
+  },
+
+  "resultats": {
+    "vide": "Lancez une étude pour obtenir les torseurs des actions de liaison.",
+    "entete_instant": "Actions de liaison à t = {t} s, dans la base globale. Torseur de l'action de A sur B, réduit au point de liaison.",
+    "entete_statique": "Actions de liaison à l'équilibre, dans la base globale. Torseur de l'action de A sur B, réduit au point de liaison.",
+    "moteur": "Moteur",
+    "colonne": {
+      "element": "Élément",
+      "nature": "Nature",
+      "solides": "A → B"
+    }
+  },
+
+  "calcul": {
+    "erreur": {
+      "aucun_solide": "Le mécanisme ne contient aucun solide mobile : il n'y a rien à calculer.",
+      "assemblage_impossible": "Le mécanisme ne peut pas être assemblé : les liaisons sont incompatibles avec la géométrie (écart restant : {residu:.3g}).",
+      "mobilite_non_pilotee": "Étude cinématique impossible : {mobilite} mobilité(s) ne sont pilotée(s) par aucun moteur. Ajoutez des moteurs ou lancez une étude dynamique.",
+      "position_initiale_singuliere": "Dans la configuration initiale, les moteurs ne commandent pas le mouvement (point mort). Déplacez le mécanisme avec l'outil Manipuler, ou motorisez une autre liaison.",
+      "inertie_insuffisante": "Étude dynamique impossible : une mobilité n'entraîne aucune inertie. Donnez une masse et un moment d'inertie aux solides : {solides}.",
+      "expression": "Expression invalide pour « {objet} » : {message}.",
+      "modele_invalide": "Le modèle contient {nombre} erreur(s). Première erreur, sur « {objet} » : {detail}",
+      "liaison_non_geree": "Type de liaison non géré par le solveur : {type}.",
+      "trop_d_instants": "Trop d'instants à calculer ({nombre}). Augmentez le pas ou réduisez la durée (maximum : {maximum}).",
+      "erreur_numerique": "Le calcul a rencontré un problème numérique : les données sont probablement démesurées ou la configuration singulière ({message}).",
+      "inattendue": "Erreur imprévue pendant le calcul : {message}"
+    },
+    "message": {
+      "mouvement_impossible": "Mouvement impossible au-delà de t = {t} s : le mécanisme atteint une position limite ou singulière. Calcul arrêté à cet instant.",
+      "configuration_singuliere": "Passage près d'une configuration singulière vers t = {t} s : les résultats y sont peu précis.",
+      "hyperstatique_norme_minimale": "Mécanisme hyperstatique d'ordre {h} : la répartition des efforts entre liaisons surabondantes n'est pas unique. La solution de norme minimale est donnée.",
+      "quasi_statique": "Calcul quasi statique : les effets d'inertie sont négligés.",
+      "inertie_partielle": "Certains solides n'ont ni masse ni inertie : leur effet dynamique est ignoré.",
+      "pas_en_equilibre": "Le mécanisme n'est pas en équilibre dans cette configuration : {mobilite} mobilité(s) non bloquée(s) où les actions travaillent. Ajoutez un moteur de blocage ou recherchez la position d'équilibre.",
+      "equilibre_avec_mobilite": "Équilibre vérifié, bien que {mobilite} mobilité(s) reste(nt) libre(s).",
+      "integration_interrompue": "Intégration interrompue à t = {t} s : le pas de temps est devenu trop petit (configuration singulière ou efforts démesurés).",
+      "decollement": "L'effort normal de la ponctuelle « {liaison} » change de signe vers t = {t} s : un appui réel décollerait à cet instant. Le modèle, lui, maintient le contact.",
+      "aucune_mobilite_libre": "Aucune mobilité libre : le mouvement est entièrement imposé par les liaisons et les moteurs."
+    }
+  },
+
+  "modele": {
+    "probleme": {
+      "bati_absent": "le bâti est absent.",
+      "bati_deplace": "le bâti doit rester à l'origine.",
+      "bati_multiple": "plusieurs solides sont déclarés comme bâti.",
+      "valeur_non_finie": "une valeur numérique est invalide ou démesurée.",
+      "segment_invalide": "un segment relie des points inexistants.",
+      "inertie_negative": "la masse et le moment d'inertie doivent être positifs.",
+      "liaison_meme_solide": "une liaison doit relier deux solides différents.",
+      "solide_inconnu": "référence à un solide inexistant.",
+      "point_inconnu": "référence à un point inexistant.",
+      "modele_spatial_incompatible": "le modèle spatial ne correspond pas au type de la liaison.",
+      "valeur_hors_bornes": "une valeur est hors des bornes admises.",
+      "ressort_meme_solide": "les deux extrémités du ressort sont sur le même solide.",
+      "repere_inconnu": "repère de force inconnu.",
+      "action_sur_bati": "une action appliquée au bâti est sans effet.",
+      "expression_invalide": "une expression est invalide.",
+      "moteur_liaison_inconnue": "le moteur pilote une liaison inexistante.",
+      "moteur_non_pilotable": "le moteur pilote une liaison qui ne peut pas être motorisée.",
+      "moteur_en_double": "deux moteurs pilotent la même liaison.",
+      "loi_invalide": "la loi de mouvement du moteur est invalide.",
+      "etude_invalide": "la durée, le pas et les tolérances de l'étude doivent être strictement positifs."
+    }
+  },
+
+  "fichier": {
+    "filtre": "Projets Sikax (*{ext});;Tous les fichiers (*)",
+    "dialogue": {
+      "ouvrir": "Ouvrir un projet",
+      "enregistrer": "Enregistrer le projet",
+      "image": "Exporter le schéma",
+      "csv": "Exporter les résultats"
+    },
+    "confirmer": {
+      "texte": "Enregistrer les modifications de « {nom} » ?",
+      "detail": "Les modifications seront perdues si vous ne les enregistrez pas.",
+      "ne_pas_enregistrer": "Ne pas enregistrer"
+    },
+    "ouvert": "{nom} ouvert.",
+    "ouvert_avec_remarques": "{nom} ouvert avec {nombre} remarque(s) : voir le journal.",
+    "exemple_ouvert": "Exemple « {nom} » ouvert comme nouveau projet.",
+    "enregistre": "{nom} enregistré.",
+    "image_exportee": "Schéma exporté dans {nom}.",
+    "csv_exporte": "{colonnes} grandeur(s) et {lignes} ligne(s) exportées dans {nom}.",
+    "export_impossible": "Impossible d'écrire {nom}.",
+    "erreur": {
+      "fichier_vide": "Le fichier est vide.",
+      "format_inconnu": "Ce fichier n'est pas un projet Sikax.",
+      "json_invalide": "Le fichier est endommagé : erreur de syntaxe ligne {ligne}, colonne {colonne}.",
+      "nombre_non_fini": "Le fichier contient un nombre invalide (NaN ou infini).",
+      "structure_invalide": "Le fichier n'a pas la structure d'un projet Sikax.",
+      "dimension_non_geree": "Ce projet est de dimension {dimension} : cette version de Sikax ne traite que les mécanismes plans.",
+      "fichier_invalide": "Le fichier contient {nombre} erreur(s) et n'a pas été ouvert.",
+      "fichier_introuvable": "Fichier introuvable : {chemin}",
+      "lecture_impossible": "Impossible de lire {chemin} ({message}).",
+      "fichier_trop_gros": "Le fichier est trop volumineux pour être un projet Sikax.",
+      "encodage_invalide": "L'encodage du fichier n'est pas reconnu.",
+      "migration_impossible": "Ce fichier a été écrit dans un format trop ancien (version {version}) pour être converti.",
+      "donnees_invalides": "Le projet contient des valeurs invalides et ne peut pas être enregistré ({message}).",
+      "ecriture_impossible": "Impossible d'enregistrer dans {chemin} ({message})."
+    },
+    "diag": {
+      "cle_en_double": "la clé « {cle} » apparaît deux fois ; la dernière valeur est retenue.",
+      "cle_inconnue": "clé inconnue « {cle} », ignorée.",
+      "champ_manquant": "le champ « {champ} » est manquant.",
+      "nombre_invalide": "« {champ} » n'est pas un nombre valide ({valeur}).",
+      "nombre_en_texte": "« {champ} » était écrit en texte ; il a été lu comme un nombre.",
+      "valeur_hors_bornes": "« {champ} » vaut {valeur}, en dehors des valeurs admises (minimum {minimum}).",
+      "angle_en_degres": "« {champ} » a été converti de degrés en radians.",
+      "expression_invalide": "l'expression de « {champ} » est invalide : {message}.",
+      "texte_invalide": "« {champ} » devrait être un texte ; valeur ignorée.",
+      "booleen_invalide": "« {champ} » devrait valoir vrai ou faux ({valeur}) ; valeur par défaut utilisée.",
+      "section_en_dictionnaire": "section écrite sous forme de dictionnaire, lue normalement.",
+      "section_invalide": "cette section n'a pas la forme attendue ; elle est ignorée.",
+      "format_absent": "la marque de format « sikax » est absente ; le fichier est lu malgré tout.",
+      "version_invalide": "numéro de version illisible ({valeur}) ; la version courante est supposée.",
+      "version_absente": "numéro de version absent ; la version courante est supposée.",
+      "version_plus_recente": "fichier écrit par une version plus récente de Sikax (format {version}, géré : {geree}) ; certaines données peuvent être ignorées.",
+      "unite_inconnue": "unité inconnue « {valeur} » ; unité par défaut utilisée.",
+      "valeur_ignoree": "valeur invalide pour « {champ} » ; valeur par défaut utilisée.",
+      "type_etude_inconnu": "type d'étude inconnu « {valeur} » ; étude cinématique retenue.",
+      "element_invalide": "cet élément n'a pas la forme attendue.",
+      "identifiant_en_double": "l'identifiant « {id} » est déjà utilisé.",
+      "identifiant_manquant": "l'identifiant est manquant.",
+      "segment_ignore": "segment invalide, ignoré.",
+      "couleur_invalide": "couleur invalide « {valeur} » ; couleur par défaut utilisée.",
+      "bati_multiple": "plusieurs solides sont déclarés comme bâti ({solides}) ; seul le premier est retenu.",
+      "bati_absent": "aucun solide n'est déclaré comme bâti.",
+      "bati_renomme": "le bâti « {ancien} » a reçu l'identifiant « S0 ».",
+      "solide_renomme": "le solide « {ancien} » a été renommé « {nouveau} ».",
+      "bati_recale": "le bâti a été ramené à l'origine (ses points ont été recalculés).",
+      "reference_par_nom": "« {champ} » désigne l'objet par son nom (« {nom} ») au lieu de son identifiant.",
+      "solide_inconnu": "« {champ} » : le solide « {solide} » n'existe pas.",
+      "solide_rejete": "« {champ} » : le solide « {solide} » est lui-même invalide (voir son erreur).",
+      "point_inconnu": "« {champ} » : le point « {point} » n'existe pas dans le solide « {solide} ».",
+      "point_cree": "un point a été créé sur le solide « {solide} » pour porter la liaison.",
+      "type_liaison_inconnu": "type de liaison inconnu « {type} ». Types reconnus : {connus}.",
+      "type_liaison_interprete": "type « {lu} » interprété comme « {type} ».",
+      "liaison_meme_solide": "la liaison relie le solide « {solide} » à lui-même.",
+      "orientation_deduite": "orientation relative absente ; déduite de la position des solides.",
+      "modele_spatial_inconnu": "modèle spatial « {valeur} » incompatible ; « {defaut} » utilisé.",
+      "type_action_inconnu": "type d'action inconnu « {type} ». Types reconnus : {connus}.",
+      "repere_inconnu": "repère inconnu « {valeur} » ; repère global utilisé.",
+      "liaison_inconnue": "la liaison « {liaison} » n'existe pas.",
+      "liaison_rejetee": "la liaison « {liaison} » est elle-même invalide (voir son erreur).",
+      "liaison_non_pilotable": "la liaison « {liaison} » ({type}) ne peut pas être motorisée.",
+      "moteur_en_double": "la liaison « {liaison} » a déjà un moteur.",
+      "loi_inconnue": "loi de mouvement inconnue « {type} ». Lois reconnues : {connus}.",
+      "loi_invalide": "loi de mouvement invalide : {message}.",
+      "modele_incoherent": "le modèle obtenu est incohérent ({probleme}).",
+      "liaison_ouverte": "la liaison n'est pas fermée dans la configuration enregistrée (écart {ecart:.3g} m).",
+      "mecanisme_referme": "le mécanisme a été réassemblé ({nombre} liaison(s) ouverte(s)).",
+      "fermeture_impossible": "le mécanisme ne peut pas être assemblé : {nombre} liaison(s) restent ouvertes.",
+      "fichier_migre": "fichier converti du format {depuis} au format {vers}.",
+      "encodage_inhabituel": "le fichier n'est pas en UTF-8 ; il a été lu en {encodage}."
+    }
+  },
+
+  "diagnostics": {
+    "titre": "Compte rendu de lecture",
+    "resume": "{erreurs} erreur(s) et {avertissements} avertissement(s) relevés à la lecture du fichier.",
+    "ouvrir_quand_meme": "Ouvrir en ignorant les éléments invalides",
+    "ouvrir_quand_meme_aide": "Les éléments en erreur ne peuvent pas être interprétés. Vous pouvez ouvrir le reste du projet : ces éléments seront absents, et le fichier d'origine ne sera modifié que si vous enregistrez."
+  },
+
+  "a_propos": {
+    "titre": "À propos de {nom}",
+    "version": "Version {version}",
+    "description": "Sikax permet de dessiner le schéma cinématique d'un mécanisme plan, d'en vérifier la mobilité et l'isostatisme, puis d'en calculer la cinématique, la statique et la dynamique.",
+    "credits": "L'organisation du logiciel s'inspire du projet libre OpenMeca (Damien André). Le moteur de calcul, écrit en Python avec NumPy, est propre à Sikax."
+  },
+
+  "erreur": {
+    "imprevue": "Une erreur imprévue s'est produite. Votre projet n'a pas été modifié : enregistrez-le sous un autre nom par précaution.",
+    "journal": "Le détail a été enregistré dans :\n{chemin}"
+  },
+
+  "exemple": {
+    "bielle_manivelle": "Bielle-manivelle",
+    "quatre_barres": "Quatre barres",
+    "coulisse_retour_rapide": "Coulisse à retour rapide",
+    "pendule_simple": "Pendule simple",
+    "double_pendule": "Double pendule",
+    "masse_ressort": "Masse-ressort-amortisseur",
+    "poutre_deux_appuis": "Poutre sur deux appuis",
+    "poutre_bi_articulee": "Poutre bi-articulée (hyperstatique)",
+    "parallelogramme_double": "Parallélogramme double"
+  }
+}

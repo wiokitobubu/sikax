@@ -1,0 +1,681 @@
+{
+  "_meta": {
+    "langue": "English",
+    "code": "en",
+    "note": "English translation of Sikax. Text in braces, such as {nom}, is replaced at display time: keep it unchanged."
+  },
+
+  "commun": {
+    "annuler": "Cancel",
+    "fermer": "Close"
+  },
+
+  "fenetre": {
+    "sans_titre": "Untitled"
+  },
+
+  "accueil": {
+    "titre": "A new mechanism",
+    "texte": "Draw a first body with the Body tool (B key), or open a ready-made mechanism from File → Examples."
+  },
+
+  "menu": {
+    "fichier": "&File",
+    "edition": "&Edit",
+    "affichage": "&View",
+    "modele": "&Model",
+    "etude": "&Study",
+    "aide": "&Help",
+    "recents": "Recent projects",
+    "exemples": "Examples",
+    "langue": "Language",
+    "panneaux": "Panels"
+  },
+
+  "barre": {
+    "principale": "Main toolbar",
+    "outils": "Modelling tools"
+  },
+
+  "panneau": {
+    "arbre": "Model",
+    "proprietes": "Properties",
+    "etude": "Study",
+    "validation": "Validation",
+    "courbes": "Plots",
+    "resultats": "Forces",
+    "journal": "Log",
+    "inspecteur": "Properties and study",
+    "analyse": "Validation and results"
+  },
+
+  "action": {
+    "nouveau": "&New",
+    "ouvrir": "&Open…",
+    "enregistrer": "&Save",
+    "enregistrer_sous": "Save &As…",
+    "exporter_image": "Export Diagram as Image…",
+    "exporter_resultats": "Export Results (CSV)…",
+    "quitter": "&Quit",
+    "annuler": "&Undo",
+    "retablir": "&Redo",
+    "supprimer": "Delete",
+    "deselectionner": "Deselect All",
+    "theme_sombre": "Dark Theme",
+    "ajuster": "Fit View",
+    "zoom_plus": "Zoom In",
+    "zoom_moins": "Zoom Out",
+    "affichage_grille": "Grid",
+    "affichage_aimantation": "Snap to Grid",
+    "affichage_noms_points": "Point Names",
+    "affichage_noms_liaisons": "Joint Names",
+    "affichage_centres_gravite": "Centres of Gravity",
+    "montrer_reactions": "Joint Forces",
+    "montrer_vitesses": "Velocity Vectors",
+    "montrer_trajectoires": "Point Trajectories",
+    "outil_selection": "Select",
+    "outil_manipuler": "Move the Mechanism",
+    "outil_barre": "Body (Bar)",
+    "outil_point": "Point",
+    "outil_pivot": "Revolute Joint",
+    "outil_glissiere": "Prismatic Joint",
+    "outil_encastrement": "Fixed Joint",
+    "outil_ponctuelle": "Point-on-Line Joint (Roller Support)",
+    "outil_force": "Force",
+    "outil_couple": "Torque",
+    "outil_ressort": "Spring-Damper",
+    "outil_moteur": "Motor",
+    "pivots_automatiques": "Automatic Revolute Joints",
+    "lancer": "Run Study",
+    "arreter": "Stop Computation",
+    "equilibre": "Find Equilibrium Position",
+    "adopter_configuration": "Use the Displayed Position as Initial Configuration",
+    "effacer_resultats": "Clear Results",
+    "lecture": "Play / Pause Animation",
+    "a_propos": "About Sikax",
+    "type": {
+      "force": "Force",
+      "couple": "Torque",
+      "ressort": "Spring-damper"
+    }
+  },
+
+  "aide_action": {
+    "theme_sombre": "Switch between the light and dark themes",
+    "ajuster": "Frame the whole mechanism",
+    "affichage_aimantation": "Snap points to the grid",
+    "montrer_reactions": "Show the computed joint forces",
+    "montrer_vitesses": "Show the velocity vectors of the points",
+    "montrer_trajectoires": "Show the trajectory of every point",
+    "outil_selection": "Select an object; drag a point to change the geometry",
+    "outil_manipuler": "Move the mechanism while respecting its joints (initial configuration)",
+    "outil_barre": "Draw a body point by point",
+    "outil_point": "Add a point to the selected body, or to the frame",
+    "outil_pivot": "Revolute: hinge between two bodies",
+    "outil_glissiere": "Prismatic: translation along an axis",
+    "outil_encastrement": "Fixed: two bodies rigidly attached",
+    "outil_ponctuelle": "Point-on-line: a point stays on a line (roller support)",
+    "outil_force": "Force applied at a point",
+    "outil_couple": "Torque applied to a body",
+    "outil_ressort": "Spring-damper between two points",
+    "outil_moteur": "Impose the motion of a revolute or prismatic joint",
+    "pivots_automatiques": "Create a revolute joint when a new body starts from an existing point",
+    "lancer": "Compute the study defined in the Study panel",
+    "equilibre": "Bring the mechanism to a stable equilibrium position",
+    "adopter_configuration": "The mechanism will start from the position shown in the animation"
+  },
+
+  "contexte": {
+    "motoriser": "Add a motor to this joint",
+    "inverser": "Swap bodies A and B",
+    "ajouter_point": "Add a point to this body"
+  },
+
+  "arbre": {
+    "solides": "Bodies",
+    "liaisons": "Joints",
+    "actions": "Loads",
+    "moteurs": "Motors"
+  },
+
+  "outil": {
+    "selection": {"aide": "Click to select. Drag a point or a joint to change the geometry. Wheel: zoom · hold right button: pan."},
+    "manipuler": {
+      "aide": "Drag a body: the mechanism follows while respecting its joints. The resulting position becomes the initial configuration.",
+      "rien": "Click a moving body to drag it."
+    },
+    "barre": {
+      "aide": "Click to place the first point of the body.",
+      "suite": "Click to add a point · Enter, double-click or right-click to finish · Esc to cancel."
+    },
+    "point": {"aide": "Click to add a point to the selected body (to the frame if no body is selected)."},
+    "liaison": {
+      "aide_point": "Click a point: the joint connects the two bodies found there, or the body and the frame.",
+      "aide_axe": "Click a point then drag to set the axis direction (15° steps; Shift for a free angle).",
+      "aucun_point": "No point here: place the joint on a point of a body.",
+      "bati_seul": "This point belongs to the frame only: place the joint on a point of a moving body.",
+      "deja_liee": "These two bodies are already connected here by “{nom}”."
+    },
+    "force": {
+      "aide": "Click a point of a body then drag to set the direction and magnitude of the force (1 pixel = 1 N).",
+      "aucun_point": "Click a point of a moving body to apply the force."
+    },
+    "couple": {
+      "aide": "Click a moving body to apply a torque to it.",
+      "aucun_solide": "Click a moving body."
+    },
+    "ressort": {
+      "aide": "Click the first attachment point of the spring.",
+      "second": "Click the second attachment point, on another body.",
+      "aucun_point": "Click an existing point.",
+      "meme_solide": "The two attachment points must belong to two different bodies."
+    },
+    "moteur": {
+      "aide": "Click a revolute or prismatic joint to motorise it.",
+      "aucune_liaison": "Click a revolute or prismatic joint.",
+      "non_pilotable": "The joint “{nom}” cannot be motorised: only revolute and prismatic joints can."
+    },
+    "message": {
+      "fermeture_impossible": "The mechanism can no longer be assembled with this geometry: check the lengths."
+    }
+  },
+
+  "liaison": {
+    "type": {
+      "pivot": "Revolute",
+      "glissiere": "Prismatic",
+      "encastrement": "Fixed",
+      "ponctuelle": "Point-on-line"
+    }
+  },
+
+  "spatial": {
+    "encastrement": "Fixed joint",
+    "pivot_z": "Revolute, z axis",
+    "pivot_glissant_z": "Cylindrical, z axis",
+    "rotule": "Spherical (ball)",
+    "lineaire_annulaire_z": "Sphere-in-cylinder, z axis",
+    "glissiere_x": "Prismatic",
+    "pivot_glissant_x": "Cylindrical (along the slide axis)",
+    "appui_plan_y": "Planar contact",
+    "ponctuelle_y": "Point contact (sphere-plane)",
+    "lineaire_annulaire_x": "Sphere-in-cylinder",
+    "lineaire_rectiligne_y": "Line contact (cylinder-plane)"
+  },
+
+  "champ": {
+    "nom": "Name",
+    "couleur": "Colour",
+    "type": "Type",
+    "actif": "Active (included in the computation)",
+    "x": "x",
+    "y": "y",
+    "angle": "Angle",
+    "masse": "Mass",
+    "gx": "Centre of gravity: local x",
+    "gy": "Centre of gravity: local y",
+    "jz": "Moment of inertia at G",
+    "modele_spatial": "Spatial model",
+    "direction_axe": "Axis direction",
+    "angle_articulaire": "Angle of B relative to A",
+    "deplacement": "Displacement along the axis",
+    "amortissement": "Viscous damping",
+    "vitesse_initiale": "Initial velocity",
+    "fx": "Fx",
+    "fy": "Fy",
+    "mz": "Moment Mz",
+    "repere": "Frame",
+    "raideur": "Stiffness",
+    "longueur_libre": "Free length",
+    "longueur_actuelle": "Current length",
+    "expression_admise": "number or expression of t",
+    "nombre_attendu": "A number is expected.",
+    "valeur_trop_petite": "Value too small."
+  },
+
+  "unite": {
+    "degre": "degrees (°)",
+    "radian": "radians (rad)"
+  },
+
+  "affichage": {
+    "grille": "Show the grid",
+    "aimantation": "Snap to the grid",
+    "noms_points": "Show point names",
+    "noms_liaisons": "Show joint names",
+    "centres_gravite": "Show centres of gravity"
+  },
+
+  "proprietes": {
+    "projet": {
+      "titre": "Project",
+      "aide": "No object selected: project settings.",
+      "nom": "Title",
+      "auteur": "Author",
+      "description": "Description of the mechanism…"
+    },
+    "unites": "Display units",
+    "unite_longueur": "Lengths",
+    "unite_angle": "Angles",
+    "affichage": "Display",
+    "pas_grille": "Grid step",
+    "solide": {
+      "bati": "Frame: fixed reference body.",
+      "mobile": "Moving body",
+      "note_bati": "The frame is fixed: it has no inertia and no position to set. Its points anchor the joints."
+    },
+    "inertie": "Inertia",
+    "barres": "Compute G and inertia (uniform bars)",
+    "barres_aide": "Spreads the entered mass over the segments of the body, treated as thin uniform bars, then computes the centre of gravity and the moment of inertia.",
+    "pose": "Position of the body frame",
+    "pose_note": "This body is connected to others: move it with the Move tool or through the position of a joint.",
+    "point": {
+      "titre": "Point {nom}",
+      "de": "Point of body “{solide}”",
+      "position": "Position in the global frame",
+      "note": "Changing these coordinates changes the geometry of the body."
+    },
+    "resultats": "Results at the displayed instant",
+    "liaison": {
+      "entre": "A: {a}  ·  B: {b}",
+      "modele_aide": "How the joint is built in space. It does not change the planar motion but sets the actual degree of static indeterminacy of the mechanism.",
+      "mobilites": "Mobilities of B / A",
+      "inconnues": "Joint unknowns",
+      "aucune": "none",
+      "axe": "Joint axis",
+      "inverser": "Swap A and B",
+      "inverser_aide": "The axis is attached to body A (currently “{a}”). Swapping attaches it to the other body.",
+      "position": "Current position",
+      "position_aide": "Changing this value moves the mechanism: it is one way to set the initial configuration.",
+      "inaccessible": "The mechanism cannot reach this position.",
+      "dynamique": "Parameters for the dynamic study",
+      "motoriser": "Add a motor to this joint",
+      "voir_moteur": "Show motor “{nom}”",
+      "torseur": "Action of {a} on {b}, at the joint point"
+    },
+    "action": {
+      "applique_en": "Applied at",
+      "applique_a": "Applied to",
+      "entre": "Between",
+      "composantes": "Components",
+      "repere_global": "Global (fixed direction)",
+      "repere_local": "Attached to the body (follower force)",
+      "expression_aide": "A value may depend on time: for example 100*sin(2*pi*t).",
+      "au_repos": "Free length = current length"
+    },
+    "moteur": {
+      "sur": "Motor of joint “{liaison}”",
+      "relatif": "Motion measured from the initial configuration",
+      "relatif_aide": "Checked: the law gives the displacement from the starting position. Unchecked: the law gives the value of the angle or displacement directly.",
+      "voir_liaison": "Show joint “{nom}”",
+      "loi": "Motion law",
+      "tours_minute": "That is"
+    }
+  },
+
+  "loi": {
+    "vitesse_constante": "Constant velocity",
+    "uniformement_accelere": "Uniformly accelerated motion",
+    "sinusoidale": "Sinusoidal",
+    "trapeze": "Trapezoidal velocity",
+    "blocage": "Locked (fixed position)",
+    "expression": "Free expression",
+    "aide": {
+      "vitesse_constante": "f(t) = initial position + velocity × t",
+      "uniformement_accelere": "f(t) = initial position + initial velocity × t + ½ × acceleration × t²",
+      "sinusoidale": "f(t) = offset + amplitude × sin(2π × frequency × t + phase)",
+      "trapeze": "Constant acceleration, plateau at maximum velocity, then deceleration, over the requested travel.",
+      "blocage": "The joint is held at a fixed position: the motor provides the holding effort.",
+      "expression": "f(t) is given by a formula; velocity and acceleration are derived from it exactly.",
+      "fonctions": "Variable t (s). Constants: pi, e, g. Functions: sin, cos, tan, asin, acos, atan, exp, log, sqrt, abs, min, max, lisse(t, t0, t1), rampe(t, t0, t1), si(condition, a, b). Angles are in radians; rad(30) converts degrees."
+    },
+    "param": {
+      "vitesse": "Velocity",
+      "position_initiale": "Initial position",
+      "acceleration": "Acceleration",
+      "vitesse_initiale": "Initial velocity",
+      "amplitude": "Amplitude",
+      "frequence": "Frequency",
+      "phase": "Phase",
+      "decalage": "Offset",
+      "course": "Travel",
+      "vitesse_max": "Maximum velocity",
+      "depart": "Start time",
+      "position": "Position",
+      "expression": "f(t) ="
+    }
+  },
+
+  "etude": {
+    "titre": "Study",
+    "nature": "Study type",
+    "type": {
+      "statique": "Statics",
+      "cinematique": "Kinematics",
+      "dynamique": "Dynamics"
+    },
+    "description": {
+      "statique": "Equilibrium of the mechanism in the displayed configuration: joint wrenches and holding efforts of the motors, from the fundamental principle of statics.",
+      "cinematique": "The motion is imposed by the motors. Positions, velocities and accelerations are computed, then the joint forces and the motor effort required.",
+      "dynamique": "The motion is computed by integrating the fundamental principle of dynamics: the mechanism moves freely under the loads and gravity."
+    },
+    "duree": "Duration",
+    "pas": "Sampling step",
+    "inertie": "Include inertia effects",
+    "inertie_aide": "Checked: forces are computed from the fundamental principle of dynamics. Unchecked: quasi-static computation, inertia effects are neglected.",
+    "pesanteur": "Gravity",
+    "pesanteur_active": "Include gravity",
+    "lancer": "Run study",
+    "arreter": "Stop computation",
+    "equilibre": "Equilibrium position",
+    "equilibre_aide": "Moves the mechanism to a stable equilibrium position under the applied loads.",
+    "calcul_en_cours": "Computing…",
+    "interrompu": "Computation stopped.",
+    "modele_modifie": "The model was changed during the computation: results discarded. Run the study again.",
+    "bilan": "{type} study finished: {instants} instant(s) computed in {duree} s.",
+    "equilibre_trouve": "Equilibrium position found.",
+    "equilibre_introuvable": "No equilibrium position found from this configuration.",
+    "configuration_adoptee": "The position at t = {t} s is now the initial configuration."
+  },
+
+  "lecteur": {
+    "lire": "Play animation",
+    "pause": "Pause",
+    "debut": "Back to start",
+    "fin": "Go to end",
+    "boucle": "Loop playback",
+    "vitesse": "Playback speed"
+  },
+
+  "validation": {
+    "plan": "In the plane",
+    "espace": "In space",
+    "verdict": {
+      "vide": "No joint yet.",
+      "isostatique": "Statically determinate",
+      "hyperstatique": "Statically indeterminate, degree {h}"
+    },
+    "graphe": "{solides} bodies · {liaisons} joints · γ = {boucles}",
+    "detail": "{nom}: Ic = {ic}, Ec = {d}γ = {ec}, rank = {rang}  →  m = Ic − rank = {m};  h = Ec − rank = {h}  (check: Is − Es + m = {is_} − {es} + {m}).",
+    "aide_vide": "Draw bodies and connect them with joints: the mobility m and the degree of static indeterminacy h appear here, computed from the joint graph.",
+    "moteurs": {
+      "complet": "{moteurs} motor(s) for {m} mobility(ies): the motion is fully imposed, a kinematic study is possible.",
+      "structure": "No mobility: the mechanism is a structure. Run a static study.",
+      "libre": "{moteurs} motor(s), {pilotees} driven mobility(ies), {libres} free mobility(ies). Add motors for a kinematic study, or run a dynamic study."
+    },
+    "boucles_hyperstatiques": "Joints of the redundant loops: {liaisons}.",
+    "liaison_hyperstatique": "This joint belongs to a statically indeterminate loop.",
+    "colonne": {
+      "liaison": "Joint",
+      "type": "Type",
+      "modele": "Spatial model",
+      "plan": "dof / Is (plane)",
+      "espace": "dof / Is (space)"
+    },
+    "colonne_aide": {
+      "liaison": "Name of the joint",
+      "type": "Type of the joint in the plane",
+      "modele": "Standard joint that builds this joint in space",
+      "plan": "Degrees of freedom and static unknowns of the joint in the plane (they add up to 3)",
+      "espace": "Degrees of freedom and static unknowns of the joint in space (they add up to 6)"
+    },
+    "resume": "Plane: m = {m}, h = {h}   ·   Space: h = {h3}"
+  },
+
+  "topologie": {
+    "avertissement": {
+      "aucun_solide": "The mechanism has no moving body.",
+      "solides_isoles": "Body(ies) without any joint: {solides}.",
+      "solides_flottants": "Body(ies) not connected to the frame: {solides}.",
+      "configuration_singuliere": "Configuration close to a singularity (aligned points): mobility and indeterminacy may change there.",
+      "moteurs_surabondants": "{nombre} motor(s) too many: they impose more motions than the mechanism has mobilities."
+    }
+  },
+
+  "courbes": {
+    "abscisse": "X axis: {nom}",
+    "temps": "time",
+    "axe_temps": "t (s)",
+    "revenir_au_temps": "Back to time",
+    "utiliser_abscisse": "Use as X axis",
+    "tout_decocher": "Uncheck all",
+    "exporter_csv": "Export (CSV)",
+    "aucun_resultat": "Run a study to plot curves.",
+    "aucune_grandeur": "Check quantities in the list to plot them.",
+    "etude_statique": "Static study: a single instant. The values are in the Forces tab.",
+    "famille": {
+      "moteur": "Motors",
+      "liaison": "Joints",
+      "point": "Points",
+      "solide": "Bodies",
+      "action": "Loads",
+      "energie": "Energies"
+    }
+  },
+
+  "grandeur": {
+    "x": "Position x",
+    "y": "Position y",
+    "angle": "Angle",
+    "vx": "Velocity Vx",
+    "vy": "Velocity Vy",
+    "v": "Speed",
+    "omega": "Angular velocity ω",
+    "ax": "Acceleration ax",
+    "ay": "Acceleration ay",
+    "a": "Acceleration (magnitude)",
+    "alpha": "Angular acceleration",
+    "X": "Force X",
+    "Y": "Force Y",
+    "N": "Moment N",
+    "R": "Force ‖R‖",
+    "Fn": "Normal force",
+    "vitesse_angulaire": "Relative angular velocity",
+    "deplacement": "Displacement",
+    "vitesse": "Velocity",
+    "effort": "Effort",
+    "puissance": "Power",
+    "position": "Imposed position",
+    "fx": "Fx",
+    "fy": "Fy",
+    "f": "Magnitude",
+    "mz": "Moment",
+    "longueur": "Length",
+    "px": "Reduction point x",
+    "py": "Reduction point y",
+    "effort_couple": "Motor torque",
+    "effort_force": "Driving force",
+    "energie_mecanique": "Mechanical energy",
+    "energie_cinetique": "Kinetic energy",
+    "energie_potentielle": "Potential energy"
+  },
+
+  "resultats": {
+    "vide": "Run a study to obtain the wrenches of the joint actions.",
+    "entete_instant": "Joint actions at t = {t} s, in the global basis. Wrench of the action of A on B, reduced at the joint point.",
+    "entete_statique": "Joint actions at equilibrium, in the global basis. Wrench of the action of A on B, reduced at the joint point.",
+    "moteur": "Motor",
+    "colonne": {
+      "element": "Element",
+      "nature": "Kind",
+      "solides": "A → B"
+    }
+  },
+
+  "calcul": {
+    "erreur": {
+      "aucun_solide": "The mechanism has no moving body: there is nothing to compute.",
+      "assemblage_impossible": "The mechanism cannot be assembled: the joints are incompatible with the geometry (remaining gap: {residu:.3g}).",
+      "mobilite_non_pilotee": "Kinematic study impossible: {mobilite} mobility(ies) are not driven by any motor. Add motors or run a dynamic study.",
+      "position_initiale_singuliere": "In the initial configuration the motors do not control the motion (dead centre). Move the mechanism with the Move tool, or motorise another joint.",
+      "inertie_insuffisante": "Dynamic study impossible: a mobility carries no inertia. Give a mass and a moment of inertia to the bodies: {solides}.",
+      "expression": "Invalid expression for “{objet}”: {message}.",
+      "modele_invalide": "The model contains {nombre} error(s). First error, on “{objet}”: {detail}",
+      "liaison_non_geree": "Joint type not handled by the solver: {type}.",
+      "trop_d_instants": "Too many instants to compute ({nombre}). Increase the step or reduce the duration (maximum: {maximum}).",
+      "erreur_numerique": "The computation hit a numerical problem: the data are probably out of scale or the configuration is singular ({message}).",
+      "inattendue": "Unexpected error during the computation: {message}"
+    },
+    "message": {
+      "mouvement_impossible": "Motion impossible beyond t = {t} s: the mechanism reaches a limit or singular position. Computation stopped at that instant.",
+      "configuration_singuliere": "Passing close to a singular configuration around t = {t} s: results are inaccurate there.",
+      "hyperstatique_norme_minimale": "Mechanism statically indeterminate to degree {h}: the distribution of forces among redundant joints is not unique. The minimum-norm solution is given.",
+      "quasi_statique": "Quasi-static computation: inertia effects are neglected.",
+      "inertie_partielle": "Some bodies have neither mass nor inertia: their dynamic effect is ignored.",
+      "pas_en_equilibre": "The mechanism is not in equilibrium in this configuration: {mobilite} unlocked mobility(ies) in which the loads do work. Add a locking motor or search for the equilibrium position.",
+      "equilibre_avec_mobilite": "Equilibrium verified, although {mobilite} mobility(ies) remain free.",
+      "integration_interrompue": "Integration stopped at t = {t} s: the time step became too small (singular configuration or out-of-scale forces).",
+      "decollement": "The normal force of the point-on-line joint “{liaison}” changes sign around t = {t} s: a real support would lift off at that instant. The model keeps the contact.",
+      "aucune_mobilite_libre": "No free mobility: the motion is fully imposed by the joints and the motors."
+    }
+  },
+
+  "modele": {
+    "probleme": {
+      "bati_absent": "the frame is missing.",
+      "bati_deplace": "the frame must stay at the origin.",
+      "bati_multiple": "several bodies are declared as the frame.",
+      "valeur_non_finie": "a numerical value is invalid or out of scale.",
+      "segment_invalide": "a segment connects points that do not exist.",
+      "inertie_negative": "mass and moment of inertia must be positive.",
+      "liaison_meme_solide": "a joint must connect two different bodies.",
+      "solide_inconnu": "reference to a body that does not exist.",
+      "point_inconnu": "reference to a point that does not exist.",
+      "modele_spatial_incompatible": "the spatial model does not match the joint type.",
+      "valeur_hors_bornes": "a value is outside the allowed range.",
+      "ressort_meme_solide": "both ends of the spring are on the same body.",
+      "repere_inconnu": "unknown force frame.",
+      "action_sur_bati": "a load applied to the frame has no effect.",
+      "expression_invalide": "an expression is invalid.",
+      "moteur_liaison_inconnue": "the motor drives a joint that does not exist.",
+      "moteur_non_pilotable": "the motor drives a joint that cannot be motorised.",
+      "moteur_en_double": "two motors drive the same joint.",
+      "loi_invalide": "the motion law of the motor is invalid.",
+      "etude_invalide": "the duration, step and tolerances of the study must be strictly positive."
+    }
+  },
+
+  "fichier": {
+    "filtre": "Sikax projects (*{ext});;All files (*)",
+    "dialogue": {
+      "ouvrir": "Open a project",
+      "enregistrer": "Save the project",
+      "image": "Export the diagram",
+      "csv": "Export the results"
+    },
+    "confirmer": {
+      "texte": "Save the changes to “{nom}”?",
+      "detail": "Your changes will be lost if you do not save them.",
+      "ne_pas_enregistrer": "Don't save"
+    },
+    "ouvert": "{nom} opened.",
+    "ouvert_avec_remarques": "{nom} opened with {nombre} remark(s): see the log.",
+    "exemple_ouvert": "Example “{nom}” opened as a new project.",
+    "enregistre": "{nom} saved.",
+    "image_exportee": "Diagram exported to {nom}.",
+    "csv_exporte": "{colonnes} quantity(ies) and {lignes} row(s) exported to {nom}.",
+    "export_impossible": "Cannot write {nom}.",
+    "erreur": {
+      "fichier_vide": "The file is empty.",
+      "format_inconnu": "This file is not a Sikax project.",
+      "json_invalide": "The file is damaged: syntax error at line {ligne}, column {colonne}.",
+      "nombre_non_fini": "The file contains an invalid number (NaN or infinity).",
+      "structure_invalide": "The file does not have the structure of a Sikax project.",
+      "dimension_non_geree": "This project has dimension {dimension}: this version of Sikax only handles planar mechanisms.",
+      "fichier_invalide": "The file contains {nombre} error(s) and was not opened.",
+      "fichier_introuvable": "File not found: {chemin}",
+      "lecture_impossible": "Cannot read {chemin} ({message}).",
+      "fichier_trop_gros": "The file is too large to be a Sikax project.",
+      "encodage_invalide": "The file encoding is not recognised.",
+      "migration_impossible": "This file was written in a format too old (version {version}) to be converted.",
+      "donnees_invalides": "The project contains invalid values and cannot be saved ({message}).",
+      "ecriture_impossible": "Cannot save to {chemin} ({message})."
+    },
+    "diag": {
+      "cle_en_double": "the key “{cle}” appears twice; the last value is kept.",
+      "cle_inconnue": "unknown key “{cle}”, ignored.",
+      "champ_manquant": "the field “{champ}” is missing.",
+      "nombre_invalide": "“{champ}” is not a valid number ({valeur}).",
+      "nombre_en_texte": "“{champ}” was written as text; it was read as a number.",
+      "valeur_hors_bornes": "“{champ}” is {valeur}, outside the allowed values (minimum {minimum}).",
+      "angle_en_degres": "“{champ}” was converted from degrees to radians.",
+      "expression_invalide": "the expression of “{champ}” is invalid: {message}.",
+      "texte_invalide": "“{champ}” should be text; value ignored.",
+      "booleen_invalide": "“{champ}” should be true or false ({valeur}); default value used.",
+      "section_en_dictionnaire": "section written as a dictionary, read normally.",
+      "section_invalide": "this section does not have the expected form; it is ignored.",
+      "format_absent": "the “sikax” format marker is missing; the file is read anyway.",
+      "version_invalide": "unreadable version number ({valeur}); the current version is assumed.",
+      "version_absente": "version number missing; the current version is assumed.",
+      "version_plus_recente": "file written by a newer version of Sikax (format {version}, supported: {geree}); some data may be ignored.",
+      "unite_inconnue": "unknown unit “{valeur}”; default unit used.",
+      "valeur_ignoree": "invalid value for “{champ}”; default value used.",
+      "type_etude_inconnu": "unknown study type “{valeur}”; kinematic study kept.",
+      "element_invalide": "this element does not have the expected form.",
+      "identifiant_en_double": "the identifier “{id}” is already used.",
+      "identifiant_manquant": "the identifier is missing.",
+      "segment_ignore": "invalid segment, ignored.",
+      "couleur_invalide": "invalid colour “{valeur}”; default colour used.",
+      "bati_multiple": "several bodies are declared as the frame ({solides}); only the first is kept.",
+      "bati_absent": "no body is declared as the frame.",
+      "bati_renomme": "the frame “{ancien}” was given the identifier “S0”.",
+      "solide_renomme": "the body “{ancien}” was renamed “{nouveau}”.",
+      "bati_recale": "the frame was brought back to the origin (its points were recomputed).",
+      "reference_par_nom": "“{champ}” refers to the object by its name (“{nom}”) instead of its identifier.",
+      "solide_inconnu": "“{champ}”: the body “{solide}” does not exist.",
+      "solide_rejete": "“{champ}”: the body “{solide}” is itself invalid (see its error).",
+      "point_inconnu": "“{champ}”: the point “{point}” does not exist in body “{solide}”.",
+      "point_cree": "a point was created on body “{solide}” to carry the joint.",
+      "type_liaison_inconnu": "unknown joint type “{type}”. Known types: {connus}.",
+      "type_liaison_interprete": "type “{lu}” read as “{type}”.",
+      "liaison_meme_solide": "the joint connects body “{solide}” to itself.",
+      "orientation_deduite": "relative orientation missing; deduced from the position of the bodies.",
+      "modele_spatial_inconnu": "spatial model “{valeur}” not compatible; “{defaut}” used.",
+      "type_action_inconnu": "unknown load type “{type}”. Known types: {connus}.",
+      "repere_inconnu": "unknown frame “{valeur}”; global frame used.",
+      "liaison_inconnue": "the joint “{liaison}” does not exist.",
+      "liaison_rejetee": "the joint “{liaison}” is itself invalid (see its error).",
+      "liaison_non_pilotable": "the joint “{liaison}” ({type}) cannot be motorised.",
+      "moteur_en_double": "the joint “{liaison}” already has a motor.",
+      "loi_inconnue": "unknown motion law “{type}”. Known laws: {connus}.",
+      "loi_invalide": "invalid motion law: {message}.",
+      "modele_incoherent": "the resulting model is inconsistent ({probleme}).",
+      "liaison_ouverte": "the joint is not closed in the saved configuration (gap {ecart:.3g} m).",
+      "mecanisme_referme": "the mechanism was reassembled ({nombre} open joint(s)).",
+      "fermeture_impossible": "the mechanism cannot be assembled: {nombre} joint(s) remain open.",
+      "fichier_migre": "file converted from format {depuis} to format {vers}.",
+      "encodage_inhabituel": "the file is not UTF-8; it was read as {encodage}."
+    }
+  },
+
+  "diagnostics": {
+    "titre": "Reading report",
+    "resume": "{erreurs} error(s) and {avertissements} warning(s) found while reading the file.",
+    "ouvrir_quand_meme": "Open, ignoring the invalid elements",
+    "ouvrir_quand_meme_aide": "The elements in error cannot be interpreted. You can open the rest of the project: those elements will be missing, and the original file is only changed if you save."
+  },
+
+  "a_propos": {
+    "titre": "About {nom}",
+    "version": "Version {version}",
+    "description": "Sikax lets you draw the kinematic diagram of a planar mechanism, check its mobility and static determinacy, then compute its kinematics, statics and dynamics.",
+    "credits": "The organisation of the software is inspired by the open-source project OpenMeca (Damien André). The solver, written in Python with NumPy, is Sikax's own."
+  },
+
+  "erreur": {
+    "imprevue": "An unexpected error occurred. Your project was not modified: save it under another name as a precaution.",
+    "journal": "The details were saved to:\n{chemin}"
+  },
+
+  "exemple": {
+    "bielle_manivelle": "Slider-crank",
+    "quatre_barres": "Four-bar linkage",
+    "coulisse_retour_rapide": "Quick-return mechanism",
+    "pendule_simple": "Simple pendulum",
+    "double_pendule": "Double pendulum",
+    "masse_ressort": "Mass-spring-damper",
+    "poutre_deux_appuis": "Simply supported beam",
+    "poutre_bi_articulee": "Doubly hinged beam (indeterminate)",
+    "parallelogramme_double": "Double parallelogram"
+  }
+}

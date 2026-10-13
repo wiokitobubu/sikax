@@ -1,0 +1,263 @@
+{
+  "format": "sikax",
+  "version": 1,
+  "application": {
+    "nom": "Sikax",
+    "version": "1.0.0"
+  },
+  "dimension": 2,
+  "meta": {
+    "titre": "Bielle-manivelle",
+    "auteur": "Sikax",
+    "description": "",
+    "modifie_le": "2026-10-12T20:51:11+00:00"
+  },
+  "unites": {
+    "longueur": "mm",
+    "angle": "deg"
+  },
+  "solides": [
+    {
+      "id": "S0",
+      "nom": "Bâti",
+      "bati": true,
+      "couleur": "#7C8696",
+      "pose": {
+        "x": 0.0,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "A",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "C",
+          "x": 0.17716675644457916,
+          "y": 0.0
+        }
+      ],
+      "segments": [],
+      "inertie": {
+        "masse": 0.0,
+        "g": [
+          0.0,
+          0.0
+        ],
+        "jz": 0.0
+      }
+    },
+    {
+      "id": "S1",
+      "nom": "Manivelle",
+      "bati": false,
+      "couleur": "#3B82F6",
+      "pose": {
+        "x": 0.0,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "A",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "B",
+          "x": 0.03213938048432697,
+          "y": 0.0383022221559489
+        }
+      ],
+      "segments": [
+        [
+          "P1",
+          "P2"
+        ]
+      ],
+      "inertie": {
+        "masse": 0.5,
+        "g": [
+          0.016069690242163485,
+          0.01915111107797445
+        ],
+        "jz": 0.00010416666666666669
+      }
+    },
+    {
+      "id": "S2",
+      "nom": "Bielle",
+      "bati": false,
+      "couleur": "#F97316",
+      "pose": {
+        "x": 0.03213938048432697,
+        "y": 0.0383022221559489,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "B",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "C",
+          "x": 0.1450273759602522,
+          "y": -0.0383022221559489
+        }
+      ],
+      "segments": [
+        [
+          "P1",
+          "P2"
+        ]
+      ],
+      "inertie": {
+        "masse": 0.8,
+        "g": [
+          0.0725136879801261,
+          -0.01915111107797445
+        ],
+        "jz": 0.0014999999999999998
+      }
+    },
+    {
+      "id": "S3",
+      "nom": "Piston",
+      "bati": false,
+      "couleur": "#22C55E",
+      "pose": {
+        "x": 0.17716675644457916,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "C",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "D",
+          "x": 0.04000000000000001,
+          "y": 0.0
+        }
+      ],
+      "segments": [
+        [
+          "P1",
+          "P2"
+        ]
+      ],
+      "inertie": {
+        "masse": 1.0,
+        "g": [
+          0.020000000000000004,
+          0.0
+        ],
+        "jz": 0.0001333333333333334
+      }
+    }
+  ],
+  "liaisons": [
+    {
+      "id": "L1",
+      "nom": "Pivot A",
+      "type": "pivot",
+      "solide_a": "S0",
+      "point_a": "P1",
+      "solide_b": "S1",
+      "point_b": "P1",
+      "modele_spatial": "pivot_z",
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    },
+    {
+      "id": "L2",
+      "nom": "Pivot B",
+      "type": "pivot",
+      "solide_a": "S1",
+      "point_a": "P2",
+      "solide_b": "S2",
+      "point_b": "P1",
+      "modele_spatial": "pivot_z",
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    },
+    {
+      "id": "L3",
+      "nom": "Pivot C",
+      "type": "pivot",
+      "solide_a": "S2",
+      "point_a": "P2",
+      "solide_b": "S3",
+      "point_b": "P1",
+      "modele_spatial": "pivot_z",
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    },
+    {
+      "id": "L4",
+      "nom": "Glissière C",
+      "type": "glissiere",
+      "solide_a": "S0",
+      "point_a": "P2",
+      "solide_b": "S3",
+      "point_b": "P1",
+      "modele_spatial": "glissiere_x",
+      "angle_axe": 0.0,
+      "angle_relatif": 0.0,
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    }
+  ],
+  "actions": [],
+  "moteurs": [
+    {
+      "id": "M1",
+      "nom": "Moteur manivelle",
+      "liaison": "L1",
+      "relatif": true,
+      "actif": true,
+      "loi": {
+        "type": "vitesse_constante",
+        "parametres": {
+          "vitesse": 6.283185307179586,
+          "position_initiale": 0.0
+        }
+      }
+    }
+  ],
+  "etude": {
+    "type": "cinematique",
+    "duree": 2.0,
+    "pas": 0.005,
+    "pesanteur": true,
+    "gravite": [
+      0.0,
+      -9.81
+    ],
+    "inertie": true,
+    "tolerance": 1e-10,
+    "precision": 1e-08
+  },
+  "affichage": {
+    "grille": true,
+    "pas_grille": 0.01,
+    "aimantation": true,
+    "noms_points": true,
+    "noms_liaisons": false,
+    "centres_gravite": true,
+    "echelle_forces": 0.0
+  }
+}

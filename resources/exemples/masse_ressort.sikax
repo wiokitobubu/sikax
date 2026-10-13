@@ -1,0 +1,153 @@
+{
+  "format": "sikax",
+  "version": 1,
+  "application": {
+    "nom": "Sikax",
+    "version": "1.0.0"
+  },
+  "dimension": 2,
+  "meta": {
+    "titre": "Masse-ressort-amortisseur",
+    "auteur": "Sikax",
+    "description": "",
+    "modifie_le": "2026-10-12T20:51:11+00:00"
+  },
+  "unites": {
+    "longueur": "mm",
+    "angle": "deg"
+  },
+  "solides": [
+    {
+      "id": "S0",
+      "nom": "Bâti",
+      "bati": true,
+      "couleur": "#7C8696",
+      "pose": {
+        "x": 0.0,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "A",
+          "x": 0.25,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "O",
+          "x": 0.0,
+          "y": 0.0
+        }
+      ],
+      "segments": [
+        [
+          "P2",
+          "P1"
+        ]
+      ],
+      "inertie": {
+        "masse": 0.0,
+        "g": [
+          0.0,
+          0.0
+        ],
+        "jz": 0.0
+      }
+    },
+    {
+      "id": "S1",
+      "nom": "Chariot",
+      "bati": false,
+      "couleur": "#3B82F6",
+      "pose": {
+        "x": 0.25,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "A",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "B",
+          "x": 0.06,
+          "y": 0.0
+        }
+      ],
+      "segments": [
+        [
+          "P1",
+          "P2"
+        ]
+      ],
+      "inertie": {
+        "masse": 2.0,
+        "g": [
+          0.03,
+          0.0
+        ],
+        "jz": 0.0006
+      }
+    }
+  ],
+  "liaisons": [
+    {
+      "id": "L1",
+      "nom": "Glissière A",
+      "type": "glissiere",
+      "solide_a": "S0",
+      "point_a": "P1",
+      "solide_b": "S1",
+      "point_b": "P1",
+      "modele_spatial": "glissiere_x",
+      "angle_axe": 0.0,
+      "angle_relatif": 0.0,
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    }
+  ],
+  "actions": [
+    {
+      "id": "A1",
+      "nom": "Ressort",
+      "type": "ressort",
+      "actif": true,
+      "solide_a": "S0",
+      "point_a": "P2",
+      "solide_b": "S1",
+      "point_b": "P1",
+      "raideur": 200.0,
+      "amortissement": 2.0,
+      "longueur_libre": 0.2
+    }
+  ],
+  "moteurs": [],
+  "etude": {
+    "type": "dynamique",
+    "duree": 3.0,
+    "pas": 0.005,
+    "pesanteur": false,
+    "gravite": [
+      0.0,
+      -9.81
+    ],
+    "inertie": true,
+    "tolerance": 1e-10,
+    "precision": 1e-08
+  },
+  "affichage": {
+    "grille": true,
+    "pas_grille": 0.01,
+    "aimantation": true,
+    "noms_points": true,
+    "noms_liaisons": false,
+    "centres_gravite": true,
+    "echelle_forces": 0.0
+  }
+}

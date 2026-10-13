@@ -1,0 +1,27 @@
+# Teste Sikax puis fabrique la distribution Windows sur une machine GitHub.
+# L'archive « Sikax-windows » se télécharge depuis la page de l'exécution.
+name: Distribution Windows
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  fabriquer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fabriquer et contrôler la distribution
+        shell: pwsh
+        run: packaging\build_windows.ps1 -Python python
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sikax-windows
+          path: dist/Sikax-*-windows.zip
+          if-no-files-found: error

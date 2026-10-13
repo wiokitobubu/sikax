@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="fond" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="54" fill="url(#fond)"/>
+  <!-- bâti -->
+  <path d="M40 204h72" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="8" stroke-linecap="round"/>
+  <path d="M50 204l-12 16M70 204l-12 16M90 204l-12 16M110 204l-12 16" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="6" stroke-linecap="round"/>
+  <!-- glissière et coulisseau -->
+  <path d="M140 172h84" stroke="#FFFFFF" stroke-opacity="0.75" stroke-width="8" stroke-linecap="round"/>
+  <!-- manivelle et bielle -->
+  <path d="M76 176 108 84 190 150" fill="none" stroke="#FFFFFF" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="162" y="130" width="56" height="38" rx="8" fill="#FFFFFF"/>
+  <!-- articulations -->
+  <circle cx="76" cy="176" r="20" fill="#FFFFFF"/>
+  <circle cx="76" cy="176" r="9" fill="#4F46E5"/>
+  <circle cx="108" cy="84" r="20" fill="#FFFFFF"/>
+  <circle cx="108" cy="84" r="9" fill="#3D74E8"/>
+  <circle cx="190" cy="149" r="9" fill="#0FA3D8"/>
+</svg>

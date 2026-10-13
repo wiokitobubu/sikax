@@ -1,0 +1,258 @@
+{
+  "format": "sikax",
+  "version": 1,
+  "application": {
+    "nom": "Sikax",
+    "version": "1.0.0"
+  },
+  "dimension": 2,
+  "meta": {
+    "titre": "Coulisse à retour rapide",
+    "auteur": "Sikax",
+    "description": "",
+    "modifie_le": "2026-10-12T20:51:11+00:00"
+  },
+  "unites": {
+    "longueur": "mm",
+    "angle": "deg"
+  },
+  "solides": [
+    {
+      "id": "S0",
+      "nom": "Bâti",
+      "bati": true,
+      "couleur": "#7C8696",
+      "pose": {
+        "x": 0.0,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "A",
+          "x": 0.0,
+          "y": 0.14
+        },
+        {
+          "id": "P2",
+          "nom": "C",
+          "x": 0.0,
+          "y": 0.0
+        }
+      ],
+      "segments": [],
+      "inertie": {
+        "masse": 0.0,
+        "g": [
+          0.0,
+          0.0
+        ],
+        "jz": 0.0
+      }
+    },
+    {
+      "id": "S1",
+      "nom": "Manivelle",
+      "bati": false,
+      "couleur": "#3B82F6",
+      "pose": {
+        "x": 0.0,
+        "y": 0.14,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "A",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "B",
+          "x": 0.05196152422706632,
+          "y": 0.03
+        }
+      ],
+      "segments": [
+        [
+          "P1",
+          "P2"
+        ]
+      ],
+      "inertie": {
+        "masse": 0.3,
+        "g": [
+          0.02598076211353316,
+          0.015
+        ],
+        "jz": 8.999999999999998e-05
+      }
+    },
+    {
+      "id": "S2",
+      "nom": "Coulisseau",
+      "bati": false,
+      "couleur": "#F97316",
+      "pose": {
+        "x": 0.05196152422706632,
+        "y": 0.17,
+        "angle": 1.2741586302382686
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "B",
+          "x": 0.0,
+          "y": 0.0
+        }
+      ],
+      "segments": [],
+      "inertie": {
+        "masse": 0.2,
+        "g": [
+          0.0,
+          0.0
+        ],
+        "jz": 1e-05
+      }
+    },
+    {
+      "id": "S3",
+      "nom": "Bras",
+      "bati": false,
+      "couleur": "#22C55E",
+      "pose": {
+        "x": 0.0,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "C",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "D",
+          "x": 0.09353805155447482,
+          "y": 0.3060239090518785
+        },
+        {
+          "id": "P3",
+          "nom": "B",
+          "x": 0.05196152422706632,
+          "y": 0.17
+        }
+      ],
+      "segments": [
+        [
+          "P1",
+          "P2"
+        ]
+      ],
+      "inertie": {
+        "masse": 1.2,
+        "g": [
+          0.04676902577723741,
+          0.15301195452593924
+        ],
+        "jz": 0.010239999999999997
+      }
+    }
+  ],
+  "liaisons": [
+    {
+      "id": "L1",
+      "nom": "Pivot A",
+      "type": "pivot",
+      "solide_a": "S0",
+      "point_a": "P1",
+      "solide_b": "S1",
+      "point_b": "P1",
+      "modele_spatial": "pivot_z",
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    },
+    {
+      "id": "L2",
+      "nom": "Pivot B",
+      "type": "pivot",
+      "solide_a": "S1",
+      "point_a": "P2",
+      "solide_b": "S2",
+      "point_b": "P1",
+      "modele_spatial": "pivot_z",
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    },
+    {
+      "id": "L3",
+      "nom": "Glissière B",
+      "type": "glissiere",
+      "solide_a": "S3",
+      "point_a": "P3",
+      "solide_b": "S2",
+      "point_b": "P1",
+      "modele_spatial": "glissiere_x",
+      "angle_axe": 1.2741586302382686,
+      "angle_relatif": 1.2741586302382686,
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    },
+    {
+      "id": "L4",
+      "nom": "Pivot C",
+      "type": "pivot",
+      "solide_a": "S0",
+      "point_a": "P2",
+      "solide_b": "S3",
+      "point_b": "P1",
+      "modele_spatial": "pivot_z",
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    }
+  ],
+  "actions": [],
+  "moteurs": [
+    {
+      "id": "M1",
+      "nom": "Moteur 1",
+      "liaison": "L1",
+      "relatif": true,
+      "actif": true,
+      "loi": {
+        "type": "vitesse_constante",
+        "parametres": {
+          "vitesse": 6.283185307179586,
+          "position_initiale": 0.0
+        }
+      }
+    }
+  ],
+  "etude": {
+    "type": "cinematique",
+    "duree": 2.0,
+    "pas": 0.005,
+    "pesanteur": true,
+    "gravite": [
+      0.0,
+      -9.81
+    ],
+    "inertie": true,
+    "tolerance": 1e-10,
+    "precision": 1e-08
+  },
+  "affichage": {
+    "grille": true,
+    "pas_grille": 0.01,
+    "aimantation": true,
+    "noms_points": true,
+    "noms_liaisons": false,
+    "centres_gravite": true,
+    "echelle_forces": 0.0
+  }
+}

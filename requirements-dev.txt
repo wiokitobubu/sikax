@@ -1,0 +1,4 @@
+# Développement : tests et fabrication de la distribution Windows
+-r requirements.txt
+pytest>=7.4
+pyinstaller>=6.6
