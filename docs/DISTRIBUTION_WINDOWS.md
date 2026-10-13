@@ -116,7 +116,17 @@ profil de l'utilisateur, raccourcis, désinstallation, et association des fichie
 
 `.github/workflows/windows.yml` fait la même fabrication sur une machine Windows de
 GitHub à chaque envoi sur la branche `main` ; l'archive se télécharge depuis la page de
-l'exécution.
+l'exécution (compte GitHub nécessaire).
+
+Pour la rendre publique, poser une étiquette de version :
+
+```powershell
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+Si les tests et la fabrication réussissent, l'archive est publiée dans une *Release* :
+elle se télécharge alors sans compte depuis la page des versions du dépôt.
 
 ## Ce qui a été vérifié, et ce qui ne l'a pas été
 

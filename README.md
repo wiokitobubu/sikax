@@ -20,6 +20,15 @@ et d'en **tracer** les résultats.
 | Langue | Français par défaut, anglais fourni, fichiers `locales/*.json` |
 | Distribution Windows | Dossier `Sikax.exe` + `runtime/` + `locales/` + `resources/` par PyInstaller |
 
+## Télécharger Sikax pour Windows
+
+La version prête à l'emploi est sur la page des versions :
+**<https://github.com/wiokitobubu/sikax/releases/latest>**
+
+Téléchargez l'archive `Sikax-…-windows.zip`, décompressez-la et lancez `Sikax.exe`. Il
+n'y a rien à installer. Le reste de cette page s'adresse à qui veut lire ou modifier le
+code.
+
 ## 1. Installation et lancement (VS Code)
 
 Il faut Python 3.9 ou plus récent (testé en 3.9 et 3.13).
