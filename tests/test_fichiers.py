@@ -361,7 +361,7 @@ def test_moteur_sur_liaison_non_pilotable():
         ('{"format": "sikax", "dimension": 3, "solides": []}', "dimension_non_geree"),
         ('{"format": "sikax", "solides": [{"id": "S0", "bati": true, "pose": {"x": NaN}}]}', "nombre_non_fini"),
         ('{"format": "sikax", "solides": [{"id": "S0", "bati": true, "pose": {"x": Infinity}}]}', "nombre_non_fini"),
-        ("[" * 100000, "json_invalide"),
+        pytest.param("[" * 100000, "json_invalide", id="imbrication_excessive"),
     ],
 )
 def test_documents_refuses(texte, code):

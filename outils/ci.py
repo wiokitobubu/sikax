@@ -34,14 +34,18 @@ def executer(journal: str, commande) -> int:
         return processus.wait()
 
 
+LIGNE_MAX = 400
+
+
 def essentiel(texte: str) -> str:
-    """Partie utile d'un journal : résumé et détail des échecs de pytest, sinon la fin."""
-    lignes = texte.splitlines()
+    """Partie utile d'un journal : bilan, résumé et détail des échecs de pytest, sinon la fin."""
+    lignes = [l if len(l) <= LIGNE_MAX else l[:LIGNE_MAX] + " […]" for l in texte.splitlines()]
     resume = [l for l in lignes if re.match(r"^(FAILED|ERROR) ", l)]
     debut = next((i for i, l in enumerate(lignes) if re.match(r"^=+ (FAILURES|ERRORS) =+", l)), None)
     if resume or debut is not None:
+        bilan = [l for l in lignes if re.search(r"\d+ (passed|failed|error)", l)][-1:]
         detail = lignes[debut:] if debut is not None else []
-        return "\n".join(resume + ["", "--- détail ---"] + detail)
+        return "\n".join(bilan + resume + ["", "--- détail ---"] + detail)
     return "\n".join(lignes[-70:])
 
 
