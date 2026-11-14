@@ -8,6 +8,10 @@ import pytest
 from sikax.calcul.contraintes import (
     AngleRelatif,
     Coincidence,
+    DistanceConstante,
+    EngrenageCremaillere,
+    EngrenageRoues,
+    PlateauTangent,
     PointSurDroite,
     TranslationPilotee,
     coordonnee_translation,
@@ -17,6 +21,10 @@ from sikax.calcul.contraintes import (
 
 def loi(t):
     return (0.3 * math.sin(2.0 * t) + 0.1 * t * t, 0.6 * math.cos(2.0 * t) + 0.2 * t, -1.2 * math.sin(2.0 * t) + 0.2)
+
+
+REPOS = np.zeros(9)
+"""État de référence des contraintes qui en ont besoin (phase d'un engrenage, côté d'une crémaillère)."""
 
 
 def contraintes():
@@ -36,6 +44,16 @@ def contraintes():
         "translation": TranslationPilotee(a1, 0.5, a2, 0.05, loi),
         "translation_bati_a": TranslationPilotee(sol, 2.2, a0, -0.1, loi),
         "translation_bati_b": TranslationPilotee(a0, -1.1, sol, 0.2, loi),
+        # contacts : engrenages et cames
+        "engrenage_exterieur": EngrenageRoues(a0, a1, 0.03, 0.05, 1.0, REPOS),
+        "engrenage_interieur": EngrenageRoues(a2, a0, 0.02, 0.06, -1.0, REPOS),
+        "engrenage_bati": EngrenageRoues(sol, a1, 0.04, 0.02, 1.0, REPOS),
+        "cremaillere": EngrenageCremaillere(a1, 0.3, a2, 0.025, REPOS),
+        "cremaillere_bati": EngrenageCremaillere(sol, -0.6, a0, 0.03, REPOS),
+        "came_pointe": DistanceConstante(a0, a2, 0.04, 0.03),
+        "came_bati": DistanceConstante(sol, a1, 0.05, 0.04),
+        "plateau": PlateauTangent(a1, 0.4, a0, 0.03, REPOS),
+        "plateau_bati": PlateauTangent(a2, -0.8, sol, 0.02, REPOS),
     }
 
 

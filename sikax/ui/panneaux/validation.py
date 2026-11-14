@@ -309,7 +309,7 @@ class PanneauValidation(QWidget):
         """Met à jour au prochain tour de boucle (jamais pendant le signal d'une liste du tableau)."""
         if not self._en_attente:
             self._en_attente = True
-            QTimer.singleShot(0, self.actualiser)
+            QTimer.singleShot(0, self, self.actualiser)  # annulé si le panneau est détruit entre-temps
 
     def actualiser(self) -> None:
         self._en_attente = False

@@ -1,0 +1,17 @@
+<h1>Motor torque and power</h1>
+<a name="couple"></a>
+<h2>Torque</h2>
+<p>A <b>couple</b> (torque) is a mechanical action with zero resultant but a non-zero moment: it turns without pushing. Two equal and opposite forces with parallel lines of action a distance d apart form a couple C = F · d. Its moment is the same at every point.</p>
+<p>Unit: N·m. In Sikax, the Torque tool (key C) applies a torque C<sub>z</sub> to a body; it may depend on time.</p>
+<a name="loi"></a>
+<h2>Motor with imposed motion</h2>
+<p>A Sikax motor imposes the angle of a revolute joint (rotary motor) or the displacement of a prismatic joint (actuator, linear motor) following a <b>motion law</b>: constant speed, sine, trapezoidal speed profile, free expression… The kinematic study then gives the <b>motor torque</b> (or force) needed at each instant.</p>
+<p class="formule">θ(t) = θ₀ + ω·t      (constant speed, ω in rad/s;  N in rpm = 30·ω/π)</p>
+<a name="effort"></a>
+<h2>Computed motor torque</h2>
+<p>The motor torque is the action of the motor (fixed on body A) on body B of the joint. It balances loads, gravity and inertia effects (inverse dynamics). Its sign tells whether the motor drives (same sign as the speed) or brakes (opposite sign).</p>
+<a name="puissance"></a>
+<h2>Power</h2>
+<p class="formule">P = C · ω  (rotation)       P = F · v  (translation)       unit: watt (W)</p>
+<p>Without friction, the motor's power changes the mechanism's energy: P = dE/dt. With gears of efficiency η, the output receives η times the input power.</p>
+<p class="remarque">A constant motor torque with no resisting load accelerates the mechanism endlessly: speed and forces grow without bound. Sikax warns about it (“runaway”).</p>

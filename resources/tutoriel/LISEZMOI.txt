@@ -1,0 +1,15 @@
+Animations du tutoriel (facultatives)
+=====================================
+
+Chaque étape du tutoriel montre une petite animation dessinée par Sikax.
+Pour la remplacer par une vraie capture d'écran animée, déposez ici un
+fichier GIF portant le nom de l'étape :
+
+    bienvenue.gif   barre.gif      pivot.gif      relier.gif
+    glissiere.gif   cercle.gif     engrenage.gif  came.gif
+    moteur.gif      force.gif      calcul.gif     vue.gif
+    photo.gif       cours.gif
+
+Le GIF est lu en boucle, réduit à la taille du cadre (environ 400 × 220
+pixels conviennent bien). Sans fichier, l'animation dessinée est utilisée.
+Rien n'est à recompiler : il suffit de relancer Sikax.

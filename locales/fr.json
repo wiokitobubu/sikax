@@ -29,7 +29,9 @@
     "recents": "Projets récents",
     "exemples": "Exemples",
     "langue": "Langue",
-    "panneaux": "Panneaux"
+    "panneaux": "Panneaux",
+    "modeles": "Nouveau depuis un &modèle",
+    "photo": "Photo de &fond"
   },
 
   "barre": {
@@ -46,7 +48,8 @@
     "resultats": "Efforts",
     "journal": "Journal",
     "inspecteur": "Propriétés et étude",
-    "analyse": "Validation et résultats"
+    "analyse": "Validation et résultats",
+    "cours": "Cours"
   },
 
   "action": {
@@ -55,7 +58,7 @@
     "enregistrer": "&Enregistrer",
     "enregistrer_sous": "Enregistrer &sous…",
     "exporter_image": "Exporter le schéma en image…",
-    "exporter_resultats": "Exporter les résultats (CSV)…",
+    "exporter_resultats": "Exporter les résultats (&Excel)…",
     "quitter": "&Quitter",
     "annuler": "&Annuler",
     "retablir": "&Rétablir",
@@ -97,7 +100,18 @@
       "force": "Force",
       "couple": "Couple",
       "ressort": "Ressort-amortisseur"
-    }
+    },
+    "importer_photo": "&Importer une photo de schéma…",
+    "detecter_formes": "Détecter les formes (traits, cercles)…",
+    "supprimer_photo": "Supprimer la photo de fond",
+    "outil_cercle": "Cercle / &disque",
+    "outil_engrenage": "&Engrenage",
+    "outil_came": "Contact came-poussoir",
+    "outil_etalonnage": "Étalonner l'échelle de la photo",
+    "outil_photo": "Déplacer la photo",
+    "tutoriel": "&Tutoriel",
+    "cours": "&Fiches de cours",
+    "accueil": "Écran de &bienvenue…"
   },
 
   "aide_action": {
@@ -122,7 +136,17 @@
     "pivots_automatiques": "Créer une pivot quand un nouveau solide part d'un point existant",
     "lancer": "Calculer l'étude définie dans le panneau Étude",
     "equilibre": "Amener le mécanisme dans une position d'équilibre stable",
-    "adopter_configuration": "Le mécanisme repartira de la position affichée dans l'animation"
+    "adopter_configuration": "Le mécanisme repartira de la position affichée dans l'animation",
+    "exporter_resultats": "Enregistre toutes les grandeurs calculées dans un classeur Excel (.xlsx), avec des graphiques",
+    "importer_photo": "Affiche la photo d'un schéma sous le mécanisme, pour le tracer par-dessus à l'échelle",
+    "detecter_formes": "Repère automatiquement les traits et les cercles de la photo et en fait des solides",
+    "outil_cercle": "Cercle ou disque : cliquez le centre puis glissez jusqu'au rayon",
+    "outil_engrenage": "Engrenage : cliquez une roue articulée par une pivot, puis la seconde roue ou une crémaillère",
+    "outil_came": "Came-poussoir : cliquez le cercle de la came, puis la pointe du poussoir",
+    "outil_etalonnage": "Cliquez deux points de la photo dont vous connaissez la distance réelle",
+    "outil_photo": "Faites glisser la photo de fond pour l'aligner sur la grille",
+    "tutoriel": "Visite guidée animée des outils de Sikax",
+    "cours": "Fiches de cours : cinématique, statique, dynamique, torseurs, engrenages…"
   },
 
   "contexte": {
@@ -135,11 +159,14 @@
     "solides": "Solides",
     "liaisons": "Liaisons",
     "actions": "Actions mécaniques",
-    "moteurs": "Moteurs"
+    "moteurs": "Moteurs",
+    "fond": "Photo de fond"
   },
 
   "outil": {
-    "selection": {"aide": "Cliquez pour sélectionner. Glissez un point ou une liaison pour modifier la géométrie. Molette : zoom · clic droit maintenu : déplacer la vue."},
+    "selection": {
+      "aide": "Cliquez pour sélectionner. Glissez un point ou une liaison pour modifier la géométrie. Molette : zoom · clic droit maintenu : déplacer la vue."
+    },
     "manipuler": {
       "aide": "Glissez un solide : le mécanisme suit en respectant ses liaisons. La position obtenue devient la configuration initiale.",
       "rien": "Cliquez sur un solide mobile pour le déplacer."
@@ -148,13 +175,18 @@
       "aide": "Cliquez pour placer le premier point du solide.",
       "suite": "Cliquez pour ajouter un point · Entrée, double-clic ou clic droit pour terminer · Échap pour abandonner."
     },
-    "point": {"aide": "Cliquez pour ajouter un point au solide sélectionné (au bâti si aucun solide n'est sélectionné)."},
+    "point": {
+      "aide": "Cliquez pour ajouter un point au solide sélectionné (au bâti si aucun solide n'est sélectionné)."
+    },
     "liaison": {
-      "aide_point": "Cliquez sur un point : la liaison relie les deux solides présents à cet endroit, ou le solide et le bâti.",
-      "aide_axe": "Cliquez sur un point puis glissez pour orienter l'axe (par pas de 15° ; Maj pour un angle libre).",
+      "aide_point": "Clic sur un point commun à deux solides : liaison entre eux. Clic sur l'extrémité d'une barre : liaison avec le bâti. Clic sur un solide puis sur un second : liaison entre les deux, points créés automatiquement.",
+      "aide_axe": "Cliquez sur un point ou un solide, et glissez pour orienter l'axe (par pas de 15° ; Maj pour un angle libre). Sur un solide seul, cliquez ensuite le second solide.",
       "aucun_point": "Aucun point ici : placez la liaison sur un point d'un solide.",
       "bati_seul": "Ce point appartient au bâti seul : placez la liaison sur un point d'un solide mobile.",
-      "deja_liee": "Ces deux solides sont déjà reliés ici par « {nom} »."
+      "deja_liee": "Ces deux solides sont déjà reliés ici par « {nom} ».",
+      "aucun_solide": "Cliquez sur un solide : un point, une barre ou un disque.",
+      "second": "Cliquez sur le second solide à relier à « {nom} » · dans le vide : le bâti · clic droit ou Échap : abandonner.",
+      "meme_solide": "Cliquez sur un autre solide (ou dans le vide pour le bâti)."
     },
     "force": {
       "aide": "Cliquez sur un point d'un solide puis glissez pour donner la direction et la norme de la force (1 pixel = 1 N).",
@@ -177,6 +209,38 @@
     },
     "message": {
       "fermeture_impossible": "Cette géométrie ne permet plus d'assembler le mécanisme : vérifiez les longueurs."
+    },
+    "cercle": {
+      "aide": "Cliquez le centre du cercle puis glissez jusqu'au rayon. Posé sur un point d'un solide, le cercle s'ajoute à ce solide (came excentrique) ; sinon il devient un nouveau disque.",
+      "cree": "Cercle créé. Ajoutez une liaison pivot (sur le centre, ou sur un autre point pour un excentrique)."
+    },
+    "engrenage": {
+      "aide": "Cliquez la première roue (un solide articulé par une liaison pivot), puis la seconde roue — ou une crémaillère guidée par une glissière.",
+      "aucune_roue": "Cliquez sur une roue : un disque ou une barre articulé par une liaison pivot.",
+      "sans_pivot": "« {nom} » n'est pas articulé par une liaison pivot : posez d'abord une pivot en son centre.",
+      "seconde": "Cliquez la roue à engrener avec « {nom} » (ou une crémaillère) · clic droit : abandonner.",
+      "impossible": "Engrenage impossible : la seconde roue doit être articulée par une pivot, ou être une crémaillère guidée par une glissière.",
+      "cree": "Engrenage créé : Z₁ = {za}, Z₂ = {zb}. Ajustez dents, module, angle de pression et rendement dans les propriétés."
+    },
+    "came": {
+      "aide": "Cliquez sur le cercle de la came (un disque), puis sur la pointe du poussoir.",
+      "aucun_cercle": "Cliquez sur un cercle ou un disque : c'est la came.",
+      "poussoir": "Cliquez sur la pointe du poussoir (un point d'un autre solide) · clic droit : abandonner.",
+      "aucun_poussoir": "Cliquez sur un point ou une barre d'un autre solide : le poussoir.",
+      "impossible": "Le poussoir ne peut pas atteindre la came : rapprochez-le, ou vérifiez son guidage.",
+      "cree": "Contact came-poussoir créé : choisissez pointe, galet ou plateau dans les propriétés."
+    },
+    "etalonnage": {
+      "aide": "Étalonnage : cliquez deux points de la photo dont vous connaissez la distance réelle (une cote, une longueur de barre).",
+      "second": "Cliquez le second point de la longueur connue · Échap : abandonner.",
+      "titre": "Étalonner la photo",
+      "question": "Longueur réelle entre les deux points ({unite}) :",
+      "trop_court": "Les deux points sont trop proches : choisissez une longueur plus grande sur la photo.",
+      "fait": "Photo étalonnée : la longueur choisie mesure maintenant {longueur}.",
+      "sans_photo": "Aucune photo de fond : importez d'abord une photo de schéma (Fichier → Importer une photo)."
+    },
+    "photo": {
+      "aide": "Faites glisser la photo de fond pour la placer. Échap : revenir à la sélection."
     }
   },
 
@@ -185,7 +249,9 @@
       "pivot": "Pivot",
       "glissiere": "Glissière",
       "encastrement": "Encastrement",
-      "ponctuelle": "Ponctuelle"
+      "ponctuelle": "Ponctuelle",
+      "engrenage": "Engrenage",
+      "came": "Came-poussoir"
     }
   },
 
@@ -230,7 +296,18 @@
     "longueur_actuelle": "Longueur actuelle",
     "expression_admise": "nombre ou expression de t",
     "nombre_attendu": "Un nombre est attendu.",
-    "valeur_trop_petite": "Valeur trop petite."
+    "valeur_trop_petite": "Valeur trop petite.",
+    "z_a": "Dents de la roue A (Z₁)",
+    "z_b": "Dents de la roue B (Z₂)",
+    "module": "Module m",
+    "angle_pression": "Angle de pression α",
+    "rendement": "Rendement η",
+    "nature": "Nature",
+    "cercle": "Cercle de la came",
+    "rayon": "Rayon",
+    "rayon_galet": "Rayon du galet ρ",
+    "direction_plateau": "Direction du plateau",
+    "direction_cremaillere": "Direction de la crémaillère"
   },
 
   "unite": {
@@ -310,6 +387,48 @@
       "voir_liaison": "Voir la liaison « {nom} »",
       "loi": "Loi de mouvement",
       "tours_minute": "Soit"
+    },
+    "modification_refusee": "Modification refusée : le mécanisme ne peut pas s'assembler avec cette valeur.",
+    "disque": "Inertie d'un disque homogène",
+    "disque_aide": "Place G au centre du cercle et prend J = m·R²/2 pour la masse indiquée.",
+    "cercles": "Cercles",
+    "cercle": {
+      "rayon": "Rayon (centre {centre})",
+      "excentricite": "Excentricité",
+      "supprimer": "Supprimer le cercle de centre {centre}"
+    },
+    "engrenage": {
+      "titre": "Engrenage",
+      "calculs": "Calculs automatiques",
+      "diametre_a": "Diamètre primitif d₁",
+      "diametre_b": "Diamètre primitif d₂",
+      "pas": "Pas p = π·m",
+      "entraxe_theorique": "Entraxe théorique a",
+      "entraxe_reel": "Entraxe réel (schéma)",
+      "rapport": "Rapport r = ω₂/ω₁",
+      "rapport_cremaillere": "v = r·ω, avec r = {r} mm",
+      "entraxe_different": "L'entraxe du schéma diffère de l'entraxe théorique : les roues ne sont pas tangentes. Le rapport reste exact, mais le dessin ne l'est pas.",
+      "ajuster": "Ajuster l'entraxe",
+      "ajuster_aide": "Déplace la roue B (et l'axe qui la porte) à l'entraxe théorique.",
+      "ajustement_impossible": "Ajustement impossible : la roue B ou son axe ne peuvent pas être déplacés."
+    },
+    "came": {
+      "titre": "Came et poussoir",
+      "note": "Le contact glisse librement : la came peut faire des tours complets. Un effort normal négatif signale un décollement (ajoutez un ressort de rappel)."
+    },
+    "fond": {
+      "titre": "Photo de fond",
+      "sans_nom": "Photo de schéma",
+      "visible": "Afficher la photo",
+      "opacite": "Opacité",
+      "placement": "Placement et échelle",
+      "largeur": "Largeur",
+      "taille": "Taille de l'image",
+      "note": "Étalonnez l'échelle avec une longueur connue, puis tracez le mécanisme par-dessus. La photo est enregistrée dans le projet.",
+      "etalonner": "Étalonner l'échelle…",
+      "deplacer": "Déplacer la photo",
+      "detecter": "Détecter les formes…",
+      "supprimer": "Supprimer la photo"
     }
   },
 
@@ -375,7 +494,17 @@
     "bilan": "Étude {type} terminée : {instants} instant(s) calculé(s) en {duree} s.",
     "equilibre_trouve": "Position d'équilibre trouvée.",
     "equilibre_introuvable": "Aucune position d'équilibre trouvée à partir de cette configuration.",
-    "configuration_adoptee": "La position à t = {t} s est maintenant la configuration initiale."
+    "configuration_adoptee": "La position à t = {t} s est maintenant la configuration initiale.",
+    "methode": "Intégrateur",
+    "methodes": {
+      "Radau": "Radau (implicite, recommandé)",
+      "BDF": "BDF (implicite)",
+      "LSODA": "LSODA (automatique)",
+      "DOP853": "DOP853 (explicite, ordre 8)",
+      "RK45": "RK45 (explicite)"
+    },
+    "precision": "Précision",
+    "precision_aide": "Tolérance relative de l'intégrateur : 1e-8 par défaut ; 1e-6 calcule plus vite."
   },
 
   "lecteur": {
@@ -450,7 +579,27 @@
       "solide": "Solides",
       "action": "Actions mécaniques",
       "energie": "Énergies"
-    }
+    },
+    "exporter_excel": "Exporter (Excel)",
+    "exporter_excel_aide": "Enregistre les grandeurs affichées dans un classeur Excel (.xlsx), avec les graphiques",
+    "mode": {
+      "ensemble": "Vue d'ensemble",
+      "personnalise": "Personnalisé"
+    },
+    "objet_suivi": "Objet suivi :",
+    "suivi_selection": "La sélection du schéma",
+    "vue": {
+      "position": "Position",
+      "vitesse": "Vitesse",
+      "acceleration": "Accélération",
+      "efforts": "Efforts dans les liaisons",
+      "couples": "Couples",
+      "energie": "Énergie"
+    },
+    "vue_vide": "(rien à tracer)",
+    "pic": "Pic hors échelle ({valeur} {unite}) non représenté.",
+    "zone_point_mort": "Passage près d'un point mort : le moteur y a peu de prise sur le mécanisme.",
+    "suivi": "Objet suivi : {nom}."
   },
 
   "grandeur": {
@@ -487,7 +636,11 @@
     "effort_force": "Force motrice",
     "energie_mecanique": "Énergie mécanique",
     "energie_cinetique": "Énergie cinétique",
-    "energie_potentielle": "Énergie potentielle"
+    "energie_potentielle": "Énergie potentielle",
+    "Ft": "Effort tangentiel Ft",
+    "Fr": "Effort radial Fr",
+    "couple_a": "Couple sur la roue A",
+    "couple_b": "Couple sur la roue B"
   },
 
   "resultats": {
@@ -507,7 +660,7 @@
       "aucun_solide": "Le mécanisme ne contient aucun solide mobile : il n'y a rien à calculer.",
       "assemblage_impossible": "Le mécanisme ne peut pas être assemblé : les liaisons sont incompatibles avec la géométrie (écart restant : {residu:.3g}).",
       "mobilite_non_pilotee": "Étude cinématique impossible : {mobilite} mobilité(s) ne sont pilotée(s) par aucun moteur. Ajoutez des moteurs ou lancez une étude dynamique.",
-      "position_initiale_singuliere": "Dans la configuration initiale, les moteurs ne commandent pas le mouvement (point mort). Déplacez le mécanisme avec l'outil Manipuler, ou motorisez une autre liaison.",
+      "position_initiale_singuliere": "Dans la configuration initiale, le mécanisme est sur un point mort et la loi du moteur y impose une vitesse : il faudrait une vitesse infinie. Décalez légèrement la position initiale (outil Manipuler), donnez au moteur une loi qui part à vitesse nulle, ou motorisez une autre liaison.",
       "inertie_insuffisante": "Étude dynamique impossible : une mobilité n'entraîne aucune inertie. Donnez une masse et un moment d'inertie aux solides : {solides}.",
       "expression": "Expression invalide pour « {objet} » : {message}.",
       "modele_invalide": "Le modèle contient {nombre} erreur(s). Première erreur, sur « {objet} » : {detail}",
@@ -517,7 +670,7 @@
       "inattendue": "Erreur imprévue pendant le calcul : {message}"
     },
     "message": {
-      "mouvement_impossible": "Mouvement impossible au-delà de t = {t} s : le mécanisme atteint une position limite ou singulière. Calcul arrêté à cet instant.",
+      "mouvement_impossible": "Mouvement impossible au-delà de t = {t} s : la loi du moteur demande une position que le mécanisme ne peut pas atteindre (fin de course, position limite). Calcul arrêté à cet instant. Pour faire tourner le mécanisme au-delà d'un point mort, motorisez la manivelle plutôt que le piston, ou faites une étude dynamique : l'inertie fait franchir les points morts.",
       "configuration_singuliere": "Passage près d'une configuration singulière vers t = {t} s : les résultats y sont peu précis.",
       "hyperstatique_norme_minimale": "Mécanisme hyperstatique d'ordre {h} : la répartition des efforts entre liaisons surabondantes n'est pas unique. La solution de norme minimale est donnée.",
       "quasi_statique": "Calcul quasi statique : les effets d'inertie sont négligés.",
@@ -525,8 +678,15 @@
       "pas_en_equilibre": "Le mécanisme n'est pas en équilibre dans cette configuration : {mobilite} mobilité(s) non bloquée(s) où les actions travaillent. Ajoutez un moteur de blocage ou recherchez la position d'équilibre.",
       "equilibre_avec_mobilite": "Équilibre vérifié, bien que {mobilite} mobilité(s) reste(nt) libre(s).",
       "integration_interrompue": "Intégration interrompue à t = {t} s : le pas de temps est devenu trop petit (configuration singulière ou efforts démesurés).",
-      "decollement": "L'effort normal de la ponctuelle « {liaison} » change de signe vers t = {t} s : un appui réel décollerait à cet instant. Le modèle, lui, maintient le contact.",
-      "aucune_mobilite_libre": "Aucune mobilité libre : le mouvement est entièrement imposé par les liaisons et les moteurs."
+      "decollement": "L'effort normal de la liaison « {liaison} » change de signe vers t = {t} s : un contact réel décollerait à cet instant (un ressort de rappel plus raide l'empêcherait). Le modèle, lui, maintient le contact.",
+      "aucune_mobilite_libre": "Aucune mobilité libre : le mouvement est entièrement imposé par les liaisons et les moteurs.",
+      "methode_de_repli": "L'intégrateur {methode} n'a pas pu terminer : le calcul a été poursuivi avec {repli}.",
+      "emballement_rotation": "Le solide « {solide} » s'emballe (vitesse de rotation de {valeur} rad/s vers t = {t} s) : le calcul est arrêté. Un couple ou une force motrice n'est équilibré par aucune charge ; ajoutez un couple résistant, un amortissement ou un moteur à vitesse imposée.",
+      "emballement_translation": "Le solide « {solide} » s'emballe (vitesse de {valeur} m/s vers t = {t} s) : le calcul est arrêté. Une force motrice n'est équilibrée par aucune charge ; ajoutez une charge, un amortissement ou un moteur à vitesse imposée.",
+      "acceleration_continue": "Le mécanisme ne cesse d'accélérer (le solide « {solide} » atteint {valeur} en fin de calcul) : rien n'équilibre l'action motrice, et les efforts croissent avec la vitesse. C'est le comportement physique attendu ; pour un régime établi, ajoutez une charge ou un amortissement.",
+      "depart_point_mort": "Départ sur un point mort : à l'instant initial le moteur n'a pas de prise sur le mécanisme. Le sens de franchissement a été choisi par le calcul ; décalez légèrement la position initiale pour imposer l'autre.",
+      "points_morts_franchis": "{nombre} point(s) mort(s) franchi(s), vers t = {t} s : le mécanisme y passe dans le sens du mouvement. Vitesses et accélérations y sont obtenues à partir des positions.",
+      "efforts_point_mort": "Au voisinage du point mort (t ≈ {t} s), le moteur « {moteur} » n'a presque plus de prise sur le mécanisme : l'effort qu'il doit fournir y atteint {valeur}. C'est la réponse exacte d'un mécanisme rigide piloté ainsi ; motorisez plutôt une liaison qui commande le mouvement, ou passez en étude dynamique."
     }
   },
 
@@ -551,7 +711,11 @@
       "moteur_non_pilotable": "le moteur pilote une liaison qui ne peut pas être motorisée.",
       "moteur_en_double": "deux moteurs pilotent la même liaison.",
       "loi_invalide": "la loi de mouvement du moteur est invalide.",
-      "etude_invalide": "la durée, le pas et les tolérances de l'étude doivent être strictement positifs."
+      "etude_invalide": "la durée, le pas et les tolérances de l'étude doivent être strictement positifs.",
+      "cercle_invalide": "un cercle n'est pas centré sur un point de son solide.",
+      "cercle_inconnu": "une came s'appuie sur un cercle inexistant.",
+      "option_inconnue": "un paramètre de liaison a une valeur inconnue.",
+      "couronne_trop_petite": "dans un engrenage intérieur, la couronne (roue B) doit avoir plus de dents que le pignon."
     }
   },
 
@@ -561,7 +725,9 @@
       "ouvrir": "Ouvrir un projet",
       "enregistrer": "Enregistrer le projet",
       "image": "Exporter le schéma",
-      "csv": "Exporter les résultats"
+      "csv": "Exporter les résultats",
+      "excel": "Exporter les résultats (Excel)",
+      "photo": "Importer une photo de schéma"
     },
     "confirmer": {
       "texte": "Enregistrer les modifications de « {nom} » ?",
@@ -589,7 +755,8 @@
       "encodage_invalide": "L'encodage du fichier n'est pas reconnu.",
       "migration_impossible": "Ce fichier a été écrit dans un format trop ancien (version {version}) pour être converti.",
       "donnees_invalides": "Le projet contient des valeurs invalides et ne peut pas être enregistré ({message}).",
-      "ecriture_impossible": "Impossible d'enregistrer dans {chemin} ({message})."
+      "ecriture_impossible": "Impossible d'enregistrer dans {chemin} ({message}).",
+      "module_absent": "Le module « {module} » nécessaire à l'export est absent de cette installation."
     },
     "diag": {
       "cle_en_double": "la clé « {cle} » apparaît deux fois ; la dernière valeur est retenue.",
@@ -644,8 +811,20 @@
       "mecanisme_referme": "le mécanisme a été réassemblé ({nombre} liaison(s) ouverte(s)).",
       "fermeture_impossible": "le mécanisme ne peut pas être assemblé : {nombre} liaison(s) restent ouvertes.",
       "fichier_migre": "fichier converti du format {depuis} au format {vers}.",
-      "encodage_inhabituel": "le fichier n'est pas en UTF-8 ; il a été lu en {encodage}."
-    }
+      "encodage_inhabituel": "le fichier n'est pas en UTF-8 ; il a été lu en {encodage}.",
+      "methode_inconnue": "méthode d'intégration « {valeur} » inconnue : {defaut} est utilisée.",
+      "cercle_inconnu": "le cercle « {cercle} » n'existe pas dans le solide {solide}.",
+      "cercle_invalide": "le cercle « {cercle} » du solide {solide} n'est pas centré sur le point de la liaison.",
+      "cercle_deduit": "cercle de la came non précisé : « {cercle} », le seul possible, est utilisé.",
+      "option_inconnue": "{champ} = « {valeur} » est inconnu (valeurs admises : {connues}).",
+      "fond_ignore": "la photo de fond est illisible : elle est ignorée, le reste du projet est ouvert."
+    },
+    "modele_ouvert": "Nouveau projet à partir du modèle « {nom} ».",
+    "filtre_excel": "Classeur Excel (*.xlsx)",
+    "filtre_photo": "Images",
+    "excel_exporte": "Résultats exportés dans « {nom} » : {lignes} instants, {colonnes} grandeurs, avec graphiques.",
+    "photo_illisible": "Impossible de lire l'image « {nom} ».",
+    "photo_importee": "Photo « {nom} » importée. Étalonnez l'échelle : cliquez deux points d'une longueur connue."
   },
 
   "diagnostics": {
@@ -676,6 +855,276 @@
     "masse_ressort": "Masse-ressort-amortisseur",
     "poutre_deux_appuis": "Poutre sur deux appuis",
     "poutre_bi_articulee": "Poutre bi-articulée (hyperstatique)",
-    "parallelogramme_double": "Parallélogramme double"
+    "parallelogramme_double": "Parallélogramme double",
+    "came_poussoir": "Came excentrique et poussoir à galet",
+    "train_engrenages": "Train d'engrenages (réducteur 1/9)",
+    "train_epicycloidal": "Train épicycloïdal",
+    "pignon_cremaillere": "Pignon-crémaillère"
+  },
+
+  "accroche": {
+    "milieu": "milieu",
+    "centre": "centre",
+    "trait": "sur le solide"
+  },
+
+  "modele_depart": {
+    "pendule_simple": "Pendule",
+    "pendule_simple_aide": "Barre pesante articulée au bâti, lâchée sans vitesse (étude dynamique)",
+    "came_poussoir": "Came-poussoir",
+    "came_poussoir_aide": "Came excentrique motorisée et poussoir à galet rappelé par un ressort",
+    "train_engrenages": "Train d'engrenages",
+    "train_engrenages_aide": "Réducteur à deux étages (rapport 1/9) avec couple résistant et rendements"
+  },
+
+  "excel": {
+    "feuille_resultats": "Résultats",
+    "feuille_graphiques": "Graphiques",
+    "feuille_informations": "Informations",
+    "temps": "t (s)",
+    "projet": "Projet",
+    "auteur": "Auteur",
+    "etude": "Étude",
+    "duree": "Durée",
+    "instants": "Instants calculés",
+    "unites": "Unités d'affichage",
+    "mobilite": "Mobilité libre",
+    "hyperstatisme": "Degré d'hyperstatisme",
+    "methode": "Intégrateur",
+    "messages": "Messages du calcul"
+  },
+
+  "engrenage": {
+    "nature": {
+      "exterieur": "Engrenage extérieur",
+      "interieur": "Engrenage intérieur (couronne B)",
+      "cremaillere": "Pignon-crémaillère"
+    }
+  },
+
+  "came": {
+    "nature": {
+      "pointe": "Poussoir à pointe",
+      "galet": "Poussoir à galet",
+      "plat": "Poussoir plat (plateau)"
+    }
+  },
+
+  "detection": {
+    "titre": "Détecter les formes de la photo",
+    "explication": "Sikax repère les traits (en orange) et les cercles (bleu : disques, vert : articulations) de la photo. Réglez la sensibilité jusqu'à ce que l'aperçu corresponde au schéma, puis créez les solides : vous pourrez les corriger à la main.",
+    "sensibilite": "Sensibilité",
+    "longueur_min": "Longueur minimale d'un trait",
+    "barres": "Créer les barres",
+    "disques": "Créer les disques",
+    "pivots": "Pivots aux petits cercles",
+    "pivots_aide": "Un petit cercle où aboutissent des traits est pris pour une articulation : une liaison pivot y est créée.",
+    "creer": "Créer les solides",
+    "bilan": "{traits} trait(s), {disques} disque(s), {articulations} petit(s) cercle(s) d'articulation.",
+    "echec": "Détection impossible : {message}",
+    "indisponible": "La détection automatique demande le module OpenCV, absent de cette installation.",
+    "cree": "Formes détectées ajoutées : {barres} barre(s), {disques} disque(s), {pivots} pivot(s)."
+  },
+
+  "touches": {
+    "entree": "Entrée",
+    "espace": "Espace",
+    "maj": "Maj"
+  },
+
+  "accueil_dialogue": {
+    "fenetre": "Bienvenue dans {nom}",
+    "titre": "Bienvenue dans {nom}",
+    "version": "Modélisation et simulation de mécanismes plans — version {version}",
+    "question": "Es-tu nouveau sur Sikax ?",
+    "nouveau": "Oui, je découvre Sikax",
+    "nouveau_detail": "Visite guidée animée des outils, en deux minutes",
+    "habitue": "J'ai déjà utilisé l'application",
+    "habitue_detail": "Aller directement au travail",
+    "ne_plus_demander": "Ne plus poser la question au démarrage",
+    "note": "Le tutoriel reste disponible à tout moment : menu Aide → Tutoriel (F1).",
+    "bon_travail": "Bon travail ! Le tutoriel reste dans Aide → Tutoriel (F1)."
+  },
+
+  "tutoriel": {
+    "etape": "Étape {numero} sur {total}",
+    "precedent": "Précédent",
+    "suivant": "Suivant",
+    "compris": "Compris",
+    "terminer": "Terminer",
+    "termine_message": "Tutoriel terminé. Pour le revoir : Aide → Tutoriel (F1).",
+    "bienvenue": {
+      "titre": "Sikax en trente secondes",
+      "puce1": "<b>Dessinez</b> les solides, puis <b>reliez-les</b> par des liaisons.",
+      "puce2": "<b>Lancez le calcul</b> : positions, vitesses, efforts et couple moteur.",
+      "puce3": "Ce tutoriel se rouvre à tout moment avec <b>F1</b>."
+    },
+    "barre": {
+      "titre": "Dessiner un solide",
+      "puce1": "Outil <b>Barre</b> (touche B).",
+      "puce2": "Chaque clic ajoute un point ; la longueur s'affiche près du pointeur.",
+      "puce3": "<b>Entrée</b>, double-clic ou clic droit pour terminer ; Échap pour abandonner."
+    },
+    "pivot": {
+      "titre": "Articuler une barre au bâti",
+      "puce1": "Outil <b>Pivot</b> (touche 1).",
+      "puce2": "Un clic sur l'extrémité d'une barre la relie au bâti."
+    },
+    "relier": {
+      "titre": "Relier deux solides",
+      "puce1": "Cliquez sur le premier solide, n'importe où sur sa barre ou son disque.",
+      "puce2": "Cliquez sur le second solide : la liaison se pose au premier clic, les points sont créés tout seuls. Dans le vide : le bâti.",
+      "puce3": "Clic droit ou Échap pour abandonner."
+    },
+    "glissiere": {
+      "titre": "Glissière et appui ponctuel",
+      "puce1": "Outil <b>Glissière</b> (touche 2), <b>Ponctuelle</b> (touche 4).",
+      "puce2": "Cliquez, puis glissez pour orienter l'axe, par pas de 15°.",
+      "puce3": "Maintenez <b>Maj</b> pour un angle libre."
+    },
+    "cercle": {
+      "titre": "Cercle, disque, excentrique",
+      "puce1": "Outil <b>Cercle</b> (touche D).",
+      "puce2": "Cliquez le centre, glissez jusqu'au rayon.",
+      "puce3": "Une pivot hors du centre en fait un <b>excentrique</b> (came)."
+    },
+    "engrenage": {
+      "titre": "Engrenages",
+      "puce1": "Outil <b>Engrenage</b> (touche E) ; les roues doivent être articulées par des pivots.",
+      "puce2": "Cliquez la première roue, puis la seconde (ou une crémaillère).",
+      "puce3": "Z, module, angle de pression et rendement se règlent dans les propriétés."
+    },
+    "came": {
+      "titre": "Came et poussoir",
+      "puce1": "Outil <b>Came</b> (touche K).",
+      "puce2": "Cliquez le cercle de la came, puis la pointe du poussoir.",
+      "puce3": "Pointe, galet ou plateau : la came peut faire des tours complets."
+    },
+    "moteur": {
+      "titre": "Motoriser une liaison",
+      "puce1": "Outil <b>Moteur</b> (touche O).",
+      "puce2": "Cliquez une pivot ou une glissière ; la loi de mouvement se règle dans les propriétés."
+    },
+    "force": {
+      "titre": "Forces et couples",
+      "puce1": "Outil <b>Force</b> (touche F).",
+      "puce2": "Cliquez un point et tirez : direction et intensité (1 pixel = 1 N).",
+      "puce3": "Outil <b>Couple</b> (touche C) : cliquez le solide."
+    },
+    "calcul": {
+      "titre": "Calculer et lire les résultats",
+      "puce1": "<b>F5</b> lance le calcul choisi dans l'onglet Étude.",
+      "puce2": "<b>Espace</b> : lecture et pause de l'animation.",
+      "puce3": "Onglet <b>Courbes</b> : position, vitesse, accélération, efforts, couples ; export <b>Excel</b>."
+    },
+    "vue": {
+      "titre": "Se déplacer dans le schéma",
+      "puce1": "<b>Molette</b> : zoom autour du pointeur.",
+      "puce2": "<b>Clic droit maintenu</b> (ou clic milieu) : déplacer la vue.",
+      "puce3": "<b>A</b> : tout voir. Ctrl+Z annule n'importe quelle action."
+    },
+    "photo": {
+      "titre": "Partir d'une photo de schéma",
+      "puce1": "Fichier → <b>Importer une photo de schéma</b>.",
+      "puce2": "Cliquez deux points d'une longueur connue et donnez-la : la photo est à l'échelle.",
+      "puce3": "Tracez par-dessus, ou laissez Sikax <b>détecter les formes</b>."
+    },
+    "cours": {
+      "titre": "Fiches de cours",
+      "puce1": "Le bouton <b>?</b> à côté d'une option explique la notion et ouvre sa fiche.",
+      "puce2": "Onglet <b>Cours</b> : statique, dynamique, torseurs, engrenages… <b>F1</b> relance ce tutoriel."
+    }
+  },
+
+  "aide": {
+    "clic_pour_le_cours": "Cliquez pour ouvrir la fiche de cours.",
+    "etudes": {
+      "nature": "<b>Cinématique</b> : le mouvement est imposé par les moteurs. <b>Statique</b> : équilibre (PFS). <b>Dynamique</b> : le mouvement résulte des forces (PFD)."
+    },
+    "methodes": {
+      "methode": "Méthode de <code>scipy.integrate.solve_ivp</code>. <b>Radau</b> (implicite, ordre 5) est la plus robuste ; LSODA et DOP853 sont plus rapides sur les mouvements réguliers.",
+      "precision": "Tolérance relative de l'intégrateur. 1e-8 par défaut ; 1e-6 suffit pour des courbes."
+    },
+    "centre_gravite": {
+      "masse": "Masse du solide (kg) : elle donne son poids m·g et son inertie en translation.",
+      "position": "Centre de gravité G, dans le repère du solide : le point où s'applique le poids."
+    },
+    "inertie": {
+      "rubrique": "Masse, centre de gravité et moment d'inertie : ce qu'il faut pour le PFD.",
+      "jz": "Moment d'inertie J autour de l'axe (G, z), en kg·m². Barre : m·L²/12 ; disque : m·R²/2."
+    },
+    "excentricite": {
+      "cercle": "Cercle lié au solide : disque, came, roue. Son centre est un point du solide.",
+      "excentricite": "Distance entre le centre du cercle et l'axe de rotation du solide : la course d'une came excentrique vaut 2·e.",
+      "came": "Une came transforme une rotation en mouvement alternatif du poussoir.",
+      "poussoirs": "Pointe : |CP| = R. Galet : |CP| = R + ρ. Plateau : face tangente au cercle.",
+      "effort_normal": "Effort de la came sur le poussoir, porté par la normale au contact. Négatif : le poussoir décollerait."
+    },
+    "ddl": {
+      "type": "Type de liaison : il fixe les mouvements permis entre les deux solides (degrés de liberté).",
+      "mobilites": "Mouvements relatifs permis par la liaison (ω : rotation, V : translation)."
+    },
+    "torseur": {
+      "inconnues": "Composantes de l'effort que la liaison peut transmettre : 3 moins le nombre de mobilités, dans le plan.",
+      "liaison": "Torseur de l'action de A sur B : résultante (X, Y) et moment N au point de la liaison."
+    },
+    "isostatisme": {
+      "modele_spatial": "Réalisation de la liaison dans l'espace : elle change le degré d'hyperstatisme réel du mécanisme."
+    },
+    "couple_moteur": {
+      "loi": "Le moteur impose l'angle (ou le déplacement) de la liaison en fonction du temps.",
+      "effort": "Couple (ou force) que le moteur doit fournir pour produire le mouvement imposé.",
+      "couple": "Couple C (N·m) appliqué au solide ; il peut dépendre du temps, par exemple 5*sin(2*pi*t)."
+    },
+    "moment": {
+      "force": "Composantes de la force, en N. Son moment en un point A vaut AP ∧ F."
+    },
+    "engrenages": {
+      "rubrique": "Roues dentées : rapport exact Z₁/Z₂, efforts Ft (tangentiel) et Fr (radial) sur la denture.",
+      "nature": "Extérieur : sens inverses. Intérieur : même sens (B est la couronne). Crémaillère : rotation → translation.",
+      "dents": "Nombre de dents Z de la roue : il fixe le rapport et le diamètre primitif d = m·Z.",
+      "module": "Module m : taille des dents. Deux roues ne s'engrènent que si elles ont le même module.",
+      "angle_pression": "Inclinaison α de la ligne d'action (20° en général) : Fr = Ft·tan α.",
+      "rendement": "η = puissance de sortie / puissance d'entrée ; 0,95 à 0,99 pour un engrenage droit.",
+      "formules": "d = m·Z ; p = π·m ; a = m·(Z₁ + Z₂)/2 ; r = −Z₁/Z₂.",
+      "diametre": "Diamètre primitif d = m·Z : les cercles primitifs roulent sans glisser.",
+      "pas": "Pas p = π·m : distance entre deux dents sur le cercle primitif.",
+      "entraxe": "Entraxe a = m·(Z₁ + Z₂)/2 (extérieur), m·(Z₂ − Z₁)/2 (intérieur).",
+      "rapport": "r = ω₂/ω₁ = −Z₁/Z₂ (extérieur), +Z₁/Z₂ (intérieur).",
+      "efforts": "Ft = 2·C/d transmet le couple ; Fr = Ft·tan α écarte les roues ; Fn = Ft/cos α.",
+      "couples": "Couple que la denture exerce sur chaque roue, autour de son centre : C = Ft·r."
+    }
+  },
+
+  "cours": {
+    "introduction": "Les notions de mécanique utiles pour comprendre Sikax. Le bouton « ? » d'une option ouvre la fiche qui l'explique.",
+    "fiche": {
+      "etudes": "Cinématique, statique, dynamique",
+      "moment": "Moment d'une force",
+      "couple_moteur": "Couple moteur et puissance",
+      "torseur": "Torseur d'action mécanique",
+      "centre_gravite": "Centre de gravité",
+      "inertie": "Moment d'inertie",
+      "excentricite": "Excentricité, came et poussoir",
+      "ddl": "Degrés de liberté et mobilité",
+      "isostatisme": "Isostatisme et hyperstatisme",
+      "engrenages": "Engrenages",
+      "points_morts": "Points morts",
+      "methodes": "Méthodes de calcul de Sikax"
+    },
+    "resume": {
+      "etudes": "Ce que calcule chaque étude, et quand la choisir.",
+      "moment": "M_A(F) = AP ∧ F : la capacité d'une force à faire tourner.",
+      "couple_moteur": "Couple, moteur à mouvement imposé, puissance P = C·ω.",
+      "torseur": "Résultante et moment d'une action ; torseurs transmis par les liaisons.",
+      "centre_gravite": "Point d'application du poids ; barycentre des masses.",
+      "inertie": "Résistance à la mise en rotation ; formules usuelles et théorème de Huygens.",
+      "excentricite": "Disque excentrique, came, types de poussoirs, décollement.",
+      "ddl": "Mouvements permis par les liaisons ; mobilité d'un mécanisme.",
+      "isostatisme": "h = Is − Es + m : quand la statique suffit, et quand elle ne suffit pas.",
+      "engrenages": "Module, pas, entraxe, rapport de transmission, efforts sur la denture, rendement.",
+      "points_morts": "Positions où le moteur n'a plus de prise ; comment les franchir.",
+      "methodes": "Comment Sikax résout les équations : Radau, lagrangien augmenté, points morts."
+    }
   }
 }

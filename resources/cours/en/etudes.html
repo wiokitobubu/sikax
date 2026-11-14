@@ -1,0 +1,31 @@
+<h1>Kinematics, statics and dynamics</h1>
+<p>Sikax's three studies answer three different questions about the same mechanism. They need different data and give different results.</p>
+
+<a name="nature"></a>
+<h2>Which study to choose?</h2>
+<table>
+<tr><th>Study</th><th>You impose</th><th>Sikax computes</th><th>Principle</th></tr>
+<tr><td><b>Kinematics</b></td><td>the motion (motors)</td><td>positions, velocities, accelerations; forces and motor torque needed</td><td>closure equations + Newton's law (inverse dynamics)</td></tr>
+<tr><td><b>Statics</b></td><td>the external actions, a position</td><td>joint forces at equilibrium</td><td>equilibrium (PFS)</td></tr>
+<tr><td><b>Dynamics</b></td><td>forces, torques and the starting position</td><td>the resulting motion, and the forces</td><td>Newton's law integrated in time</td></tr>
+</table>
+
+<a name="cinematique"></a>
+<h2>Kinematics: the motion is imposed</h2>
+<p><b>Kinematics</b> studies motion regardless of its causes. A motor imposes the angle of a revolute joint or the displacement of a prismatic joint as a function of time; Sikax deduces the position of every body, then velocities and accelerations by differentiating the joints' <i>closure equations</i>:</p>
+<p class="formule">Φ(q, t) = 0  ⇒  Φq · q̇ = −Φt  ⇒  Φq · q̈ = γ</p>
+<p>When “inertia effects” is checked, Sikax then computes the forces needed to produce this motion: this is <b>inverse dynamics</b>. The motor torque obtained is the one a real motor would have to deliver.</p>
+<p class="remarque">You need as many motors as mobilities: a slider-crank (mobility 1) is driven by a single motor.</p>
+
+<a name="statique"></a>
+<h2>Statics: equilibrium</h2>
+<p>A body (or a set of bodies) is in <b>equilibrium</b> when the sum of the mechanical actions on it is zero:</p>
+<p class="formule">Σ F<sub>ext</sub> = 0     and     Σ M<sub>A</sub>(F<sub>ext</sub>) = 0  (at any point A)</p>
+<p>In the plane this gives <b>three equations per body</b> (two for the resultant, one for the moment). The unknowns are the joint force components. If the mechanism is isostatic, there are as many equations as unknowns: the solution is unique. If it is hyperstatic, some unknowns stay undetermined (see <a href="fiche:isostatisme">Isostatism</a>).</p>
+
+<a name="dynamique"></a>
+<h2>Dynamics: Newton's second law</h2>
+<p>For a body of mass m, centre of gravity G and moment of inertia J<sub>G</sub> about (G, z):</p>
+<p class="formule">Σ F<sub>ext</sub> = m · a<sub>G</sub>     Σ M<sub>G</sub>(F<sub>ext</sub>) = J<sub>G</sub> · θ̈</p>
+<p>The dynamic study <b>computes the motion</b> from the forces: given a starting position and velocities, Sikax integrates these equations step by step in time (Radau method, see <a href="fiche:methodes">How Sikax computes</a>). It is the only study where inertia carries the mechanism through dead points, like a flywheel in an engine.</p>
+<p class="sikax"><b>In Sikax:</b> Study panel → Kind of study. A pendulum, a mass on a spring, a mechanism released under gravity are dynamics; a mechanism driven by a motor at imposed speed is kinematics.</p>

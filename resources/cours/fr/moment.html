@@ -1,0 +1,26 @@
+<h1>Moment d'une force</h1>
+<p>Le moment d'une force mesure sa capacité à faire <b>tourner</b> un solide autour d'un point.</p>
+<p><img src="figure:moment" width="360"></p>
+
+<a name="definition"></a>
+<h2>Définition</h2>
+<p>Pour une force <b>F</b> appliquée au point P, son moment au point A est le vecteur :</p>
+<p class="formule">M<sub>A</sub>(F) = AP ∧ F</p>
+<p>Dans le plan (x, y), ce vecteur est porté par l'axe z ; on ne garde que sa composante :</p>
+<p class="formule">M<sub>A</sub> = (x<sub>P</sub> − x<sub>A</sub>) · F<sub>y</sub> − (y<sub>P</sub> − y<sub>A</sub>) · F<sub>x</sub></p>
+<ul>
+<li>Positif : la force fait tourner dans le sens trigonométrique (anti-horaire).</li>
+<li>Négatif : sens horaire.</li>
+<li>Unité : le newton-mètre (N·m).</li>
+</ul>
+
+<a name="bras_de_levier"></a>
+<h2>Bras de levier</h2>
+<p>Le moment ne dépend que de la <b>distance d</b> entre A et la droite d'action de la force (le bras de levier) :</p>
+<p class="formule">|M<sub>A</sub>(F)| = F · d</p>
+<p>Une force dont la droite d'action passe par A a un moment nul en A : elle ne fait pas tourner autour de A. C'est ce qui se passe au <a href="fiche:points_morts">point mort</a> d'un système bielle-manivelle.</p>
+
+<a name="force"></a>
+<h2>Les forces dans Sikax</h2>
+<p>Une force est définie par ses composantes F<sub>x</sub>, F<sub>y</sub> (en N), dans le repère global ou dans celui du solide (force « suiveuse », qui tourne avec lui). Les composantes acceptent une expression du temps, par exemple <code>50*sin(2*pi*t)</code>.</p>
+<p class="sikax"><b>Dans Sikax :</b> outil Force (touche F) : cliquez le point d'application puis tirez dans la direction de la force.</p>

@@ -1,0 +1,22 @@
+<h1>Degrees of freedom and mobility</h1>
+<a name="definition"></a>
+<h2>Degrees of freedom of a body</h2>
+<p>In the plane, a free body has <b>3 degrees of freedom</b>: two translations (x, y) and one rotation (θ). In space it has 6. Each joint removes some of them.</p>
+<a name="type"></a>
+<a name="mobilites"></a>
+<h2>Mobilities of planar joints</h2>
+<table>
+<tr><th>Joint</th><th>Motions of B allowed relative to A</th><th>dof</th></tr>
+<tr><td>Fixed</td><td>none</td><td>0</td></tr>
+<tr><td>Revolute</td><td>rotation about the point</td><td>1</td></tr>
+<tr><td>Prismatic</td><td>translation along the axis</td><td>1</td></tr>
+<tr><td>Point contact</td><td>translation along the line + rotation</td><td>2</td></tr>
+<tr><td>Gear</td><td>rolling + wheel separation (held by the revolute joints)</td><td>2</td></tr>
+<tr><td>Cam-follower</td><td>sliding along the profile + rotation</td><td>2</td></tr>
+</table>
+<a name="mobilite"></a>
+<h2>Mobility of a mechanism</h2>
+<p>The <b>mobility</b> m is the number of independent parameters needed to know the position of every body. It is also the number of motors needed to drive the mechanism.</p>
+<p class="formule">Grübler's formula (plane):  m = 3·(N − 1) − Σ (3 − dof<sub>i</sub>)</p>
+<p>N: number of bodies, ground included. Example: slider-crank (4 bodies, 3 revolute joints, 1 prismatic): m = 3·3 − 4·2 = 1.</p>
+<p class="remarque">This formula assumes independent joints. Sikax computes the true mobility from the rank of the closure equations, which also detects internal mobilities and special configurations.</p>

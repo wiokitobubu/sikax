@@ -6,7 +6,8 @@
 Résultat dans ``dist/Sikax/`` ::
 
     Sikax.exe      le programme (icône et numéro de version intégrés)
-    runtime/       ses dépendances : python3xx.dll, Qt6*.dll, modules .pyd, NumPy
+    runtime/       ses dépendances : python3xx.dll, Qt6*.dll, modules .pyd, NumPy,
+                   SciPy (intégrateurs), openpyxl (Excel), OpenCV (photos)
     locales/       fr.json, en.json : textes de l'interface
     resources/     icons/, themes/, exemples/
 
@@ -42,8 +43,10 @@ DOSSIER_BIBLIOTHEQUES = "." if DISPOSITION == "plate" else "runtime"
 # évite d'embarquer des centaines de mégaoctets si l'environnement n'est pas neuf.
 # Aucun module de PySide6 n'est exclu : pyqtgraph en importe plusieurs (QtSvg,
 # QtTest, QtOpenGL selon sa version) et un seul qui manque empêche le démarrage.
+# SciPy n'est plus exclu : la dynamique utilise scipy.integrate.solve_ivp (Radau, BDF…).
+# pandas reste exclu : l'export Excel passe directement par openpyxl.
 EXCLUS = [
-    "tkinter", "matplotlib", "scipy", "pandas", "IPython", "jupyter", "notebook",
+    "tkinter", "matplotlib", "pandas", "IPython", "jupyter", "notebook",
     "PyQt5", "PyQt6", "PySide2", "h5py", "numba", "cupy", "sympy",
     "pytest", "setuptools", "pip", "wheel", "lib2to3",
 ]
@@ -81,7 +84,8 @@ analyse = Analysis(
     pathex=[str(RACINE)],
     binaries=[],
     datas=[],
-    hiddenimports=[],
+    # Intégrateurs choisis par leur nom (solve_ivp(method="Radau")) : importés à l'exécution.
+    hiddenimports=["scipy.integrate._ivp.radau", "scipy.integrate._ivp.bdf", "scipy.integrate._ivp.lsoda", "scipy.integrate._ivp.rk"],
     hookspath=[],
     runtime_hooks=[],
     excludes=EXCLUS,

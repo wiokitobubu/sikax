@@ -11,7 +11,7 @@ import math
 from typing import Dict, List, Optional, Tuple
 
 from PySide6.QtCore import QPoint, QPointF, QRectF, QSize, Qt, Signal
-from PySide6.QtGui import QImage, QKeyEvent, QMouseEvent, QPainter, QPen, QWheelEvent
+from PySide6.QtGui import QColor, QImage, QKeyEvent, QMouseEvent, QPainter, QPen, QPolygonF, QTransform, QWheelEvent
 from PySide6.QtWidgets import QWidget
 
 from ...i18n import tr
@@ -24,6 +24,17 @@ from .rendu import Rendu, fleche
 ECHELLE_MIN = 5.0
 ECHELLE_MAX = 5.0e6
 RAYON_CAPTURE = 10.0  # pixels
+RAYON_CAPTURE_TRAIT = 7.0  # pixels : milieu d'une barre, point d'une barre ou d'un cercle
+
+
+def _projection(px: float, py: float, ax: float, ay: float, bx: float, by: float) -> Tuple[float, float, float]:
+    """Projeté de p sur le segment ab : (x, y, paramètre entre 0 et 1)."""
+    dx, dy = bx - ax, by - ay
+    longueur2 = dx * dx + dy * dy
+    if longueur2 <= 1e-300:
+        return ax, ay, 0.0
+    u = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / longueur2))
+    return ax + u * dx, ay + u * dy, u
 
 
 def _distance_segment(p: QPointF, a: QPointF, b: QPointF) -> float:
@@ -57,6 +68,9 @@ class VueSchema(QWidget):
         self._espace = False
         self._pointeur = QPointF()
         self._a_ajuster = True
+        self.repere_aimant: Optional[Tuple[float, float, str]] = None
+        """Dernier accrochage (x, y, nature) : dessiné pour montrer où le clic se posera."""
+        self._image_fond: Optional[Tuple[int, QImage]] = None
         self.outils: Dict[str, Outil] = {nom: classe(self) for nom, classe in OUTILS.items()}
         self.outil: Outil = self.outils["selection"]
 
@@ -122,6 +136,17 @@ class VueSchema(QWidget):
                 x, y = doc.position(solide.id, point_id)
                 xs.append(x)
                 ys.append(y)
+            for cercle in solide.cercles.values():
+                if cercle.centre in solide.points:
+                    cx, cy = doc.position(solide.id, cercle.centre)
+                    xs += [cx - cercle.rayon, cx + cercle.rayon]
+                    ys += [cy - cercle.rayon, cy + cercle.rayon]
+        fond = doc.mecanisme.fond
+        if fond is not None and fond.visible and not xs:
+            for u, v in ((0, 0), (fond.largeur_px, fond.hauteur_px), (0, fond.hauteur_px), (fond.largeur_px, 0)):
+                x, y = fond.vers_modele(u, v)
+                xs.append(x)
+                ys.append(y)
         resultats = doc.resultats
         if resultats is not None:
             for cle, canal in resultats.canaux.items():
@@ -172,14 +197,107 @@ class VueSchema(QWidget):
         return [(s, p, px, py) for _, s, p, px, py in trouves]
 
     def aimanter(self, x: float, y: float, exclure=(), grille: bool = True) -> Tuple[float, float]:
-        """Position accrochée : sur un point existant, sinon sur la grille si elle est active."""
+        """Position accrochée (voir ``accrocher``)."""
+        ax, ay, _ = self.accrocher(x, y, exclure, grille)
+        return ax, ay
+
+    def accrocher(self, x: float, y: float, exclure=(), grille: bool = True) -> Tuple[float, float, str]:
+        """Position accrochée et nature de l'accroche, par ordre de priorité :
+
+        ``point`` (un point existant), puis, si l'aimantation est active,
+        ``milieu`` (milieu d'une barre), ``centre`` (centre d'un cercle),
+        ``trait`` (sur une barre ou un cercle) et ``grille``. Sinon ``libre``.
+        """
         proches = self.points_proches(x, y, RAYON_CAPTURE, exclure)
         if proches:
-            return proches[0][2], proches[0][3]
-        if grille and self.doc.mecanisme.affichage.get("aimantation", True):
+            self.repere_aimant = (proches[0][2], proches[0][3], "point")
+            return proches[0][2], proches[0][3], "point"
+        if not self.doc.mecanisme.affichage.get("aimantation", True):
+            self.repere_aimant = None
+            return x, y, "libre"
+        rayon = self.pixels(RAYON_CAPTURE_TRAIT)
+        meilleur: Optional[Tuple[float, float, float, str]] = None
+        for _solide, (x1, y1), (x2, y2) in self.segments_visibles():
+            mx, my = (x1 + x2) / 2.0, (y1 + y2) / 2.0
+            d = math.hypot(mx - x, my - y)
+            if d <= rayon and (meilleur is None or d < meilleur[0] or meilleur[3] == "trait"):
+                meilleur = (d, mx, my, "milieu")
+        if meilleur is None:
+            for _solide, centre, r in self.cercles_visibles():
+                d = math.hypot(centre[0] - x, centre[1] - y)
+                if d <= rayon and (meilleur is None or d < meilleur[0]):
+                    meilleur = (d, centre[0], centre[1], "centre")
+        if meilleur is None:
+            for _solide, (x1, y1), (x2, y2) in self.segments_visibles():
+                px, py, _ = _projection(x, y, x1, y1, x2, y2)
+                d = math.hypot(px - x, py - y)
+                if d <= rayon and (meilleur is None or d < meilleur[0]):
+                    meilleur = (d, px, py, "trait")
+            for _solide, centre, r in self.cercles_visibles():
+                distance = math.hypot(x - centre[0], y - centre[1])
+                if distance > 1e-12 and abs(distance - r) <= rayon:
+                    px, py = centre[0] + (x - centre[0]) * r / distance, centre[1] + (y - centre[1]) * r / distance
+                    d = abs(distance - r)
+                    if meilleur is None or d < meilleur[0]:
+                        meilleur = (d, px, py, "trait")
+        if meilleur is not None:
+            self.repere_aimant = (meilleur[1], meilleur[2], meilleur[3])
+            return meilleur[1], meilleur[2], meilleur[3]
+        if grille:
             pas = self.pas_grille()
-            return round(x / pas) * pas, round(y / pas) * pas
-        return x, y
+            self.repere_aimant = None
+            return round(x / pas) * pas, round(y / pas) * pas, "grille"
+        self.repere_aimant = None
+        return x, y, "libre"
+
+    def segments_visibles(self):
+        """(solide, a, b) : barres de tous les solides dans la configuration affichée."""
+        doc = self.doc
+        for solide in doc.mecanisme.solides.values():
+            for a, b in solide.segments:
+                yield solide.id, doc.position(solide.id, a), doc.position(solide.id, b)
+
+    def cercles_visibles(self):
+        """(solide, centre, rayon) : cercles de tous les solides dans la configuration affichée."""
+        doc = self.doc
+        for solide in doc.mecanisme.solides.values():
+            for cercle in solide.cercles.values():
+                if cercle.centre in solide.points:
+                    yield solide.id, doc.position(solide.id, cercle.centre), cercle.rayon
+
+    def solides_sous(self, x: float, y: float, rayon_px: float = 7.0) -> List[Tuple[str, Tuple[float, float]]]:
+        """Solides dont une barre ou un cercle passe près de (x, y) : (solide, point le plus proche)."""
+        rayon = self.pixels(rayon_px)
+        trouves: Dict[str, Tuple[float, Tuple[float, float]]] = {}
+        for solide_id, (x1, y1), (x2, y2) in self.segments_visibles():
+            px, py, _ = _projection(x, y, x1, y1, x2, y2)
+            d = math.hypot(px - x, py - y)
+            if d <= rayon and (solide_id not in trouves or d < trouves[solide_id][0]):
+                trouves[solide_id] = (d, (px, py))
+        for solide_id, centre, r in self.cercles_visibles():
+            distance = math.hypot(x - centre[0], y - centre[1])
+            if distance <= r + rayon:
+                d = max(0.0, distance - r) if distance <= r else distance - r
+                if solide_id not in trouves or d < trouves[solide_id][0]:
+                    trouves[solide_id] = (d, (x, y))
+        return [(sid, point) for sid, (_, point) in sorted(trouves.items(), key=lambda e: e[1][0])]
+
+    def cercle_sous(self, x: float, y: float, rayon_px: float = 8.0) -> Optional[Tuple[str, str]]:
+        """(solide, cercle) dont le disque contient (x, y) ou dont le bord passe tout près."""
+        rayon = self.pixels(rayon_px)
+        meilleur = None
+        for solide in self.doc.mecanisme.solides.values():
+            for cercle in solide.cercles.values():
+                if cercle.centre not in solide.points:
+                    continue
+                centre = self.doc.position(solide.id, cercle.centre)
+                ecart = abs(math.hypot(x - centre[0], y - centre[1]) - cercle.rayon)
+                dedans = math.hypot(x - centre[0], y - centre[1]) <= cercle.rayon
+                if ecart <= rayon or dedans:
+                    score = ecart if ecart <= rayon else rayon + ecart
+                    if meilleur is None or score < meilleur[0]:
+                        meilleur = (score, solide.id, cercle.id)
+        return (meilleur[1], meilleur[2]) if meilleur is not None else None
 
     # ---------------------------------------------------------------- sélection
     def objets_sous(self, position: QPointF) -> List[Ref]:
@@ -196,7 +314,13 @@ class VueSchema(QWidget):
 
         for liaison in m.liaisons.values():
             try:
-                d = ecart(self.ecran(*doc.position(liaison.solide_b, liaison.point_b)))
+                if liaison.CONTACT:
+                    contact = self.rendu.position_contact(liaison)
+                    if contact is None:
+                        continue
+                    d = ecart(self.ecran(*contact))
+                else:
+                    d = ecart(self.ecran(*doc.position(liaison.solide_b, liaison.point_b)))
             except KeyError:
                 continue
             if d <= 11.0:
@@ -233,6 +357,22 @@ class VueSchema(QWidget):
                 if d <= 6.0:
                     solides.append((d, Ref("solide", solide.id)))
                     break
+            for cercle in solide.cercles.values():
+                if cercle.centre not in solide.points:
+                    continue
+                centre = self.ecran(*doc.position(solide.id, cercle.centre))
+                r = cercle.rayon * self.echelle
+                distance = ecart(centre)
+                if abs(distance - r) <= 6.0:
+                    solides.append((abs(distance - r), Ref("solide", solide.id)))
+                elif distance < r and not solide.bati:
+                    solides.append((6.0 + (r - distance) / max(r, 1.0), Ref("solide", solide.id)))
+        fond = m.fond
+        if fond is not None and fond.visible and not liaisons and not actions and not points and not solides:
+            x, y = self.monde(position)
+            u, v = fond.vers_pixels(x, y)
+            if 0.0 <= u <= fond.largeur_px and 0.0 <= v <= fond.hauteur_px:
+                solides.append((1e9, Ref("fond", "fond")))
         resultat: List[Ref] = []
         for groupe in (liaisons, actions, points, solides):
             groupe.sort(key=lambda element: element[0])
@@ -381,6 +521,7 @@ class VueSchema(QWidget):
 
     def peindre(self, p: QPainter, decor: bool = True) -> None:
         p.fillRect(self.rect(), theme.couleur("canevas"))
+        self._fond(p)
         if decor and self.doc.mecanisme.affichage.get("grille", True):
             self._grille(p)
         if decor:
@@ -388,9 +529,86 @@ class VueSchema(QWidget):
         self.rendu.dessiner(p, self.ecran, self.echelle)
         self.outil.dessiner(p)
         if decor:
+            self._accroche(p)
             self._habillage(p)
             if self.doc.mecanisme.est_vide() and self.outil.nom == "selection":
                 self._accueil(p)
+
+    def image_fond(self) -> Optional[QImage]:
+        """Image de la photo de fond, décodée une seule fois."""
+        fond = self.doc.mecanisme.fond
+        if fond is None:
+            return None
+        cle = id(fond.donnees)
+        if self._image_fond is None or self._image_fond[0] != cle:
+            image = QImage()
+            image.loadFromData(fond.donnees)
+            self._image_fond = (cle, image)
+        return self._image_fond[1]
+
+    def _fond(self, p: QPainter) -> None:
+        """Photo de schéma sous le mécanisme, à l'échelle et dans la position de l'étalonnage."""
+        fond = self.doc.mecanisme.fond
+        if fond is None or not fond.visible:
+            return
+        image = self.image_fond()
+        if image is None or image.isNull():
+            return
+        origine = self.ecran(*fond.vers_modele(0.0, 0.0))
+        axe_u = self.ecran(*fond.vers_modele(float(image.width()), 0.0))
+        axe_v = self.ecran(*fond.vers_modele(0.0, float(image.height())))
+        transformation = QTransform(
+            (axe_u.x() - origine.x()) / image.width(),
+            (axe_u.y() - origine.y()) / image.width(),
+            (axe_v.x() - origine.x()) / image.height(),
+            (axe_v.y() - origine.y()) / image.height(),
+            origine.x(),
+            origine.y(),
+        )
+        p.save()
+        p.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        p.setTransform(transformation, True)
+        p.setOpacity(max(0.05, min(1.0, fond.opacite)))
+        p.drawImage(QPointF(0.0, 0.0), image)
+        p.restore()
+        if self.doc.selection is not None and self.doc.selection.genre == "fond":
+            coins = [self.ecran(*fond.vers_modele(u, v)) for u, v in ((0, 0), (fond.largeur_px, 0), (fond.largeur_px, fond.hauteur_px), (0, fond.hauteur_px))]
+            p.setPen(QPen(theme.couleur("accent"), 1.6, Qt.DashLine))
+            p.setBrush(Qt.NoBrush)
+            p.drawPolygon(QPolygonF(coins))
+
+    def _accroche(self, p: QPainter) -> None:
+        """Petit repère sur la position où un outil de dessin va se poser."""
+        if self.repere_aimant is None or self.outil.nom in ("selection", "manipuler") or self._panoramique is not None:
+            return
+        x, y, nature = self.repere_aimant
+        if nature not in ("milieu", "centre", "trait"):
+            return
+        c = self.ecran(x, y)
+        couleur = theme.couleur("accent")
+        p.setPen(QPen(couleur, 1.6))
+        p.setBrush(Qt.NoBrush)
+        if nature == "milieu":
+            p.drawPolygon(QPolygonF([QPointF(c.x(), c.y() - 6.0), QPointF(c.x() + 6.0, c.y() + 4.5), QPointF(c.x() - 6.0, c.y() + 4.5)]))
+        elif nature == "centre":
+            p.drawEllipse(c, 6.0, 6.0)
+            p.drawLine(QPointF(c.x() - 3.0, c.y()), QPointF(c.x() + 3.0, c.y()))
+            p.drawLine(QPointF(c.x(), c.y() - 3.0), QPointF(c.x(), c.y() + 3.0))
+        else:
+            p.drawLine(QPointF(c.x() - 5.0, c.y() - 5.0), QPointF(c.x() + 5.0, c.y() + 5.0))
+            p.drawLine(QPointF(c.x() - 5.0, c.y() + 5.0), QPointF(c.x() + 5.0, c.y() - 5.0))
+        police = p.font()
+        police.setPointSizeF(8.5)
+        p.setFont(police)
+        fond = QColor(theme.couleur("canevas"))
+        fond.setAlpha(200)
+        texte = tr(f"accroche.{nature}")
+        rect = QRectF(c.x() + 10.0, c.y() + 8.0, p.fontMetrics().horizontalAdvance(texte) + 8.0, p.fontMetrics().height() + 2.0)
+        p.setPen(Qt.NoPen)
+        p.setBrush(fond)
+        p.drawRoundedRect(rect, 3.0, 3.0)
+        p.setPen(couleur)
+        p.drawText(rect, Qt.AlignCenter, texte)
 
     def _grille(self, p: QPainter) -> None:
         pas = self.pas_grille()

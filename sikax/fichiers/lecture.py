@@ -21,6 +21,8 @@ Principes :
 
 from __future__ import annotations
 
+import base64
+import binascii
 import json
 import math
 import os
@@ -33,12 +35,13 @@ from ..calcul.configuration import refermer
 from ..calcul.systeme import SystemeMecanique
 from ..geometrie import Pose
 from ..modele.actions import REGISTRE_ACTIONS, REPERES_FORCE, Couple, Force, Ressort
-from ..modele.etude import Etude
-from ..modele.liaisons import REGISTRE_LIAISONS, Liaison
+from ..modele.etude import METHODES, Etude
+from ..modele.fond import FondPlan, format_image
+from ..modele.liaisons import REGISTRE_LIAISONS, Came, Liaison
 from ..modele.lois import LOIS, LoiMouvement
 from ..modele.mecanisme import AFFICHAGE_PAR_DEFAUT, Mecanisme
 from ..modele.moteur import Moteur
-from ..modele.solide import COULEUR_BATI, COULEURS_SOLIDES, ID_BATI, Inertie, Point, Solide
+from ..modele.solide import COULEUR_BATI, COULEURS_SOLIDES, ID_BATI, Cercle, Inertie, Point, Solide
 from ..physique.unites import ANGLES, LONGUEURS, Unites
 from ..util.expression import ErreurExpression, compiler
 from .diagnostics import ErreurLecture, Rapport
@@ -70,6 +73,10 @@ SYNONYMES_CLES = {
     "stiffness": "raideur", "damping": "amortissement", "free_length": "longueur_libre",
     "spatial_model": "modele_spatial", "modele_3d": "modele_spatial",
     "title": "titre", "author": "auteur",
+    "circles": "cercles", "disques": "cercles", "radius": "rayon", "center": "centre", "centre_cercle": "centre",
+    "circle": "cercle", "teeth_a": "z_a", "teeth_b": "z_b", "za": "z_a", "zb": "z_b", "z1": "z_a", "z2": "z_b",
+    "pressure_angle": "angle_pression", "efficiency": "rendement", "kind": "nature", "roller_radius": "rayon_galet",
+    "method": "methode", "integrateur": "methode", "solver": "methode", "background": "fond", "photo": "fond",
 }
 
 SYNONYMES_LIAISON = {
@@ -82,6 +89,25 @@ SYNONYMES_LIAISON = {
     "ponctuelle": "ponctuelle", "appui_simple": "ponctuelle", "appui": "ponctuelle",
     "point_sur_droite": "ponctuelle", "sphere_plan": "ponctuelle", "lineaire_annulaire": "ponctuelle",
     "point_line": "ponctuelle", "roller": "ponctuelle", "contact_ponctuel": "ponctuelle",
+    "engrenage": "engrenage", "gear": "engrenage", "roue_dentee": "engrenage", "engrenage_exterieur": "engrenage",
+    "engrenage_interieur": "engrenage", "pignon_cremaillere": "engrenage", "cremaillere": "engrenage", "rack": "engrenage",
+    "rack_pinion": "engrenage",
+    "came": "came", "cam": "came", "came_poussoir": "came", "contact_came": "came", "cam_follower": "came",
+}
+
+# Un type comme « pignon_cremaillere » dit aussi la nature de l'engrenage.
+NATURE_IMPLICITE = {
+    "engrenage_exterieur": "exterieur", "engrenage_interieur": "interieur", "pignon_cremaillere": "cremaillere",
+    "cremaillere": "cremaillere", "rack": "cremaillere", "rack_pinion": "cremaillere",
+}
+
+SYNONYMES_OPTION = {
+    "exterieur": "exterieur", "external": "exterieur", "exterior": "exterieur",
+    "interieur": "interieur", "internal": "interieur", "interior": "interieur", "couronne": "interieur",
+    "cremaillere": "cremaillere", "rack": "cremaillere", "pignon_cremaillere": "cremaillere",
+    "pointe": "pointe", "knife": "pointe", "point": "pointe", "couteau": "pointe",
+    "galet": "galet", "roller": "galet", "roulette": "galet",
+    "plat": "plat", "flat": "plat", "plateau": "plat",
 }
 
 SYNONYMES_ACTION = {
@@ -106,7 +132,7 @@ SYNONYMES_ETUDE = {
 }
 
 # Sections qui peuvent être écrites comme un dictionnaire {identifiant: élément}.
-SECTIONS_INDEXEES = ("solides", "liaisons", "actions", "moteurs", "points")
+SECTIONS_INDEXEES = ("solides", "liaisons", "actions", "moteurs", "points", "cercles")
 
 # Au-delà, une valeur n'a plus de sens physique et ferait déborder les calculs.
 VALEUR_MAX = 1e15
@@ -322,8 +348,10 @@ class _Lecteur:
 
 CLES_RACINE = (
     "format", "version", "application", "dimension", "meta", "unites", "solides",
-    "liaisons", "actions", "moteurs", "etude", "affichage", "titre", "auteur", "description",
+    "liaisons", "actions", "moteurs", "etude", "affichage", "titre", "auteur", "description", "fond",
 )
+
+CLES_FOND = ("nom", "format", "largeur_px", "hauteur_px", "x", "y", "largeur", "angle", "opacite", "visible", "image")
 
 
 def _lire_entete(lecteur: _Lecteur, donnees: Dict[str, Any]) -> int:
@@ -395,6 +423,50 @@ def _lire_meta(lecteur: _Lecteur, donnees: Dict[str, Any], mecanisme: Mecanisme)
             mecanisme.affichage["pas_grille"] = AFFICHAGE_PAR_DEFAUT["pas_grille"]
 
 
+def _lire_fond(lecteur: _Lecteur, donnees: Dict[str, Any], mecanisme: Mecanisme) -> None:
+    """Photo de fond : une image illisible est écartée avec un avertissement, sans gêner le reste."""
+    brut = donnees.get("fond")
+    if brut is None:
+        return
+    rapport = lecteur.rapport
+    if not isinstance(brut, dict) or not isinstance(brut.get("image"), str):
+        rapport.avertissement("fond_ignore", "fond")
+        return
+    try:
+        octets = base64.b64decode(brut["image"].encode("ascii"), validate=True)
+    except (binascii.Error, ValueError, UnicodeError):
+        rapport.avertissement("fond_ignore", "fond")
+        return
+    nature = format_image(octets)
+    if nature is None:
+        rapport.avertissement("fond_ignore", "fond")
+        return
+    avant = len(rapport.diagnostics)
+    try:
+        largeur_px = int(lecteur.nombre(brut, "largeur_px", "fond", 1.0, minimum=1.0))
+        hauteur_px = int(lecteur.nombre(brut, "hauteur_px", "fond", 1.0, minimum=1.0))
+        fond = FondPlan(
+            octets,
+            nature,
+            largeur_px,
+            hauteur_px,
+            lecteur.nombre(brut, "x", "fond", 0.0),
+            lecteur.nombre(brut, "y", "fond", 0.0),
+            lecteur.nombre(brut, "largeur", "fond", 0.2, minimum=0.0, strict=True),
+            lecteur.angle(brut, "angle", "fond", 0.0),
+            min(1.0, lecteur.nombre(brut, "opacite", "fond", 0.45, minimum=0.0)),
+            lecteur.booleen(brut, "visible", "fond", True),
+            lecteur.texte(brut, "nom", "fond", ""),
+        )
+    except _Rejet:
+        # Une valeur invalide écarte la photo, jamais le projet : l'erreur devient un avertissement.
+        del rapport.diagnostics[avant:]
+        rapport.avertissement("fond_ignore", "fond")
+        return
+    lecteur.cles_inconnues(brut, CLES_FOND, "fond")
+    mecanisme.fond = fond
+
+
 def _lire_etude(lecteur: _Lecteur, donnees: Dict[str, Any], mecanisme: Mecanisme) -> None:
     brut = donnees.get("etude")
     if brut is None:
@@ -423,6 +495,13 @@ def _lire_etude(lecteur: _Lecteur, donnees: Dict[str, Any], mecanisme: Mecanisme
     etude.pas = positif("pas", etude.pas)
     etude.tolerance = positif("tolerance", etude.tolerance)
     etude.precision = positif("precision", etude.precision)
+    if "methode" in brut:
+        demandee = _cle(lecteur.texte(brut, "methode", "etude", etude.methode))
+        methode = next((m for m in METHODES if _cle(m) == demandee), None)
+        if methode is None:
+            rapport.avertissement("methode_inconnue", "etude", valeur=str(brut.get("methode"))[:40], defaut=etude.methode)
+        else:
+            etude.methode = methode
     etude.pesanteur = lecteur.booleen(brut, "pesanteur", "etude", etude.pesanteur)
     etude.inertie = lecteur.booleen(brut, "inertie", "etude", etude.inertie)
     gravite = brut.get("gravite")
@@ -479,6 +558,44 @@ def _lire_points(lecteur: _Lecteur, brut: Any, chemin: str) -> Dict[str, Point]:
         y = lecteur.nombre(element, "y", lieu, None)
         points[pid] = Point(pid, lecteur.texte(element, "nom", lieu, pid) or pid, x, y)
     return points
+
+
+def _lire_cercles(lecteur: _Lecteur, brut: Any, points: Dict[str, Point], chemin: str) -> Dict[str, Cercle]:
+    """Cercles d'un solide : centre désigné par un point du solide (identifiant ou nom), rayon > 0."""
+    cercles: Dict[str, Cercle] = {}
+    if brut is None:
+        return cercles
+    if isinstance(brut, dict):
+        brut = [dict(c, id=c.get("id", k)) if isinstance(c, dict) else c for k, c in brut.items()]
+    if not isinstance(brut, list):
+        lecteur.rapport.erreur("section_invalide", f"{chemin}.cercles")
+        raise _Rejet()
+    for i, element in enumerate(brut):
+        lieu = f"{chemin}.cercles[{i}]"
+        if not isinstance(element, dict):
+            lecteur.rapport.erreur("element_invalide", lieu)
+            raise _Rejet()
+        cid = lecteur.identifiant(element.get("id"), "C")
+        if not cid:
+            numero = 1
+            while f"C{numero}" in cercles:
+                numero += 1
+            cid = f"C{numero}"
+        if cid in cercles:
+            lecteur.rapport.erreur("identifiant_en_double", lieu, id=cid)
+            raise _Rejet()
+        reference = lecteur.identifiant(element.get("centre"), "P")
+        centre = points.get(reference)
+        if centre is None:
+            homonymes = [p for p in points.values() if p.nom == reference]
+            centre = homonymes[0] if len(homonymes) == 1 else None
+        if centre is None:
+            lecteur.rapport.erreur("point_inconnu", lieu, champ="centre", point=reference or "?", solide=chemin)
+            raise _Rejet()
+        rayon = lecteur.nombre(element, "rayon", lieu, None, minimum=0.0, strict=True)
+        lecteur.cles_inconnues(element, ("id", "centre", "rayon"), lieu)
+        cercles[cid] = Cercle(cid, centre.id, rayon)
+    return cercles
 
 
 def _lire_solides(lecteur: _Lecteur, donnees: Dict[str, Any], mecanisme: Mecanisme) -> None:
@@ -540,13 +657,15 @@ def _lire_solides(lecteur: _Lecteur, donnees: Dict[str, Any], mecanisme: Mecanis
                     raise _Rejet()
                 inertie.gx, inertie.gy = gx, gy
 
+            cercles = _lire_cercles(lecteur, brut.get("cercles"), points, chemin)
+
             defaut = COULEUR_BATI if est_bati else COULEURS_SOLIDES[len(solides) % len(COULEURS_SOLIDES)]
             couleur = lecteur.texte(brut, "couleur", chemin, defaut)
             if not _COULEUR.match(couleur):
                 rapport.avertissement("couleur_invalide", chemin, valeur=couleur[:20])
                 couleur = defaut
-            lecteur.cles_inconnues(brut, ("id", "nom", "bati", "couleur", "pose", "points", "segments", "inertie"), chemin)
-            solide = Solide(sid, lecteur.texte(brut, "nom", chemin, sid) or sid, est_bati, couleur.upper(), pose, points, segments, inertie)
+            lecteur.cles_inconnues(brut, ("id", "nom", "bati", "couleur", "pose", "points", "segments", "inertie", "cercles"), chemin)
+            solide = Solide(sid, lecteur.texte(brut, "nom", chemin, sid) or sid, est_bati, couleur.upper(), pose, points, segments, inertie, cercles)
         except _Rejet:
             if sid:
                 lecteur.rejetes.add(("solide", sid))
@@ -645,6 +764,25 @@ def _point_a_la_position(lecteur: _Lecteur, solide: Solide, position: Tuple[floa
 CLES_LIAISON = ("id", "nom", "type", "solide_a", "point_a", "solide_b", "point_b", "modele_spatial", "position")
 
 
+def _cercle_de_came(lecteur: _Lecteur, solide: Solide, point_a: Point, brut: Dict[str, Any], chemin: str) -> str:
+    """Cercle de la came : désigné par son identifiant, sinon le seul cercle du solide centré en ``point_a``."""
+    reference = lecteur.identifiant(brut.get("cercle"), "C")
+    if reference:
+        if reference not in solide.cercles:
+            lecteur.rapport.erreur("cercle_inconnu", chemin, cercle=reference, solide=solide.id)
+            raise _Rejet()
+        if solide.cercles[reference].centre != point_a.id:
+            lecteur.rapport.erreur("cercle_invalide", chemin, cercle=reference, solide=solide.id)
+            raise _Rejet()
+        return reference
+    candidats = [c.id for c in solide.cercles.values() if c.centre == point_a.id]
+    if len(candidats) == 1:
+        lecteur.rapport.info("cercle_deduit", chemin, cercle=candidats[0])
+        return candidats[0]
+    lecteur.rapport.erreur("champ_manquant", chemin, champ="cercle")
+    raise _Rejet()
+
+
 def _lire_liaisons(lecteur: _Lecteur, donnees: Dict[str, Any], mecanisme: Mecanisme) -> None:
     rapport = lecteur.rapport
     rayon = 1e-6 * mecanisme.longueur_caracteristique()
@@ -673,6 +811,7 @@ def _lire_liaisons(lecteur: _Lecteur, donnees: Dict[str, Any], mecanisme: Mecani
             if nature != brut["type"]:
                 rapport.info("type_liaison_interprete", chemin, lu=str(brut["type"])[:40], type=nature)
             classe = REGISTRE_LIAISONS[nature]
+            implicite = NATURE_IMPLICITE.get(_cle(brut["type"]))
 
             solide_a = _trouver_solide(lecteur, mecanisme, brut, "solide_a", chemin)
             solide_b = _trouver_solide(lecteur, mecanisme, brut, "solide_b", chemin)
@@ -711,7 +850,19 @@ def _lire_liaisons(lecteur: _Lecteur, donnees: Dict[str, Any], mecanisme: Mecani
                         rapport.info("orientation_deduite", chemin)
                     parametres[champ.nom] = lecteur.angle(brut, champ.nom, lieu, defaut)
                 else:
-                    parametres[champ.nom] = lecteur.nombre(brut, champ.nom, lieu, champ.defaut, minimum=champ.minimum)
+                    parametres[champ.nom] = lecteur.nombre(brut, champ.nom, lieu, champ.defaut, minimum=champ.minimum, strict=champ.strict)
+                if not champ.admet(parametres[champ.nom]):
+                    rapport.erreur("valeur_hors_bornes", chemin, champ=champ.nom, valeur=parametres[champ.nom], minimum=champ.minimum)
+                    raise _Rejet()
+            for nom_option, admises in classe.OPTIONS:
+                lue = lecteur.texte(brut, nom_option, chemin, implicite or admises[0])
+                valeur = SYNONYMES_OPTION.get(_cle(lue), _cle(lue))
+                if valeur not in admises:
+                    rapport.erreur("option_inconnue", chemin, champ=nom_option, valeur=lue[:40], connues=", ".join(admises))
+                    raise _Rejet()
+                parametres[nom_option] = valeur
+            if classe is Came:
+                parametres["cercle"] = _cercle_de_came(lecteur, solide_a, point_a, brut, chemin)
 
             modele = _cle(lecteur.texte(brut, "modele_spatial", chemin, ""))
             if modele and modele not in classe.MODELES_SPATIAUX:
@@ -719,7 +870,11 @@ def _lire_liaisons(lecteur: _Lecteur, donnees: Dict[str, Any], mecanisme: Mecani
                 modele = ""
             lecteur.cles_inconnues(
                 brut,
-                CLES_LIAISON + tuple(c.nom for c in classe.CHAMPS) + tuple(f"{c.nom}_deg" for c in classe.CHAMPS if c.dimension == "angle"),
+                CLES_LIAISON
+                + tuple(c.nom for c in classe.CHAMPS)
+                + tuple(f"{c.nom}_deg" for c in classe.CHAMPS if c.dimension == "angle")
+                + tuple(nom for nom, _ in classe.OPTIONS)
+                + classe.REFERENCES,
                 chemin,
             )
             nom = lecteur.texte(brut, "nom", chemin, lid) or lid
@@ -909,6 +1064,7 @@ def dict_vers_mecanisme(donnees: Any, tolerant: bool = False) -> ResultatLecture
     _lire_liaisons(lecteur, donnees, mecanisme)
     _lire_actions(lecteur, donnees, mecanisme)
     _lire_moteurs(lecteur, donnees, mecanisme)
+    _lire_fond(lecteur, donnees, mecanisme)
 
     for probleme in mecanisme.verifier():
         if probleme.gravite == "erreur":

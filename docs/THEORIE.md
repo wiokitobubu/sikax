@@ -45,6 +45,35 @@ Une liaison impose `Φ(q, t) = 0`. Quatre contraintes élémentaires suffisent
 | Moteur sur une pivot | angle relatif `c(t) = c0 + f(t)` |
 | Moteur sur une glissière | translation pilotée `c(t) = c0 + f(t)` |
 
+Les liaisons de contact (version 2) ajoutent chacune **une** équation :
+
+| Liaison | Équation | Effort transmis |
+|---|---|---|
+| Engrenage extérieur / intérieur | `ra·(θa − φ) + s·rb·(θb − φ) − c0 = 0`, s = +1 / −1 | effort tangentiel `Ft` au point primitif I |
+| Pignon-crémaillère | `u·(Oa − Pb) + σ·ra·(θa − θb) − c0 = 0`, u direction de la ligne primitive | `Ft` le long de la crémaillère |
+| Came, poussoir à pointe ou à galet | `|P − C| − (R + ρ) = 0`, C centre du cercle, ρ rayon du galet (0 pour une pointe) | effort normal `Fn`, porté par la normale au cercle |
+| Came, poussoir à plateau | `σ·n·(C − P) − R = 0`, n normale à la face du plateau | `Fn`, normal au plateau |
+
+Pour un engrenage, `φ` est la direction de la ligne des centres OaOb, suivie
+continûment. Si les deux pivots sont fixes, φ est constant et l'équation se réduit à
+`ra·θa + s·rb·θb = cte`, soit le rapport `ωb/ωa = −s·Za/Zb`. Si la ligne des centres
+tourne (train épicycloïdal, porte-satellites motorisé), le terme en φ donne exactement
+la **formule de Willis** : `(ωb − ωp)/(ωa − ωp) = −s·Za/Zb`.
+
+Les rayons primitifs valent `r = m·Z/2` et l'entraxe `a = m·(Za + s·Zb)/2`. L'équation
+est écrite pour que son multiplicateur soit l'effort tangentiel **physique** `Ft` au
+point primitif. L'effort radial `Fr = |Ft|·tan α` (α angle de pression, 20° par défaut)
+ne travaille pas : il est ajouté aux réactions des pivots après le calcul, ce qui donne
+les efforts réels sur les paliers. Le couple transmis à la roue *k* vaut `±Ft·rk`.
+
+**Rendement.** Avec `η < 1`, la roue menée (celle qui reçoit de la puissance, mesurée
+par rapport au porte-train s'il y en a un) subit en plus le couple `−(1 − η)·C`, où C
+est le couple que la denture exerce sur elle ; le porte-train encaisse la réaction. Elle
+ne reçoit donc que η fois la puissance de la roue menante. Ce frottement est
+proportionnel à l'effort transmis, donc à λ : les efforts sont obtenus en résolvant
+exactement le système linéaire `(Φqᵀ − G)·λ = Q − M·q''`, où G regroupe ces couples
+par unité d'effort. Le sens (qui mène, qui est mené) est recalculé à chaque instant.
+
 En dérivant deux fois par rapport au temps :
 
 ```text
@@ -143,6 +172,28 @@ autorisent.
 Si l'option « inertie » est décochée, le terme `M·q''` est omis : c'est un calcul quasi
 statique (PFS à chaque instant).
 
+**Points morts.** Quand le moteur est sur le piston d'une bielle-manivelle, ou sur le
+balancier d'un quadrilatère, la manivelle passe par des positions où `Φq` est singulière
+(manivelle et bielle alignées). La vitesse de la manivelle y devient indéterminée et une
+résolution directe donnerait des efforts de 10¹⁴ N ou bloquerait le calcul. Sikax :
+
+1. **prédit** la position suivante, près d'une singularité (conditionnement de `Φq`
+   au-delà de 10³), par extrapolation polynomiale des positions précédentes plutôt
+   que par la vitesse : la manivelle continue sur sa lancée, comme sur une machine
+   à vapeur, au lieu de rebrousser chemin ;
+2. **démarre** d'un point mort en écartant légèrement la configuration dans la
+   direction libre du noyau de `Φq` ;
+3. **dérive** les vitesses et accélérations par différences finies sur la trajectoire
+   au voisinage immédiat de la singularité (conditionnement au-delà de 10⁵), en
+   gardant la résolution exacte dans les directions bien conditionnées ;
+4. **borne** les efforts : les directions de valeur singulière relative inférieure à
+   10⁻⁵ sont écartées de la résolution, et les instants concernés sont signalés
+   (bandes grisées sur les courbes, message « points morts franchis »).
+
+Si la loi du moteur demande une position que le mécanisme ne peut pas atteindre (piston
+au-delà de sa course), le calcul s'arrête au dernier instant atteint avec un message qui
+l'explique et propose de motoriser la manivelle ou de faire une étude dynamique.
+
 ## 6. Multiplicateurs de Lagrange et torseurs de liaison
 
 Les multiplicateurs `λ` sont les inconnues de liaison. L'action des liaisons sur le
@@ -201,10 +252,49 @@ Cette forme reste valable quand les équations de liaison sont liées (mécanism
 hyperstatique) et quand un solide n'a pas de masse, tant que chaque mobilité libre
 entraîne de l'inertie (`Nᵀ·M·N` définie positive, ce que Sikax vérifie avant de lancer).
 
-**Intégration.** Schéma de Dormand-Prince d'ordre 5(4) à pas adaptatif. Après chaque pas
-accepté, la position est reprojetée sur `Φ = 0` et la vitesse sur `Φq·q' = −Φt` : il n'y
-a pas de dérive des liaisons, et pas de stabilisation artificielle qui modifierait la
-dynamique.
+**Intégration.** L'état `y = (q, v)` est intégré par `scipy.integrate.solve_ivp`, avec
+la méthode choisie dans l'étude : **Radau** (implicite, d'ordre 5, par défaut), **BDF**,
+**LSODA** (bascule seule entre méthodes raides et non raides), **DOP853** ou **RK45**
+(explicites). Les méthodes implicites supportent les problèmes raides : ressorts très
+raides, solides très légers à côté de solides lourds, passages près d'un point mort.
+
+À chaque évaluation, les accélérations sont obtenues par un **lagrangien augmenté** :
+
+```text
+A = M + α·Φqᵀ·Φq          α = 10⁶ × (masse la plus grande) / max diag(Φqᵀ·Φq)
+A·q'' = Q − Φqᵀ·λ + α·Φqᵀ·γ
+λ ← λ + α·(Φq·q'' − γ)     (3 itérations)
+```
+
+`A` reste définie positive même quand les liaisons sont surabondantes ou qu'un solide
+n'a pas de masse, et la factorisation de Cholesky est faite une fois par évaluation.
+Les écarts numériques sur les liaisons sont repris en douceur (stabilisation de temps
+caractéristique τ = 0,05 s) :
+
+```text
+q' = v̂ + δq/τ        v' = q'' + (v̂ − v)/τ
+```
+
+où `v̂` est la vitesse ramenée sur `Φq·v = −Φt` et `δq` le petit déplacement qui
+referme `Φ = 0`. Les résultats enregistrés sont ensuite **reprojetés exactement** sur
+les liaisons, en position puis en vitesse, et les accélérations et efforts y sont
+recalculés par la méthode du noyau ci-dessus : les courbes respectent les liaisons à la
+tolérance de l'étude.
+
+**Sécurités.**
+
+- Si la méthode choisie échoue en cours de route, le calcul reprend au dernier instant
+  atteint avec une autre méthode (Radau → BDF → LSODA…), et le message l'indique.
+- Un solide dont la vitesse dépasse 10⁴ rad/s ou 10³ m/s arrête le calcul : c'est un
+  **emballement** (couple moteur que rien n'équilibre). Le message donne le solide,
+  la vitesse atteinte et l'instant.
+- Une énergie cinétique qui ne fait que croître jusqu'à plus de 100 fois sa valeur du
+  début est signalée (« accélération continue »).
+- Un intégrateur qui piétine (le temps n'avance plus) est arrêté proprement, et une
+  expression qui devient incalculable (racine d'un nombre négatif…) donne une erreur
+  claire au lieu d'interrompre le programme.
+- Sans mobilité libre (tout est imposé par les moteurs), le PFD ne sert qu'aux efforts :
+  le calcul est fait directement, comme l'étude cinématique avec inertie.
 
 **Configurations singulières.** Quand une direction de liaison devient presque dégénérée
 (valeur singulière relative inférieure à 10⁻⁶), elle n'est plus imposée en accélération ;
@@ -238,3 +328,8 @@ accélérations imposées sont donc exactes. L'analyse de l'expression n'utilise
 | Volant freiné | `ω = ω0·exp(−c·t/J)` | < 10⁻⁶ |
 | Échelle glissant contre un mur | `θ'' = −(3g/2L)·cos θ`, décollement à `sin θ = ⅔·sin θ0` | < 10⁻⁹ au lâcher ; décollement trouvé à un pas d'échantillonnage près |
 | Énergie du double pendule sur 5 s | conservation | < 2·10⁻⁶ de l'énergie échangée |
+| Pendule, petites oscillations, chacun des 5 intégrateurs | `T = 2π·√(2L/3g)·(1 + θ0²/16)` | < 3·10⁻⁷ |
+| Réducteur à deux étages 15/45 – 15/45 | rapport 1/9 | < 2·10⁻¹⁴ |
+| Train épicycloïdal (couronne fixe) | formule de Willis | < 10⁻⁶ |
+| Came excentrique, poussoir à pointe, galet ou plateau, deux tours | levée analytique | < 10⁻¹⁰ m |
+| Piston piloté sur toute sa course, deux tours de manivelle | géométrie exacte de la bielle-manivelle | < 2·10⁻¹⁰ m ; 720° sans saut ; effort moteur borné (< 260 N) |

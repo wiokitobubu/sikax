@@ -1,0 +1,61 @@
+<h1>Engrenages</h1>
+<p>Un engrenage transmet une rotation d'un arbre à un autre par des dents qui s'engrènent, sans glissement : le rapport des vitesses est exact et constant.</p>
+<p><img src="figure:engrenage" width="360"></p>
+
+<a name="rubrique"></a>
+<a name="nature"></a>
+<h2>Trois sortes d'engrenages</h2>
+<ul>
+<li><b>Extérieur</b> : deux roues à denture extérieure ; elles tournent en sens <b>inverses</b>.</li>
+<li><b>Intérieur</b> : un pignon tourne à l'intérieur d'une couronne à denture intérieure ; même sens de rotation, entraxe plus court.</li>
+<li><b>Pignon-crémaillère</b> : une roue et une barre dentée ; transforme une rotation en translation.</li>
+</ul>
+
+<a name="module"></a>
+<a name="dents"></a>
+<a name="formules"></a>
+<h2>Module et dimensions</h2>
+<p>Le <b>module</b> m (en mm) caractérise la taille des dents. Deux roues ne peuvent engrener que si elles ont le <b>même module</b> (et le même angle de pression).</p>
+<a name="diametre"></a>
+<a name="pas"></a>
+<table>
+<tr><th>Grandeur</th><th>Formule</th></tr>
+<tr><td>Diamètre primitif</td><td>d = m · Z</td></tr>
+<tr><td>Pas (sur le cercle primitif)</td><td>p = π · m</td></tr>
+<tr><td>Diamètre de tête</td><td>d<sub>a</sub> = d + 2·m</td></tr>
+<tr><td>Diamètre de pied</td><td>d<sub>f</sub> = d − 2,5·m</td></tr>
+<tr><td>Hauteur de dent</td><td>h = 2,25·m</td></tr>
+</table>
+<p class="remarque">Avec α = 20° et une denture normale, il faut au moins 17 dents pour éviter l'interférence (taillage sans correction).</p>
+
+<a name="entraxe"></a>
+<h2>Entraxe</h2>
+<p class="formule">extérieur : a = (d₁ + d₂)/2 = m·(Z₁ + Z₂)/2        intérieur : a = (d₂ − d₁)/2 = m·(Z₂ − Z₁)/2</p>
+<p>Pour une crémaillère, l'axe du pignon est à d/2 de la ligne primitive. Sikax compare l'entraxe réel du schéma à l'entraxe théorique et propose de l'ajuster.</p>
+
+<a name="rapport"></a>
+<h2>Rapport de transmission</h2>
+<p>Les cercles primitifs roulent sans glisser : r₁·ω₁ = ∓ r₂·ω₂, d'où</p>
+<p class="formule">r = ω₂/ω₁ = − Z₁/Z₂ (extérieur)       r = + Z₁/Z₂ (intérieur)       v = (m·Z/2)·ω (crémaillère)</p>
+<p>Pour un <b>train</b> de plusieurs engrenages :</p>
+<p class="formule">r = (−1)<sup>n</sup> · (produit des Z menantes) / (produit des Z menées)    n : nombre de contacts extérieurs</p>
+<p>Une roue intermédiaire (« roue folle ») change le sens mais pas le rapport. Pour un <b>train épicycloïdal</b> (porte-satellites PS), la formule de Willis s'écrit, entre le planétaire 1 et la couronne 3 :</p>
+<p class="formule">(ω₁ − ω<sub>PS</sub>) / (ω₃ − ω<sub>PS</sub>) = − Z₃/Z₁</p>
+
+<a name="efforts"></a>
+<h2>Efforts sur la denture</h2>
+<p>L'effort de contact <b>F<sub>n</sub></b> est porté par la <b>ligne d'action</b>, inclinée de l'angle de pression α (en général 20°) sur la tangente commune aux cercles primitifs. On le décompose au point primitif I :</p>
+<a name="angle_pression"></a>
+<p class="formule">F<sub>t</sub> = C₁ / r₁ = 2·C₁ / d₁       F<sub>r</sub> = F<sub>t</sub> · tan α       F<sub>n</sub> = F<sub>t</sub> / cos α</p>
+<ul>
+<li><b>F<sub>t</sub></b>, effort <b>tangentiel</b> : il transmet le couple.</li>
+<li><b>F<sub>r</sub></b>, effort <b>radial</b> : il écarte les roues et charge leurs paliers.</li>
+</ul>
+<p>Les pivots des roues reprennent F<sub>n</sub> en entier : c'est ce que Sikax affiche dans leurs torseurs.</p>
+
+<a name="couples"></a>
+<a name="rendement"></a>
+<h2>Couples transmis et rendement</h2>
+<p class="formule">P = C · ω       η = P<sub>sortie</sub> / P<sub>entrée</sub>       C₂ = η · C₁ · Z₂/Z₁</p>
+<p>Le <b>rendement</b> η (souvent 0,95 à 0,99 pour un engrenage droit) traduit le frottement des dents : la roue menée reçoit η fois la puissance fournie. Pour plusieurs étages, les rendements se multiplient : η<sub>total</sub> = η₁·η₂·…</p>
+<p class="sikax"><b>Dans Sikax :</b> tracez deux disques (outil Cercle), articulez-les par des pivots, puis outil Engrenage (touche E) : cliquez la première roue, puis la seconde. Nature et nombres de dents sont déduits des rayons tracés ; ajustez Z, m, α et η dans les propriétés.</p>

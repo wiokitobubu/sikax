@@ -55,7 +55,7 @@ def lancer_etude(
                 if etude.type == "cinematique":
                     resultats = analyse_cinematique(systeme, temps, etude.inertie, etude.tolerance, progression, annule)
                 else:
-                    resultats = analyse_dynamique(systeme, temps, etude.precision, etude.tolerance, progression, annule)
+                    resultats = analyse_dynamique(systeme, temps, etude.precision, etude.tolerance, progression, annule, etude.methode)
     except (np.linalg.LinAlgError, FloatingPointError, OverflowError, ZeroDivisionError) as exc:
         raise ErreurCalcul("erreur_numerique", message=str(exc)) from exc
     if not all(np.all(np.isfinite(canal.valeurs)) for canal in resultats.canaux.values()):

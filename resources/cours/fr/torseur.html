@@ -1,0 +1,30 @@
+<h1>Torseur d'action mécanique</h1>
+<p>Un <b>torseur</b> rassemble en un seul objet toutes les informations d'une action mécanique : ce qu'elle « pousse » et ce qu'elle « fait tourner ».</p>
+<p><img src="figure:torseur" width="360"></p>
+
+<a name="definition"></a>
+<h2>Définition</h2>
+<p>Le torseur d'une action mécanique au point A est le couple de vecteurs :</p>
+<p class="formule">{T} = { R ; M<sub>A</sub> }      R : résultante (N)      M<sub>A</sub> : moment en A (N·m)</p>
+<p>Dans le plan, il se réduit à trois nombres : X, Y (composantes de R) et N (moment autour de z).</p>
+
+<a name="changement_de_point"></a>
+<h2>Changement de point (relation de Varignon)</h2>
+<p class="formule">M<sub>B</sub> = M<sub>A</sub> + BA ∧ R</p>
+<p>La résultante ne dépend pas du point ; le moment, si. Un <b>glisseur</b> est un torseur qui a un point où le moment est nul (une force seule) ; un <b>couple</b> est un torseur de résultante nulle.</p>
+
+<a name="liaison"></a>
+<h2>Torseur transmis par une liaison</h2>
+<p>Une liaison parfaite ne transmet que les composantes qui empêchent un mouvement. Sikax donne le torseur de l'action de A sur B, réduit au point de la liaison :</p>
+<a name="inconnues"></a>
+<table>
+<tr><th>Liaison plane</th><th>Mobilités</th><th>Inconnues statiques</th></tr>
+<tr><td>Encastrement</td><td>aucune</td><td>X, Y, N (3)</td></tr>
+<tr><td>Pivot</td><td>rotation Rz</td><td>X, Y (2)</td></tr>
+<tr><td>Glissière</td><td>translation Tx</td><td>Y, N (2)</td></tr>
+<tr><td>Ponctuelle (appui)</td><td>Tx et Rz</td><td>Y, effort normal (1)</td></tr>
+<tr><td>Engrenage</td><td>roulement au point primitif</td><td>Ft, effort tangentiel (1)</td></tr>
+<tr><td>Came-poussoir</td><td>glissement et rotation au contact</td><td>Fn, effort normal (1)</td></tr>
+</table>
+<p>Le nombre d'inconnues statiques d'une liaison vaut 3 moins son nombre de mobilités (dans le plan ; 6 moins ses mobilités dans l'espace).</p>
+<p class="sikax"><b>Dans Sikax :</b> après un calcul, sélectionnez une liaison : son torseur apparaît dans les propriétés et l'onglet Efforts les liste tous.</p>

@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFormLayout,
+    QHBoxLayout,
     QLabel,
     QProgressBar,
     QPushButton,
@@ -18,7 +19,8 @@ from PySide6.QtWidgets import (
 )
 
 from ...i18n import tr, traducteur
-from ...modele.etude import TYPES_ETUDE
+from ...modele.etude import METHODES, TYPES_ETUDE
+from ..aide import bouton_aide
 from ..document import Document
 from ..icones import icone
 from ..theme import theme
@@ -57,7 +59,7 @@ class PanneauEtude(QWidget):
         formulaire.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
         self.type = QComboBox()
         self.e_type = QLabel()
-        formulaire.addRow(self.e_type, self.type)
+        formulaire.addRow(self.e_type, self._avec_aide(self.type, "etudes", "nature"))
         unites = lambda: self.doc.mecanisme.unites  # noqa: E731
         self.duree = ChampNombre("temps", unites, minimum=0.0, strict=True)
         self.e_duree = QLabel()
@@ -65,6 +67,15 @@ class PanneauEtude(QWidget):
         self.pas = ChampNombre("temps", unites, minimum=0.0, strict=True)
         self.e_pas = QLabel()
         formulaire.addRow(self.e_pas, self.pas)
+        self.methode = QComboBox()
+        self.e_methode = QLabel()
+        self._rangee_methode = self._avec_aide(self.methode, "methodes", "methode")
+        formulaire.addRow(self.e_methode, self._rangee_methode)
+        self.precision = ChampNombre("sans", unites, minimum=0.0, strict=True)
+        self.e_precision = QLabel()
+        self._rangee_precision = self._avec_aide(self.precision, "methodes", "precision")
+        formulaire.addRow(self.e_precision, self._rangee_precision)
+        self._formulaire = formulaire
         disposition.addLayout(formulaire)
 
         self.description = QLabel()
@@ -110,11 +121,13 @@ class PanneauEtude(QWidget):
         disposition.addWidget(self.bilan)
         disposition.addStretch(1)
 
-        for etiquette in (self.e_type, self.e_duree, self.e_pas, self.e_gx, self.e_gy):
+        for etiquette in (self.e_type, self.e_duree, self.e_pas, self.e_gx, self.e_gy, self.e_methode, self.e_precision):
             etiquette.setProperty("role", "secondaire")
 
         etude = lambda: self.doc.mecanisme.etude  # noqa: E731
         self.type.activated.connect(lambda _: self._ecrire(lambda: setattr(etude(), "type", self.type.currentData())))
+        self.methode.activated.connect(lambda _: self._ecrire(lambda: setattr(etude(), "methode", self.methode.currentData())))
+        self.precision.modifie.connect(lambda v: self._ecrire(lambda: setattr(etude(), "precision", min(max(v, 1e-12), 1e-2))))
         self.duree.modifie.connect(lambda v: self._ecrire(lambda: setattr(etude(), "duree", v)))
         self.pas.modifie.connect(lambda v: self._ecrire(lambda: setattr(etude(), "pas", v)))
         self.gx.modifie.connect(lambda v: self._ecrire(lambda: setattr(etude(), "gx", v)))
@@ -128,6 +141,16 @@ class PanneauEtude(QWidget):
         traducteur.abonner(self.traduire)
         theme.change.connect(lambda _: self._icones())
         self.traduire()
+
+    @staticmethod
+    def _avec_aide(composant: QWidget, fiche: str, section: str) -> QWidget:
+        rangee = QWidget()
+        boite = QHBoxLayout(rangee)
+        boite.setContentsMargins(0, 0, 0, 0)
+        boite.setSpacing(2)
+        boite.addWidget(composant, 1)
+        boite.addWidget(bouton_aide(fiche, section))
+        return rangee
 
     def _ecrire(self, operation) -> None:
         with self.doc.modification():
@@ -150,6 +173,15 @@ class PanneauEtude(QWidget):
         self.pesanteur.setText(tr("etude.pesanteur_active"))
         self.bouton_equilibre.setText(tr("etude.equilibre"))
         self.bouton_equilibre.setToolTip(tr("etude.equilibre_aide"))
+        self.e_methode.setText(tr("etude.methode"))
+        self.e_precision.setText(tr("etude.precision"))
+        self.precision.setToolTip(tr("etude.precision_aide"))
+        choisie = self.methode.currentData()
+        self.methode.clear()
+        for methode in METHODES:
+            self.methode.addItem(tr(f"etude.methodes.{methode}"), methode)
+        if choisie is not None:
+            self.methode.setCurrentIndex(max(0, self.methode.findData(choisie)))
         courant = self.type.currentData()
         self.type.clear()
         for nature in TYPES_ETUDE:
@@ -168,9 +200,15 @@ class PanneauEtude(QWidget):
         indice = self.type.findData(etude.type)
         if indice >= 0 and indice != self.type.currentIndex():
             self.type.setCurrentIndex(indice)
-        for champ, valeur in ((self.duree, etude.duree), (self.pas, etude.pas), (self.gx, etude.gx), (self.gy, etude.gy)):
+        for champ, valeur in ((self.duree, etude.duree), (self.pas, etude.pas), (self.gx, etude.gx), (self.gy, etude.gy), (self.precision, etude.precision)):
             if not (champ.hasFocus() and champ.isModified()):
                 champ.definir(valeur)
+        indice = self.methode.findData(etude.methode)
+        if indice >= 0 and indice != self.methode.currentIndex():
+            self.methode.setCurrentIndex(indice)
+        dynamique = etude.type == "dynamique"
+        for composant in (self.e_methode, self._rangee_methode, self.e_precision, self._rangee_precision):
+            composant.setVisible(dynamique)
         self.pesanteur.setChecked(etude.pesanteur)
         self.inertie.setChecked(etude.inertie)
         temporel = etude.type != "statique"

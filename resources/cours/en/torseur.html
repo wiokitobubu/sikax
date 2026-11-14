@@ -1,0 +1,27 @@
+<h1>Torsor of a mechanical action</h1>
+<p>A <b>torsor</b> gathers in one object everything about a mechanical action: what it “pushes” and what it “turns”.</p>
+<p><img src="figure:torseur" width="360"></p>
+<a name="definition"></a>
+<h2>Definition</h2>
+<p>The torsor of a mechanical action at point A is the pair of vectors:</p>
+<p class="formule">{T} = { R ; M<sub>A</sub> }      R: resultant (N)      M<sub>A</sub>: moment at A (N·m)</p>
+<p>In the plane it reduces to three numbers: X, Y (components of R) and N (moment about z).</p>
+<a name="changement_de_point"></a>
+<h2>Change of point (Varignon's relation)</h2>
+<p class="formule">M<sub>B</sub> = M<sub>A</sub> + BA ∧ R</p>
+<p>The resultant does not depend on the point; the moment does. A <b>slider</b> (glisseur) is a torsor with a point where the moment vanishes (a single force); a <b>couple</b> is a torsor with zero resultant.</p>
+<a name="liaison"></a>
+<h2>Torsor transmitted by a joint</h2>
+<p>A perfect joint only transmits the components that prevent a motion. Sikax gives the torsor of the action of A on B, reduced at the joint point:</p>
+<a name="inconnues"></a>
+<table>
+<tr><th>Planar joint</th><th>Mobilities</th><th>Static unknowns</th></tr>
+<tr><td>Fixed</td><td>none</td><td>X, Y, N (3)</td></tr>
+<tr><td>Revolute</td><td>rotation Rz</td><td>X, Y (2)</td></tr>
+<tr><td>Prismatic</td><td>translation Tx</td><td>Y, N (2)</td></tr>
+<tr><td>Point contact</td><td>Tx and Rz</td><td>Y, normal force (1)</td></tr>
+<tr><td>Gear</td><td>rolling at the pitch point</td><td>Ft, tangential force (1)</td></tr>
+<tr><td>Cam-follower</td><td>sliding and rotation at the contact</td><td>Fn, normal force (1)</td></tr>
+</table>
+<p>A joint's number of static unknowns is 3 minus its number of mobilities (in the plane; 6 minus its mobilities in space).</p>
+<p class="sikax"><b>In Sikax:</b> after a computation, select a joint: its torsor appears in the properties, and the Forces tab lists them all.</p>

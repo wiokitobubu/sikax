@@ -1,0 +1,23 @@
+<h1>Eccentricity, cam and follower</h1>
+<p><img src="figure:came" width="360"></p>
+<a name="excentricite"></a>
+<h2>Eccentricity</h2>
+<p>A disc is <b>eccentric</b> when it turns about a point O different from its centre C. The <b>eccentricity</b> e is the distance OC. As it turns, C describes a circle of radius e: the disc's edge moves away from and back towards the axis, producing a reciprocating motion.</p>
+<a name="cercle"></a>
+<p class="sikax"><b>In Sikax:</b> Circle tool (key D) to draw the disc, then a revolute joint on another point of the disc: the distance between that point and the centre is the eccentricity, shown in the body's properties.</p>
+<a name="came"></a>
+<h2>Cam and follower</h2>
+<p>A <b>cam</b> turns a rotation into a translation (or oscillation) of the <b>follower</b> resting on it. With an eccentric circular cam and a follower guided along an axis through O:</p>
+<p class="formule">stroke = 2·e       y(θ) = e·sin θ + √((R + ρ)² − e²·cos² θ)</p>
+<p>R is the cam radius, ρ the roller radius (ρ = 0 for a knife-edge).</p>
+<a name="poussoirs"></a>
+<h2>Follower types</h2>
+<ul>
+<li><b>Knife-edge</b>: contact at a point, the tip stays on the profile (|CP| = R). Simple, but wears fast.</li>
+<li><b>Roller</b>: a small wheel of radius ρ rolls on the cam (|CP| = R + ρ). Less friction.</li>
+<li><b>Flat face</b>: a plane face stays tangent to the cam. For an eccentric, the lift is exactly sinusoidal: y = e·sin θ + R.</li>
+</ul>
+<p>In Sikax the contact slides freely: the cam can make full turns without blocking the computation.</p>
+<a name="effort_normal"></a>
+<h2>Normal force and lift-off</h2>
+<p>The cam pushes the follower along the <b>contact normal</b>, which passes through the circle centre C. A real contact can only push: if the normal force becomes negative, the follower <b>lifts off</b>. A stiff enough return spring is then needed; Sikax reports when lift-off happens.</p>

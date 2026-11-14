@@ -205,6 +205,8 @@ class Document(QObject):
             return m.actions.get(ref.id)
         if ref.genre == "moteur":
             return m.moteurs.get(ref.id)
+        if ref.genre == "fond":
+            return m.fond
         return None
 
     def selectionner(self, ref: Optional[Ref]) -> None:
@@ -229,6 +231,8 @@ class Document(QObject):
                 m.supprimer_action(ref.id)
             elif ref.genre == "moteur":
                 m.supprimer_moteur(ref.id)
+            elif ref.genre == "fond":
+                m.fond = None
         return True
 
     # -------------------------------------------------------------- résultats

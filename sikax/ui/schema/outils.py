@@ -11,10 +11,11 @@ import math
 from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, Type
 
 from PySide6.QtCore import QPointF, Qt
-from PySide6.QtGui import QAction, QPainter, QPen
-from PySide6.QtWidgets import QMenu
+from PySide6.QtGui import QAction, QColor, QPainter, QPen
+from PySide6.QtWidgets import QInputDialog, QMenu
 
 from ...calcul import SystemeMecanique, glisser, refermer, residu_de_fermeture
+from ...i18n import tr
 from ...modele.liaisons import Encastrement, Pivot, classe_liaison
 from ...modele.solide import ID_BATI
 from ..document import Ref
@@ -371,14 +372,27 @@ class OutilPoint(Outil):
 
 
 class OutilLiaison(Outil):
-    """Pose une liaison sur un point : entre les deux solides présents, ou avec le bâti."""
+    """Pose une liaison entre deux solides.
+
+    - Clic sur un point où se rejoignent deux solides : la liaison les relie.
+    - Clic sur l'extrémité d'une barre seule : liaison avec le bâti.
+    - Clic sur un solide (n'importe où sur une barre ou un disque), puis sur un
+      second solide : la liaison est créée à l'endroit du premier clic, et les
+      points qui manquent sont ajoutés aux deux solides. Un second clic dans le
+      vide relie le premier solide au bâti. Maj + clic sur un point démarre
+      aussi cette sélection en deux temps.
+
+    Pour une glissière ou une ponctuelle, glisser pendant le premier clic
+    oriente l'axe (par pas de 15°, Maj pour un angle libre).
+    """
 
     curseur = Qt.CrossCursor
     type_liaison = "pivot"
 
     def __init__(self, vue: "VueSchema") -> None:
         super().__init__(vue)
-        self._attente: Optional[Tuple[float, float, str, str]] = None  # x, y, solide A, solide B
+        self._attente: Optional[Tuple[float, float, str, Optional[str]]] = None  # x, y, solide A, solide B
+        self._premier: Optional[Tuple[float, float, str, float]] = None  # x, y, solide, angle : en attente du second solide
         self._depart: Optional[QPointF] = None
         self._angle = 0.0
         self._pointeur: Optional[Tuple[float, float]] = None
@@ -391,23 +405,36 @@ class OutilLiaison(Outil):
     def cle_aide(self) -> str:
         return f"outil.liaison.aide_{'axe' if classe_liaison(self.type_liaison).A_UN_AXE else 'point'}"
 
-    def _paire(self, x: float, y: float, position_globale) -> Optional[Tuple[float, float, str, str]]:
+    def _paire(self, x: float, y: float, position_globale, deux_temps: bool = False) -> Optional[Tuple[float, float, str, Optional[str]]]:
+        """(x, y, A, B) à relier ; B vaut ``None`` quand il faut encore cliquer le second solide."""
         vue = self.vue
-        proches = vue.points_proches(x, y)
-        if not proches:
-            vue.signaler("outil.liaison.aucun_point")
-            return None
-        px, py = proches[0][2], proches[0][3]
         tolerance = vue.pixels(2.0)
+        proches = vue.points_proches(x, y)
+        sur_un_point = bool(proches)
         solides: List[str] = []
-        for solide_id, _, qx, qy in proches:
-            if solide_id not in solides and math.hypot(qx - px, qy - py) <= tolerance:
-                solides.append(solide_id)
-        if len(solides) == 1:
-            if solides[0] == ID_BATI:
-                vue.signaler("outil.liaison.bati_seul")
+        if proches:
+            px, py = proches[0][2], proches[0][3]
+            for solide_id, _, qx, qy in proches:
+                if solide_id not in solides and math.hypot(qx - px, qy - py) <= tolerance:
+                    solides.append(solide_id)
+            # un solide dont la barre passe par ce point est relié lui aussi
+            for solide_id, _ in vue.solides_sous(px, py, 4.0):
+                if solide_id not in solides:
+                    solides.append(solide_id)
+        else:
+            corps = vue.solides_sous(x, y)
+            if not corps:
+                vue.signaler("outil.liaison.aucun_solide")
                 return None
-            return (px, py, ID_BATI, solides[0])
+            px, py = corps[0][1]
+            solides = [solide_id for solide_id, _ in corps if solide_id == corps[0][0] or self._passe_par(solide_id, px, py)]
+        if len(solides) == 1:
+            seul = solides[0]
+            if seul == ID_BATI:
+                return (px, py, ID_BATI, None)
+            if sur_un_point and not deux_temps:
+                return (px, py, ID_BATI, seul)
+            return (px, py, seul, None)
         if len(solides) == 2:
             a, b = solides
             if b == ID_BATI:
@@ -423,6 +450,9 @@ class OutilLiaison(Outil):
             return None
         return (px, py, choix[0], choix[1])
 
+    def _passe_par(self, solide_id: str, x: float, y: float) -> bool:
+        return any(sid == solide_id for sid, _ in self.vue.solides_sous(x, y, 3.0))
+
     def choisir_paire(self, paires: List[Tuple[str, str]], position_globale) -> Optional[Tuple[str, str]]:
         """Demande, par un menu, quels solides relier quand plus de deux se rejoignent en un point."""
         m = self.doc.mecanisme
@@ -435,14 +465,21 @@ class OutilLiaison(Outil):
         return tuple(choix.data()) if choix is not None else None
 
     def presse(self, evenement, x, y):
-        self._attente = self._paire(x, y, evenement.globalPosition().toPoint())
+        if self._premier is not None:
+            self._second(x, y)
+            return
+        deux_temps = bool(evenement.modifiers() & Qt.ShiftModifier) and not classe_liaison(self.type_liaison).A_UN_AXE
+        self._attente = self._paire(x, y, evenement.globalPosition().toPoint(), deux_temps)
         self._depart = evenement.position()
         self._angle = 0.0
         if self._attente is not None and not classe_liaison(self.type_liaison).A_UN_AXE:
-            self._creer()
+            self._conclure()
 
     def deplace(self, evenement, x, y):
         self._pointeur = (x, y)
+        if self._premier is not None:
+            self._survoler(evenement)
+            return
         if self._attente is None or self._depart is None or not (evenement.buttons() & Qt.LeftButton):
             self._survoler(evenement)
             return
@@ -456,7 +493,35 @@ class OutilLiaison(Outil):
 
     def relache(self, evenement, x, y):
         if self._attente is not None:
-            self._creer()
+            self._conclure()
+
+    def _conclure(self) -> None:
+        """Crée la liaison si les deux solides sont connus, sinon attend le second clic."""
+        x, y, a, b = self._attente
+        if b is None:
+            self._attente = None
+            self._depart = None
+            self._premier = (x, y, a, self._angle)
+            self.vue.signaler("outil.liaison.second", nom=self.doc.mecanisme.solides[a].nom)
+            return
+        self._creer()
+
+    def _second(self, x: float, y: float) -> None:
+        x0, y0, premier, angle = self._premier
+        candidats = [s for s, *_ in self.vue.points_proches(x, y)] + [sid for sid, _ in self.vue.solides_sous(x, y)]
+        autres = [c for c in dict.fromkeys(candidats) if c != premier]
+        if not autres and candidats:
+            self.vue.signaler("outil.liaison.meme_solide")
+            return
+        second = autres[0] if autres else ID_BATI
+        if second == premier:
+            self.vue.signaler("outil.liaison.meme_solide")
+            return
+        a, b = (second, premier) if second == ID_BATI else (premier, second)
+        self._premier = None
+        self._attente = (x0, y0, a, b)
+        self._angle = angle
+        self._creer()
 
     def _creer(self) -> None:
         x, y, a, b = self._attente
@@ -465,23 +530,67 @@ class OutilLiaison(Outil):
         m = self.doc.mecanisme
         tolerance = self.vue.pixels(2.0)
         for existante in m.liaisons.values():
-            if {existante.solide_a, existante.solide_b} == {a, b}:
+            if {existante.solide_a, existante.solide_b} == {a, b} and not existante.CONTACT:
                 ex, ey = self.doc.position(existante.solide_b, existante.point_b)
                 if math.hypot(ex - x, ey - y) <= tolerance:
                     self.vue.signaler("outil.liaison.deja_liee", nom=existante.nom)
                     self.doc.selectionner(Ref("liaison", existante.id))
                     return
+        avant = {sid: set(m.solides[sid].points) for sid in (a, b)}
         with self.doc.modification() as m:
             liaison = m.creer_liaison_en(self.type_liaison, x, y, a, b, angle_axe_global=self._angle, rayon=tolerance)
+            for solide_id in (a, b):
+                self._raccorder(m, solide_id, avant[solide_id], x, y)
         self.doc.selectionner(Ref("liaison", liaison.id))
+        self.vue.signaler(self.cle_aide)
+
+    def _raccorder(self, m, solide_id: str, avant, x: float, y: float) -> None:
+        """Un point ajouté hors du squelette d'un solide mobile y est relié par une barre."""
+        solide = m.solides[solide_id]
+        nouveaux = [pid for pid in solide.points if pid not in avant]
+        if solide.bati or not nouveaux or len(solide.points) < 2:
+            return
+        tolerance = self.vue.pixels(3.0)
+        for a_id, b_id in solide.segments:
+            (ax, ay), (bx, by) = solide.position_globale(a_id), solide.position_globale(b_id)
+            dx, dy = bx - ax, by - ay
+            longueur2 = dx * dx + dy * dy
+            if longueur2 > 0.0:
+                u = max(0.0, min(1.0, ((x - ax) * dx + (y - ay) * dy) / longueur2))
+                if math.hypot(ax + u * dx - x, ay + u * dy - y) <= tolerance:
+                    return  # déjà sur une barre du solide
+        for pid in nouveaux:
+            if any(c.centre != pid and math.hypot(*(v - w for v, w in zip(solide.position_globale(c.centre), (x, y)))) < c.rayon + tolerance for c in solide.cercles.values()):
+                continue  # dans un disque du solide : pas de barre nécessaire
+            autres = [q for q in solide.points if q != pid]
+            plus_proche = min(autres, key=lambda q: math.hypot(solide.position_globale(q)[0] - x, solide.position_globale(q)[1] - y))
+            solide.ajouter_segment(plus_proche, pid)
 
     def annuler(self) -> bool:
-        actif = self._attente is not None
+        actif = self._attente is not None or self._premier is not None
         self._attente = None
+        self._premier = None
         self._depart = None
         return actif
 
+    def clic_droit(self, evenement, x, y) -> bool:
+        if self._premier is not None:
+            self.annuler()
+            self.vue.signaler(self.cle_aide)
+            return True
+        return False
+
     def dessiner(self, p: QPainter) -> None:
+        if self._premier is not None:
+            x0, y0, premier, _ = self._premier
+            c = self.vue.ecran(x0, y0)
+            self._apercu(p, 2.0, pointille=True)
+            if self._pointeur is not None:
+                p.drawLine(c, self.vue.ecran(*self._pointeur))
+            p.setPen(Qt.NoPen)
+            p.setBrush(theme.couleur("accent"))
+            p.drawEllipse(c, 5.0, 5.0)
+            return
         if self._attente is None:
             return
         x, y = self._attente[0], self._attente[1]
@@ -663,6 +772,313 @@ class OutilMoteur(Outil):
         self._survoler(evenement)
 
 
+class OutilCercle(Outil):
+    """Trace un cercle : clic au centre, puis glisser jusqu'au rayon.
+
+    Le cercle devient un nouveau solide (un disque), sauf si le centre est
+    posé sur un point d'un solide mobile ou si un solide est sélectionné : il
+    s'ajoute alors à ce solide (came excentrique, roue sur un arbre).
+    """
+
+    nom = "cercle"
+    curseur = Qt.CrossCursor
+
+    def __init__(self, vue: "VueSchema") -> None:
+        super().__init__(vue)
+        self._centre: Optional[Tuple[float, float]] = None
+        self._rayon = 0.0
+        self._cible: Optional[str] = None
+        self._pointeur: Optional[Tuple[float, float]] = None
+
+    def _rayon_par_defaut(self) -> float:
+        pas = self.vue.pas_grille()
+        return max(2.0 * pas, round(self.vue.pixels(40.0) / pas) * pas)
+
+    def presse(self, evenement, x, y):
+        cx, cy = self.vue.aimanter(x, y)
+        self._centre = (cx, cy)
+        self._rayon = 0.0
+        self._cible = None
+        proches = [c for c in self.vue.points_proches(cx, cy, 2.0) if c[0] != ID_BATI]
+        selection = self.doc.selection
+        if proches:
+            self._cible = proches[0][0]
+        elif selection is not None and selection.genre in ("solide", "point") and selection.id != ID_BATI:
+            self._cible = selection.id
+
+    def deplace(self, evenement, x, y):
+        self._pointeur = self.vue.aimanter(x, y)
+        if self._centre is None or not (evenement.buttons() & Qt.LeftButton):
+            return
+        rayon = math.hypot(x - self._centre[0], y - self._centre[1])
+        if self.doc.mecanisme.affichage.get("aimantation", True):
+            pas = self.vue.pas_grille() / 2.0
+            rayon = max(pas, round(rayon / pas) * pas)
+        self._rayon = rayon
+
+    def relache(self, evenement, x, y):
+        if self._centre is None:
+            return
+        cx, cy = self._centre
+        rayon = self._rayon if self._rayon >= self.vue.pixels(3.0) else self._rayon_par_defaut()
+        cible = self._cible
+        self._centre = None
+        self._rayon = 0.0
+        with self.doc.modification() as m:
+            if cible is not None and cible in m.solides:
+                m.creer_cercle(cible, cx, cy, rayon, rayon_capture=self.vue.pixels(2.0))
+                solide_id = cible
+            else:
+                solide_id = m.creer_disque(cx, cy, rayon).id
+        self.doc.selectionner(Ref("solide", solide_id))
+        self.vue.signaler("outil.cercle.cree")
+
+    def annuler(self) -> bool:
+        actif = self._centre is not None
+        self._centre = None
+        return actif
+
+    def dessiner(self, p: QPainter) -> None:
+        vue = self.vue
+        if self._centre is None:
+            if self._pointeur is not None:
+                self._apercu(p, 1.4)
+                p.drawEllipse(vue.ecran(*self._pointeur), 5.0, 5.0)
+            return
+        c = vue.ecran(*self._centre)
+        rayon = self._rayon * vue.echelle
+        self._apercu(p, 2.0, pointille=self._rayon <= 0.0)
+        p.drawEllipse(c, max(rayon, 4.0), max(rayon, 4.0))
+        if self._rayon > 0.0:
+            unites = self.doc.mecanisme.unites
+            p.setPen(theme.couleur("texte"))
+            p.drawText(QPointF(c.x() + rayon + 10.0, c.y()), f"R = {unites.formater(self._rayon, 'longueur', 4)}")
+
+
+class _OutilDeuxSolides(Outil):
+    """Base des outils qui relient deux solides choisis l'un après l'autre."""
+
+    curseur = Qt.PointingHandCursor
+
+    def __init__(self, vue: "VueSchema") -> None:
+        super().__init__(vue)
+        self._premier: Optional[Tuple[str, Tuple[float, float]]] = None
+        self._pointeur: Optional[Tuple[float, float]] = None
+
+    def _solide_sous(self, x: float, y: float, bati: bool = False) -> Optional[str]:
+        for solide_id, _ in self.vue.solides_sous(x, y):
+            if bati or solide_id != ID_BATI:
+                return solide_id
+        for solide_id, *_ in self.vue.points_proches(x, y):
+            if bati or solide_id != ID_BATI:
+                return solide_id
+        return None
+
+    def deplace(self, evenement, x, y):
+        self._pointeur = (x, y)
+        self._survoler(evenement)
+
+    def annuler(self) -> bool:
+        actif = self._premier is not None
+        self._premier = None
+        return actif
+
+    def clic_droit(self, evenement, x, y) -> bool:
+        if self._premier is not None:
+            self.annuler()
+            self.vue.signaler(self.cle_aide)
+            return True
+        return False
+
+    def dessiner(self, p: QPainter) -> None:
+        if self._premier is None or self._pointeur is None:
+            return
+        self._apercu(p, 2.0, pointille=True)
+        p.drawLine(self.vue.ecran(*self._premier[1]), self.vue.ecran(*self._pointeur))
+
+
+class OutilEngrenage(_OutilDeuxSolides):
+    """Engrène deux roues articulées par des pivots, ou une roue et une crémaillère.
+
+    Nature (extérieur, intérieur, crémaillère) et nombres de dents sont déduits
+    des cercles tracés ; on les ajuste ensuite dans les propriétés.
+    """
+
+    nom = "engrenage"
+
+    def presse(self, evenement, x, y):
+        m = self.doc.mecanisme
+        if self._premier is None:
+            roue = self._solide_sous(x, y)
+            if roue is None:
+                self.vue.signaler("outil.engrenage.aucune_roue")
+                return
+            if m.centre_de_rotation(roue) is None:
+                self.vue.signaler("outil.engrenage.sans_pivot", nom=m.solides[roue].nom)
+                return
+            self._premier = (roue, (x, y))
+            self.vue.signaler("outil.engrenage.seconde", nom=m.solides[roue].nom)
+            return
+        roue_a = self._premier[0]
+        roue_b = self._solide_sous(x, y, bati=True)
+        if roue_b is None or roue_b == roue_a:
+            self.vue.signaler("outil.engrenage.aucune_roue")
+            return
+        try:
+            with self.doc.modification() as modele:
+                liaison = modele.creer_engrenage(roue_a, roue_b)
+        except ValueError:
+            self.vue.signaler("outil.engrenage.impossible")
+            return
+        self._premier = None
+        self.doc.selectionner(Ref("liaison", liaison.id))
+        self.vue.signaler("outil.engrenage.cree", za=f"{liaison.z_a:g}", zb=f"{liaison.z_b:g}")
+
+
+class OutilCame(_OutilDeuxSolides):
+    """Contact came-poussoir : cliquer le cercle de la came, puis la pointe du poussoir."""
+
+    nom = "came"
+
+    def presse(self, evenement, x, y):
+        vue = self.vue
+        if self._premier is None:
+            trouve = vue.cercle_sous(x, y)
+            if trouve is None:
+                vue.signaler("outil.came.aucun_cercle")
+                return
+            self._cercle = trouve
+            self._premier = (trouve[0], (x, y))
+            vue.signaler("outil.came.poussoir")
+            return
+        came, cercle = self._cercle
+        point = next(((s, pid) for s, pid, _, _ in vue.points_proches(x, y) if s != came), None)
+        corps = next(((s, lieu) for s, lieu in vue.solides_sous(x, y) if s != came), None)
+        if point is None and corps is None:
+            vue.signaler("outil.came.aucun_poussoir")
+            return
+        self._premier = None
+        try:
+            with self.doc.modification() as m:
+                if point is None:
+                    solide_id, (px, py) = corps
+                    point = (solide_id, m.creer_point(solide_id, px, py).id)
+                liaison = m.creer_came(came, cercle, point[0], point[1])
+                if residu_de_fermeture(m) > 1e-9 * m.longueur_caracteristique() and not refermer(m):
+                    raise ValueError("contact impossible")
+        except ValueError:
+            vue.signaler("outil.came.impossible")
+            return
+        self.doc.selectionner(Ref("liaison", liaison.id))
+        vue.signaler("outil.came.cree")
+
+
+class OutilEtalonnage(Outil):
+    """Étalonne la photo de fond : cliquer deux points d'une longueur connue, puis la saisir."""
+
+    nom = "etalonnage"
+    curseur = Qt.CrossCursor
+
+    def __init__(self, vue: "VueSchema") -> None:
+        super().__init__(vue)
+        self._a: Optional[Tuple[float, float]] = None
+        self._pointeur: Optional[Tuple[float, float]] = None
+
+    def activer(self) -> None:
+        if self.doc.mecanisme.fond is None:
+            self.vue.signaler("outil.etalonnage.sans_photo")
+
+    def demander_longueur(self, mesure: float) -> Optional[float]:
+        """Longueur réelle (SI) entre les deux points, saisie par l'utilisateur ; ``None`` s'il renonce."""
+        unites = self.doc.mecanisme.unites
+        symbole = unites.symbole("longueur")
+        valeur, ok = QInputDialog.getDouble(
+            self.vue,
+            tr("outil.etalonnage.titre"),
+            tr("outil.etalonnage.question", unite=symbole),
+            unites.vers_affichage(mesure, "longueur"),
+            1e-6,
+            1e9,
+            3,
+        )
+        return unites.depuis_affichage(valeur, "longueur") if ok and valeur > 0.0 else None
+
+    def presse(self, evenement, x, y):
+        if self.doc.mecanisme.fond is None:
+            self.vue.signaler("outil.etalonnage.sans_photo")
+            return
+        if self._a is None:
+            self._a = (x, y)
+            self.vue.signaler("outil.etalonnage.second")
+            return
+        a, b = self._a, (x, y)
+        self._a = None
+        mesure = math.hypot(b[0] - a[0], b[1] - a[1])
+        if mesure < self.vue.pixels(3.0):
+            self.vue.signaler("outil.etalonnage.trop_court")
+            return
+        longueur = self.demander_longueur(mesure)
+        if longueur is None:
+            self.vue.signaler(self.cle_aide)
+            return
+        with self.doc.modification() as m:
+            m.fond.etalonner(a, b, longueur)
+        self.vue.signaler("outil.etalonnage.fait", longueur=self.doc.mecanisme.unites.formater(longueur, "longueur", 4))
+        self.vue.demander_ajustement()
+        self.vue.choisir_outil("selection")
+
+    def deplace(self, evenement, x, y):
+        self._pointeur = (x, y)
+
+    def annuler(self) -> bool:
+        actif = self._a is not None
+        self._a = None
+        return actif
+
+    def dessiner(self, p: QPainter) -> None:
+        if self._a is None:
+            return
+        a = self.vue.ecran(*self._a)
+        self._apercu(p, 2.0)
+        p.drawEllipse(a, 4.0, 4.0)
+        if self._pointeur is not None:
+            b = self.vue.ecran(*self._pointeur)
+            p.drawLine(a, b)
+            p.drawEllipse(b, 4.0, 4.0)
+
+
+class OutilPhoto(Outil):
+    """Déplace la photo de fond en la faisant glisser."""
+
+    nom = "photo"
+    curseur = Qt.SizeAllCursor
+
+    def __init__(self, vue: "VueSchema") -> None:
+        super().__init__(vue)
+        self._depart: Optional[Tuple[float, float]] = None
+
+    def presse(self, evenement, x, y):
+        if self.doc.mecanisme.fond is None:
+            self.vue.signaler("outil.etalonnage.sans_photo")
+            return
+        self._depart = (x, y)
+        self.doc.selectionner(Ref("fond", "fond"))
+
+    def deplace(self, evenement, x, y):
+        if self._depart is None or not (evenement.buttons() & Qt.LeftButton):
+            return
+        dx, dy = x - self._depart[0], y - self._depart[1]
+        self._depart = (x, y)
+        with self.doc.modification(fusion="photo") as m:
+            m.fond.x += dx
+            m.fond.y += dy
+
+    def relache(self, evenement, x, y):
+        if self._depart is not None:
+            self.doc.terminer_fusion()
+        self._depart = None
+
+
 OUTILS: Dict[str, Type[Outil]] = {
     "selection": OutilSelection,
     "manipuler": OutilManipuler,
@@ -676,4 +1092,9 @@ OUTILS: Dict[str, Type[Outil]] = {
     "couple": OutilCouple,
     "ressort": OutilRessort,
     "moteur": OutilMoteur,
+    "cercle": OutilCercle,
+    "engrenage": OutilEngrenage,
+    "came": OutilCame,
+    "etalonnage": OutilEtalonnage,
+    "photo": OutilPhoto,
 }

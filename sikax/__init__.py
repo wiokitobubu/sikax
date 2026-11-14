@@ -15,7 +15,7 @@ Les couches ``modele``, ``calcul`` et ``fichiers`` n'importent jamais Qt : elles
 sont utilisables seules, en script ou dans des tests.
 """
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __app_name__ = "Sikax"
 __organisation__ = "Sikax"
 

@@ -92,6 +92,13 @@ class PanneauArbre(QWidget):
             texte = f"{moteur.nom}  →  {liaison.nom}" if liaison is not None else moteur.nom
             self._feuille(moteurs, texte, "moteur", Ref("moteur", moteur.id), not moteur.actif)
 
+        if m.fond is not None:
+            element = QTreeWidgetItem(self.arbre, [tr("arbre.fond")])
+            element.setIcon(0, icone("photo", "texte_inactif" if not m.fond.visible else "texte", 16))
+            element.setData(0, ROLE_REF, Ref("fond", "fond"))
+            element.setToolTip(0, m.fond.nom)
+            self._elements[Ref("fond", "fond")] = element
+
         self._silence = False
         self._suivre_selection()
 

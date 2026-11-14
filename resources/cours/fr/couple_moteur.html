@@ -1,0 +1,21 @@
+<h1>Couple moteur et puissance</h1>
+
+<a name="couple"></a>
+<h2>Couple</h2>
+<p>Un <b>couple</b> est une action mécanique dont la résultante est nulle mais le moment non nul : il fait tourner sans pousser. Deux forces égales et opposées, de droites d'action parallèles distantes de d, forment un couple C = F · d. Son moment est le même en tout point.</p>
+<p>Unité : N·m. Dans Sikax, l'outil Couple (touche C) applique un couple C<sub>z</sub> à un solide ; sa valeur peut dépendre du temps.</p>
+
+<a name="loi"></a>
+<h2>Moteur à mouvement imposé</h2>
+<p>Un moteur Sikax impose l'angle d'une pivot (moteur rotatif) ou le déplacement d'une glissière (vérin, moteur linéaire) selon une <b>loi de mouvement</b> : vitesse constante, sinusoïde, trapèze de vitesse, expression libre… Le calcul cinématique donne alors le <b>couple moteur</b> (ou la force) nécessaire à chaque instant.</p>
+<p class="formule">θ(t) = θ₀ + ω·t      (vitesse constante, ω en rad/s ;  N en tr/min = 30·ω/π)</p>
+
+<a name="effort"></a>
+<h2>Couple moteur calculé</h2>
+<p>Le couple moteur est l'action du moteur (fixé sur le solide A) sur le solide B de la liaison. Il équilibre les charges, la pesanteur et les effets d'inertie (dynamique inverse). Son signe indique si le moteur entraîne (même signe que la vitesse) ou retient (signe opposé).</p>
+
+<a name="puissance"></a>
+<h2>Puissance</h2>
+<p class="formule">P = C · ω  (rotation)       P = F · v  (translation)       unité : watt (W)</p>
+<p>Sans frottement, la puissance du moteur sert à faire varier l'énergie du mécanisme : P = dE/dt. Avec des engrenages de rendement η, la puissance reçue par la sortie vaut η fois celle fournie à l'entrée.</p>
+<p class="remarque">Un couple moteur constant sans charge résistante accélère le mécanisme sans fin : la vitesse et les efforts croissent sans limite. Sikax le signale (« emballement »).</p>

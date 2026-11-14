@@ -55,7 +55,10 @@ dist\Sikax\Sikax.exe
 
 Toujours fabriquer depuis un environnement qui ne contient **que** les dépendances de
 Sikax : PyInstaller embarque ce qu'il trouve, et un environnement chargé (matplotlib,
-scipy, pandas…) donnerait une distribution de plusieurs centaines de mégaoctets.
+pandas, PyTorch…) donnerait une distribution de plusieurs centaines de mégaoctets.
+Depuis la version 2, les dépendances comprennent SciPy (intégrateurs de la dynamique),
+openpyxl (export Excel) et OpenCV sans interface (`opencv-python-headless`, détection des
+formes d'une photo) : la distribution est donc plus lourde qu'en version 1.
 
 ## La recette `sikax.spec`
 
@@ -82,8 +85,9 @@ le démarrage est immédiat et les antivirus ne s'alarment pas.
 **Données.** Après `COLLECT`, la recette copie `locales/` et `resources/` à côté de
 l'exécutable. Ils ne sont pas passés par `datas=` pour rester visibles et modifiables.
 
-La liste `EXCLUS` écarte les paquets étrangers à Sikax (tkinter, matplotlib, scipy…) au
-cas où l'environnement de fabrication ne serait pas neuf. Aucun module de PySide6 n'y
+La liste `EXCLUS` écarte les paquets étrangers à Sikax (tkinter, matplotlib, pandas…) au
+cas où l'environnement de fabrication ne serait pas neuf. SciPy n'y figure plus ; ses
+intégrateurs, choisis par leur nom à l'exécution, sont déclarés dans `hiddenimports`. Aucun module de PySide6 n'y
 figure : pyqtgraph en importe plusieurs, qui varient selon sa version, et un seul module
 manquant empêche l'application de démarrer.
 

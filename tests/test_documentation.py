@@ -27,7 +27,7 @@ def test_exemple_de_script_du_readme():
 
 
 def test_exemple_de_fichier_de_la_documentation():
-    (exemple,) = blocs(RACINE / "docs" / "FORMAT_FICHIER.md", "json")
+    exemple = blocs(RACINE / "docs" / "FORMAT_FICHIER.md", "json")[0]  # le projet complet ; les suivants sont des extraits
     resultat = depuis_json(exemple)
     assert not resultat.rapport.erreurs and not resultat.rapport.avertissements
     assert resultat.mecanisme.titre == "Pendule simple" and list(resultat.mecanisme.liaisons) == ["L1"]
@@ -53,11 +53,12 @@ def test_arborescence_du_readme():
         "sikax/physique/torseur.py", "sikax/physique/unites.py", "sikax/util/expression.py",
         "sikax/modele/solide.py", "sikax/modele/liaisons.py", "sikax/modele/catalogue_spatial.py",
         "sikax/modele/actions.py", "sikax/modele/moteur.py", "sikax/modele/lois.py", "sikax/modele/etude.py",
-        "sikax/modele/mecanisme.py", "sikax/modele/bibliotheque.py",
+        "sikax/modele/mecanisme.py", "sikax/modele/bibliotheque.py", "sikax/modele/contacts.py", "sikax/modele/fond.py",
         "sikax/calcul/contraintes.py", "sikax/calcul/systeme.py", "sikax/calcul/topologie.py",
         "sikax/calcul/assemblage.py", "sikax/calcul/cinematique.py", "sikax/calcul/statique.py",
         "sikax/calcul/dynamique.py", "sikax/calcul/resultats.py",
         "sikax/fichiers/lecture.py", "sikax/fichiers/ecriture.py", "sikax/fichiers/diagnostics.py", "sikax/fichiers/migrations.py",
+        "sikax/fichiers/excel.py", "sikax/vision/detection.py", "sikax/ui/aide.py",
         "sikax/i18n/traducteur.py", "sikax/ui/fenetre_principale.py", "sikax/ui/document.py",
         "sikax/ui/schema/vue.py", "sikax/ui/schema/rendu.py", "sikax/ui/schema/outils.py",
         "locales/fr.json", "locales/en.json", "resources/icons/sikax.ico", "resources/themes/style.qss",
@@ -66,4 +67,4 @@ def test_arborescence_du_readme():
     for chemin in attendus:
         assert (RACINE / chemin).exists(), chemin
         assert chemin.rsplit("/", 1)[-1].split(".")[0] in arbre, f"{chemin} absent de l'arborescence"
-    assert len(list((RACINE / "resources" / "exemples").glob("*.sikax"))) == 9  # « neuf projets »
+    assert len(list((RACINE / "resources" / "exemples").glob("*.sikax"))) == 13  # « treize projets »

@@ -5,11 +5,13 @@ import math
 import re
 import time
 
+import numpy as np
 import pytest
 from PySide6.QtCore import QEvent, QPoint, QPointF, Qt
 from PySide6.QtGui import QImage, QMouseEvent
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QComboBox
+from PySide6.QtWidgets import QApplication, QComboBox, QToolBar
+from openpyxl import load_workbook
 
 from sikax.application import creer_application
 from sikax.calcul import residu_de_fermeture
@@ -233,13 +235,16 @@ def test_messages_des_outils(fenetre):
     f, vue = fenetre, fenetre.vue
     f.commandes["outil_pivot"].trigger()
     cliquer(vue, 0.5, 0.5)
-    assert f.etiquette_aide.text() == tr("outil.liaison.aucun_point")
+    assert f.etiquette_aide.text() == tr("outil.liaison.aucun_solide")
     f.commandes["outil_point"].trigger()
     cliquer(vue, 0.0, 0.0)
     f.commandes["outil_pivot"].trigger()
-    cliquer(vue, 0.0, 0.0)
-    assert f.etiquette_aide.text() == tr("outil.liaison.bati_seul")
+    cliquer(vue, 0.0, 0.0)  # un point du bâti seul : on attend le solide à y articuler
+    assert f.etiquette_aide.text() == tr("outil.liaison.second", nom="Bâti")
     assert not f.doc.mecanisme.liaisons
+    QTest.keyClick(vue, Qt.Key_Escape)  # abandon de la liaison en attente
+    traiter()
+    assert vue.outil.nom == "pivot" and not f.doc.mecanisme.liaisons
     f.commandes["outil_moteur"].trigger()
     cliquer(vue, 0.3, 0.3)
     assert f.etiquette_aide.text() == tr("outil.moteur.aucune_liaison")
@@ -468,6 +473,13 @@ def test_etude_cinematique_depuis_la_fenetre(fenetre):
     resultats = doc.resultats
     assert resultats is not None and resultats.nb_instants == 401
     assert f.lecteur.isVisible() and f.lecteur.curseur.maximum() == 400
+    # vue d'ensemble : les six graphiques sont remplis sans rien cocher
+    assert f.courbes.mode == "ensemble"
+    assert f.courbes.series["couples"] == ["moteur/M1/effort"]
+    assert all(f.courbes.series[vue] for vue in ("position", "vitesse", "acceleration", "efforts", "energie"))
+    assert all(len(f.courbes._courbes_ensemble[vue]) == len(f.courbes.series[vue]) for vue in f.courbes.series)
+    # présentation personnalisée : l'effort moteur est tracé d'emblée
+    f.courbes.choisir_mode(1)
     assert f.courbes.cles_tracees() == ["moteur/M1/effort"]
     assert len(f.courbes._courbes) == 1
     assert f.resultats.table.rowCount() == 5  # quatre liaisons et un moteur
@@ -642,7 +654,7 @@ def test_ouverture_d_un_fichier_illisible(fenetre, tmp_path, monkeypatch):
 def test_ouverture_tolerante_apres_compte_rendu(fenetre, tmp_path, monkeypatch):
     f, doc = fenetre, fenetre.doc
     donnees = json.loads(vers_json(B.bielle_manivelle()))
-    donnees["liaisons"][1]["type"] = "engrenage"
+    donnees["liaisons"][1]["type"] = "cardan"
     donnees["liaisons"][2]["point_b"] = "P42"
     chemin = tmp_path / "partiel.sikax"
     chemin.write_text(json.dumps(donnees), encoding="utf-8")
@@ -650,7 +662,7 @@ def test_ouverture_tolerante_apres_compte_rendu(fenetre, tmp_path, monkeypatch):
         charger(str(chemin))
     dialogue = DialogueDiagnostics(info.value.rapport, "partiel.sikax", proposer_ouverture=True)
     textes = [texte_diagnostic(d) for d in info.value.rapport.erreurs]
-    assert textes[0].startswith("liaisons[1] (L2) : type de liaison inconnu « engrenage »")
+    assert textes[0].startswith("liaisons[1] (L2) : type de liaison inconnu « cardan »")
     assert "le point « P42 » n'existe pas dans le solide « S3 »" in textes[1]
     dialogue.close()
 
@@ -671,18 +683,23 @@ def test_exports(fenetre, tmp_path):
     assert image.width() == 3 * f.vue.width() and image.height() == 3 * f.vue.height()
     assert f.exporter_image(str(tmp_path / "schema.svg"))
     assert (tmp_path / "schema.svg").read_text(encoding="utf-8").lstrip().startswith("<?xml")
-    assert not f.exporter_resultats([], str(tmp_path / "rien.csv"))  # pas encore de résultats
+    assert not f.exporter_resultats([], str(tmp_path / "rien.xlsx"))  # pas encore de résultats
     calculer(f)
-    assert f.exporter_resultats(["moteur/M1/effort", "point/S3/P1/x"], str(tmp_path / "courbes.csv"))
-    lignes = (tmp_path / "courbes.csv").read_text(encoding="utf-8-sig").splitlines()
-    assert lignes[0] == "t (s);Moteur manivelle · Effort (N·m);C (Piston) · Position x (mm)"
-    assert len(lignes) == 402
-    t, effort, x = lignes[51].split(";")
-    assert float(t.replace(",", ".")) == pytest.approx(doc.resultats.temps[50])
-    assert float(effort.replace(",", ".")) == pytest.approx(doc.resultats.valeur("moteur/M1/effort", 50))
-    assert float(x.replace(",", ".")) == pytest.approx(1000.0 * doc.resultats.valeur("point/S3/P1/x", 50))
-    assert f.exporter_resultats([], str(tmp_path / "tout.csv"))
-    assert len((tmp_path / "tout.csv").read_text(encoding="utf-8-sig").splitlines()[0].split(";")) == len(doc.resultats.canaux) + 1
+    assert f.exporter_resultats(["moteur/M1/effort", "point/S3/P1/x"], str(tmp_path / "courbes.xlsx"))
+    classeur = load_workbook(str(tmp_path / "courbes.xlsx"))
+    assert classeur.sheetnames == ["Résultats", "Graphiques", "Informations"]
+    feuille = classeur["Résultats"]
+    assert [c.value for c in feuille[1]] == ["t (s)", "Moteur manivelle · Effort (N·m)", "C (Piston) · Position x (mm)"]
+    assert feuille.max_row == 402 and feuille.freeze_panes == "B2"
+    t, effort, x = (c.value for c in feuille[52])
+    assert isinstance(effort, float)  # de vrais nombres : aucun problème de virgule
+    assert t == pytest.approx(doc.resultats.temps[50])
+    assert effort == pytest.approx(doc.resultats.valeur("moteur/M1/effort", 50))
+    assert x == pytest.approx(1000.0 * doc.resultats.valeur("point/S3/P1/x", 50))
+    assert classeur["Graphiques"]._charts  # les courbes de la vue d'ensemble
+    assert f.exporter_resultats([], str(tmp_path / "tout"))  # l'extension est ajoutée
+    tout = load_workbook(str(tmp_path / "tout.xlsx"))["Résultats"]
+    assert tout.max_column == len(doc.resultats.canaux) + 1
 
 
 def test_fermeture_avec_modifications_non_enregistrees(fenetre, monkeypatch):
@@ -713,9 +730,23 @@ def test_vue_zoom_et_cadrage(fenetre):
     assert vue.monde(centre) == pytest.approx(avant)  # le point sous le pointeur ne bouge pas
     x, y = 0.0123, -0.0456
     assert vue.monde(vue.ecran(x, y)) == pytest.approx((x, y))
-    assert vue.aimanter(0.0101, 0.0199) == pytest.approx((0.01, 0.02))  # grille de 10 mm
+    assert vue.aimanter(0.1001, -0.0499) == pytest.approx((0.1, -0.05))  # grille de 10 mm, loin des barres
     b = doc.mecanisme.point_global("S1", "P2")
     assert vue.aimanter(b[0] + vue.pixels(4), b[1]) == pytest.approx(b)  # un point existant l'emporte
+    # puis le milieu d'une barre, puis la barre elle-même
+    a = doc.mecanisme.point_global("S1", "P1")
+    milieu = ((a[0] + b[0]) / 2.0, (a[1] + b[1]) / 2.0)
+    x, y, nature = vue.accrocher(milieu[0] + vue.pixels(3), milieu[1])
+    assert nature == "milieu" and (x, y) == pytest.approx(milieu)
+    quart = (a[0] + 0.25 * (b[0] - a[0]), a[1] + 0.25 * (b[1] - a[1]))
+    dx, dy = -(b[1] - a[1]), b[0] - a[0]
+    norme = math.hypot(dx, dy)
+    x, y, nature = vue.accrocher(quart[0] + vue.pixels(3) * dx / norme, quart[1] + vue.pixels(3) * dy / norme)
+    assert nature == "trait" and (x, y) == pytest.approx(quart, abs=vue.pixels(0.01))
+    # sans aimantation : seuls les points existants accrochent
+    doc.mecanisme.affichage["aimantation"] = False
+    assert vue.accrocher(milieu[0] + vue.pixels(3), milieu[1])[2] == "libre"
+    doc.mecanisme.affichage["aimantation"] = True
 
 
 def test_modification_refusee_ne_laisse_aucune_trace():
@@ -770,7 +801,7 @@ def test_choix_de_la_paire_quand_trois_solides_partagent_un_point(fenetre, monke
     assert f.validation.bilan_plan.mobilite == 1
 
 
-@pytest.mark.parametrize("graine", range(8))
+@pytest.mark.parametrize("graine", range(12))
 def test_utilisation_aleatoire_sans_erreur(fenetre, graine, monkeypatch):
     """Suite d'actions tirées au hasard : jamais d'exception, le modèle reste cohérent."""
     import random
@@ -785,7 +816,10 @@ def test_utilisation_aleatoire_sans_erreur(fenetre, graine, monkeypatch):
         doc.nouveau(B.EXEMPLES[rng.choice(list(B.EXEMPLES))]())
         traiter()
         vue.ajuster()
-    outils = ["selection", "manipuler", "barre", "point", "pivot", "glissiere", "encastrement", "ponctuelle", "force", "couple", "ressort", "moteur"]
+    outils = [
+        "selection", "manipuler", "barre", "point", "cercle", "pivot", "glissiere", "encastrement", "ponctuelle",
+        "engrenage", "came", "force", "couple", "ressort", "moteur",
+    ]
 
     def position():
         """Tantôt un point existant, tantôt un endroit quelconque de la vue."""
@@ -833,8 +867,10 @@ def test_utilisation_aleatoire_sans_erreur(fenetre, graine, monkeypatch):
                 doc.definir_indice(rng.randrange(doc.resultats.nb_instants))
         elif tirage < 0.97:
             f.chercher_equilibre()
-        else:
+        elif tirage < 0.985:
             f.commandes[rng.choice(["ajuster", "zoom_plus", "zoom_moins", "theme_sombre", "montrer_vitesses", "montrer_trajectoires"])].trigger()
+        else:
+            f.courbes.choisir_mode(rng.randrange(2))
         traiter(3)
         assert not doc.mecanisme.erreurs(), (graine, etape, doc.mecanisme.erreurs())
     QTest.keyClick(vue, Qt.Key_Escape)
@@ -876,3 +912,337 @@ def test_theme_sombre_par_defaut(application):
     assert f.commandes["theme_sombre"].isChecked()
     f.close()
     theme.appliquer("clair")
+
+
+# ------------------------------------------------------- version 2 : nouveaux outils
+
+def test_outil_cercle_disque_puis_came_excentrique(fenetre):
+    f, vue, doc = fenetre, fenetre.vue, fenetre.doc
+    f.commandes["outil_cercle"].trigger()
+    glisser(vue, (0.0, 0.0), (0.04, 0.0))
+    (disque,) = doc.mecanisme.solides_mobiles()
+    (cercle,) = disque.cercles.values()
+    assert cercle.rayon == pytest.approx(0.04, abs=vue.pas_grille())
+    assert disque.position_globale(cercle.centre) == pytest.approx((0.0, 0.0), abs=1e-9)
+    # un cercle centré sur un point d'un solide existant s'ajoute à ce solide (came excentrique)
+    f.commandes["outil_barre"].trigger()
+    cliquer(vue, 0.1, 0.0)
+    cliquer(vue, 0.2, 0.0)
+    QTest.keyClick(vue, Qt.Key_Return)
+    traiter()
+    barre = [s for s in doc.mecanisme.solides_mobiles() if s.id != disque.id][0]
+    f.commandes["outil_cercle"].trigger()
+    glisser(vue, (0.1, 0.0), (0.13, 0.0))
+    assert len(doc.mecanisme.solides_mobiles()) == 2 and len(barre.cercles) == 1
+    f.commandes["annuler"].trigger()
+    assert not doc.mecanisme.solides[barre.id].cercles
+
+
+def test_liaison_en_deux_clics_sur_les_solides(fenetre):
+    """Pivot entre deux barres qui se croisent : un clic sur chacune, sans créer de point à la main."""
+    f, vue, doc = fenetre, fenetre.vue, fenetre.doc
+    m = Mecanisme()
+    m.creer_barre([(0.0, 0.0), (0.2, 0.0)])
+    m.creer_barre([(0.1, -0.1), (0.1, 0.1)])
+    doc.nouveau(m)
+    traiter()
+    vue.ajuster()
+    traiter()
+    avant = {s.id: len(s.points) for s in doc.mecanisme.solides_mobiles()}
+    f.commandes["outil_pivot"].trigger()
+    cliquer(vue, 0.1, 0.0)
+    cliquer(vue, 0.1, 0.05)
+    (liaison,) = doc.mecanisme.liaisons.values()
+    assert {liaison.solide_a, liaison.solide_b} == set(avant)
+    for solide in doc.mecanisme.solides_mobiles():
+        assert len(solide.points) == avant[solide.id] + 1  # un seul point ajouté par solide, au croisement
+    assert doc.mecanisme.position_liaison(liaison) == pytest.approx((0.1, 0.0), abs=vue.pas_grille())
+    assert residu_de_fermeture(doc.mecanisme) < 1e-9
+
+
+def _deux_roues():
+    m = Mecanisme()
+    for x, rayon in ((0.0, 0.03), (0.075, 0.045)):
+        roue = m.creer_disque(x, 0.0, rayon)
+        m.creer_liaison_en("pivot", x, 0.0, "S0", roue.id)
+    return m
+
+
+def test_outil_engrenage_entre_deux_roues(fenetre):
+    f, vue, doc = fenetre, fenetre.vue, fenetre.doc
+    doc.nouveau(_deux_roues())
+    traiter()
+    vue.ajuster()
+    traiter()
+    f.commandes["outil_engrenage"].trigger()
+    cliquer(vue, 0.0, 0.03)  # bord de la première roue
+    cliquer(vue, 0.075, 0.045)  # bord de la seconde
+    engrenages = [l for l in doc.mecanisme.liaisons.values() if l.type == "engrenage"]
+    assert len(engrenages) == 1
+    e = engrenages[0]
+    assert e.z_b / e.z_a == pytest.approx(1.5)
+    with doc.modification() as m:
+        pivot = next(l for l in m.liaisons.values() if l.type == "pivot" and l.concerne(e.solide_a))
+        m.creer_moteur(pivot.id, LoiMouvement("vitesse_constante", {"vitesse": 3.0}))
+        m.etude.type, m.etude.duree, m.etude.pas = "cinematique", 0.5, 0.01
+    calculer(f)
+    res = doc.resultats
+    omega_a = np.gradient(res.valeurs(f"solide/{e.solide_a}/angle"), res.temps)
+    omega_b = np.gradient(res.valeurs(f"solide/{e.solide_b}/angle"), res.temps)
+    assert omega_b[5:-5] == pytest.approx(-omega_a[5:-5] / 1.5, rel=1e-6)  # engrènement extérieur : sens inverse
+
+
+def test_outil_engrenage_refuse_une_roue_sans_pivot(fenetre):
+    f, vue, doc = fenetre, fenetre.vue, fenetre.doc
+    m = Mecanisme()
+    m.creer_disque(0.0, 0.0, 0.03)
+    doc.nouveau(m)
+    traiter()
+    vue.ajuster()
+    traiter()
+    f.commandes["outil_engrenage"].trigger()
+    cliquer(vue, 0.0, 0.03)
+    assert not doc.mecanisme.liaisons
+    assert f.etiquette_aide.text() == tr("outil.engrenage.sans_pivot", nom=doc.mecanisme.solides["S1"].nom)
+
+
+def test_outil_came_relie_le_cercle_et_le_poussoir(fenetre):
+    f, vue, doc = fenetre, fenetre.vue, fenetre.doc
+    m = B.came_poussoir()
+    came = next(l for l in m.liaisons.values() if l.type == "came")
+    m.supprimer_liaison(came.id)
+    doc.nouveau(m)
+    traiter()
+    vue.ajuster()
+    traiter()
+    solide_came = m.solides[came.solide_a]
+    centre = solide_came.position_globale(solide_came.cercles[came.cercle].centre)
+    f.commandes["outil_came"].trigger()
+    cliquer(vue, *centre)  # dans le disque de la came
+    pointe = doc.mecanisme.solides[came.solide_b].position_globale(came.point_b)
+    cliquer(vue, *pointe)
+    cames = [l for l in doc.mecanisme.liaisons.values() if l.type == "came"]
+    assert len(cames) == 1 and cames[0].solide_b == came.solide_b
+    assert residu_de_fermeture(doc.mecanisme) < 1e-9
+    calculer(f)
+    assert doc.resultats is not None and doc.resultats.complet
+
+
+# ------------------------------------------------------------------ photo de fond
+
+def _png_schema(chemin=None):
+    """Quadrilatère dessiné comme dans un cours (barres, pivots blancs cerclés), en PNG."""
+    from PySide6.QtGui import QColor, QPainter, QPen
+
+    image = QImage(600, 400, QImage.Format_RGB32)
+    image.fill(QColor("white"))
+    p = QPainter(image)
+    p.setRenderHint(QPainter.Antialiasing)
+    articulations = [QPointF(60, 330), QPointF(130, 130), QPointF(420, 110), QPointF(520, 330)]
+    p.setPen(QPen(QColor(30, 30, 30), 5))
+    for a, b in zip(articulations, articulations[1:]):
+        p.drawLine(a, b)
+    p.setPen(QPen(QColor(30, 30, 30), 3))
+    p.setBrush(QColor("white"))
+    for centre in articulations:
+        p.drawEllipse(centre, 11, 11)
+    p.end()
+    if chemin is not None:
+        assert image.save(str(chemin), "PNG")
+    return image
+
+
+def test_importer_puis_etalonner_une_photo(fenetre, tmp_path, monkeypatch):
+    f, vue, doc = fenetre, fenetre.vue, fenetre.doc
+    chemin = tmp_path / "schema.png"
+    _png_schema(chemin)
+    assert f.importer_photo(str(chemin))
+    fond = doc.mecanisme.fond
+    assert fond is not None and (fond.largeur_px, fond.hauteur_px) == (600, 400) and fond.format == "png"
+    assert vue.outil.nom == "etalonnage"
+    # l'étalonnage : deux clics sur les pivots du haut, distants de 290,7 px, déclarés à 145 mm
+    monkeypatch.setattr(type(vue.outil), "demander_longueur", lambda self, mesure: 0.145)
+    a, b = fond.vers_modele(130, 130), fond.vers_modele(420, 110)
+    cliquer(vue, *a)
+    cliquer(vue, *b)
+    fond = doc.mecanisme.fond
+    pixels = math.hypot(290, 20)
+    assert fond.metres_par_pixel == pytest.approx(0.145 / pixels, rel=0.03)  # à la précision du clic près
+    assert vue.outil.nom == "selection"
+    f.commandes["annuler"].trigger()
+    assert doc.mecanisme.fond.metres_par_pixel != pytest.approx(0.145 / pixels, rel=0.03)
+
+
+def test_photo_enregistree_avec_le_projet(fenetre, tmp_path):
+    f, doc = fenetre, fenetre.doc
+    _png_schema(tmp_path / "schema.png")
+    assert f.importer_photo(str(tmp_path / "schema.png"))
+    assert f._ecrire(str(tmp_path / "projet.sikax"))
+    relu = charger(str(tmp_path / "projet.sikax")).mecanisme
+    assert relu.fond is not None and relu.fond.donnees == doc.mecanisme.fond.donnees
+
+
+def test_importer_une_image_illisible(fenetre, tmp_path):
+    chemin = tmp_path / "faux.png"
+    chemin.write_bytes(b"pas une image")
+    assert not fenetre.importer_photo(str(chemin))
+    assert fenetre.doc.mecanisme.fond is None
+
+
+def test_detection_des_formes_depuis_la_fenetre(fenetre, tmp_path, monkeypatch):
+    pytest.importorskip("cv2")
+    from PySide6.QtWidgets import QDialog
+    from sikax.ui.dialogues import detection as dialogue_detection
+
+    f, doc = fenetre, fenetre.doc
+    _png_schema(tmp_path / "schema.png")
+    assert f.importer_photo(str(tmp_path / "schema.png"))
+    vus = {}
+
+    def accepter(dialogue):
+        vus["bilan"] = dialogue.bilan.text()
+        dialogue.pivots.setChecked(True)
+        return QDialog.Accepted
+
+    monkeypatch.setattr(dialogue_detection.DialogueDetection, "exec", accepter)
+    f.detecter_formes()
+    assert "3" in vus["bilan"]  # trois traits annoncés dans l'aperçu
+    assert len(doc.mecanisme.solides_mobiles()) == 3
+    assert len(doc.mecanisme.liaisons) == 4  # deux pivots avec le bâti, deux entre barres
+    assert not doc.mecanisme.erreurs()
+
+
+# ------------------------------------------------------------- accueil et tutoriel
+
+def test_tutoriel_complet(fenetre):
+    from sikax.ui.tutoriel.etapes import ETAPES
+
+    f = fenetre
+    superposition = f.tutoriel()
+    traiter()
+    assert superposition.isVisible() and superposition.geometry() == f.rect()
+    vus = []
+    for i in range(len(ETAPES)):
+        assert superposition.indice == i
+        assert superposition.titre.text() and superposition.puces.count() >= 2
+        vus.append(superposition.titre.text())
+        action = f.commandes.get(superposition.etape_courante.action)
+        en_barre = action is not None and any(b.widgetForAction(action) is not None for b in f.findChildren(QToolBar))
+        zone = superposition.zone_mise_en_lumiere()
+        assert (zone is not None) == en_barre  # le bouton présenté est mis en lumière (s'il est dans une barre)
+        if zone is not None:
+            assert f.rect().contains(zone.center())
+        superposition.grab()  # dessin de la superposition et de l'animation
+        if i < len(ETAPES) - 1:
+            QTest.keyClick(superposition, Qt.Key_Right)
+            traiter()
+    assert len(set(vus)) == len(ETAPES)
+    QTest.keyClick(superposition, Qt.Key_Left)
+    assert superposition.indice == len(ETAPES) - 2
+    superposition.compris.click()
+    traiter()
+    assert f._tutoriel is None
+
+
+def test_tutoriel_echap_et_clics_bloques(fenetre):
+    f = fenetre
+    superposition = f.tutoriel(debut=2)
+    traiter()
+    assert superposition.indice == 2
+    avant = len(f.doc.mecanisme.solides)
+    QTest.mouseClick(superposition, Qt.LeftButton, Qt.NoModifier, f.vue.mapTo(f, f.vue.rect().center()))
+    assert len(f.doc.mecanisme.solides) == avant  # la fenêtre derrière ne réagit pas
+    QTest.keyClick(superposition, Qt.Key_Escape)
+    traiter()
+    assert f._tutoriel is None
+    f.resize(1000, 700)
+    traiter()
+
+
+@pytest.mark.parametrize("choix", ["nouveau", "habitue"])
+def test_fenetre_d_accueil(fenetre, monkeypatch, choix):
+    from sikax.ui.tutoriel.accueil import DialogueAccueil
+
+    def repondre(dialogue):
+        (dialogue.bouton_nouveau if choix == "nouveau" else dialogue.bouton_habitue).click()
+        return 1
+
+    monkeypatch.setattr(DialogueAccueil, "exec", repondre)
+    assert fenetre.accueillir() == choix
+    traiter()
+    assert (fenetre._tutoriel is not None) == (choix == "nouveau")
+    if fenetre._tutoriel is not None:
+        fenetre._tutoriel.fermer()
+        traiter()
+
+
+# ------------------------------------------------------------------ aide et cours
+
+def test_boutons_d_aide_ouvrent_la_bonne_fiche(fenetre):
+    from PySide6.QtWidgets import QToolButton
+    from sikax.ui.panneaux.cours import FICHES
+
+    f = fenetre
+    f.doc.nouveau(B.EXEMPLES["train_engrenages"]())
+    traiter()
+    # un engrenage sélectionné : son panneau de propriétés porte aussi des boutons « ? »
+    engrenage = next(l for l in f.doc.mecanisme.liaisons.values() if l.type == "engrenage")
+    f.doc.selectionner(Ref("liaison", engrenage.id))
+    traiter()
+    boutons = [b for b in f.findChildren(QToolButton) if b.property("role") == "aide"]
+    assert len(boutons) >= 5
+    for bouton in boutons:
+        assert bouton.toolTip()
+        bouton.click()
+        traiter(2)
+        assert f.cours.fiche in FICHES
+        nom = bouton.objectName()[len("aide_"):]
+        assert nom.startswith(f.cours.fiche)
+        section = nom[len(f.cours.fiche) + 1:]
+        if section:
+            assert section in f.cours.sections(f.cours.fiche), nom
+
+
+@pytest.mark.parametrize("langue", ["fr", "en"])
+def test_chaque_fiche_de_cours_s_affiche(fenetre, langue):
+    from sikax.ui.panneaux.cours import FICHES, fichier_de_fiche
+
+    traducteur.charger(langue)
+    for fiche in FICHES:
+        assert fichier_de_fiche(fiche, langue) is not None, fiche
+        fenetre.ouvrir_cours(fiche)
+        traiter(2)
+        texte = fenetre.cours.lecteur.toPlainText()
+        assert len(texte) > 300 and fenetre.cours.fiche == fiche
+    traducteur.charger("fr")
+
+
+def test_liens_entre_fiches(fenetre):
+    from PySide6.QtCore import QUrl
+
+    fenetre.ouvrir_cours("etudes")
+    fenetre.cours._sur_lien(QUrl("fiche:engrenages#rapport"))
+    assert fenetre.cours.fiche == "engrenages"
+
+
+# --------------------------------------------------------------- courbes en tableau de bord
+
+def test_courbes_en_tableau_de_bord_puis_personnalisees(fenetre):
+    f = fenetre
+    f.doc.nouveau(B.EXEMPLES["bielle_manivelle"]())
+    traiter()
+    with f.doc.modification() as m:
+        m.etude.duree, m.etude.pas = 0.3, 0.01
+    calculer(f)
+    courbes = f.courbes
+    assert courbes.mode == "ensemble"
+    courbes.grab()
+    graphiques = courbes.graphiques_excel()
+    assert {g.titre for g in graphiques} >= {tr("courbes.vue.position"), tr("courbes.vue.vitesse")}
+    courbes.choisir_mode(1)
+    traiter()
+    assert courbes.mode == "personnalise"
+    courbes.grab()
+    courbes.choisir_mode(0)
+    traiter()
+    assert courbes.mode == "ensemble"

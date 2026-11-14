@@ -1,0 +1,25 @@
+<h1>Degrés de liberté et mobilité</h1>
+
+<a name="definition"></a>
+<h2>Degrés de liberté d'un solide</h2>
+<p>Dans le plan, un solide libre a <b>3 degrés de liberté</b> : deux translations (x, y) et une rotation (θ). Dans l'espace, il en a 6. Chaque liaison en supprime certains.</p>
+
+<a name="type"></a>
+<a name="mobilites"></a>
+<h2>Mobilités des liaisons planes</h2>
+<table>
+<tr><th>Liaison</th><th>Mouvements permis de B par rapport à A</th><th>ddl</th></tr>
+<tr><td>Encastrement</td><td>aucun</td><td>0</td></tr>
+<tr><td>Pivot</td><td>rotation autour du point</td><td>1</td></tr>
+<tr><td>Glissière</td><td>translation le long de l'axe</td><td>1</td></tr>
+<tr><td>Ponctuelle</td><td>translation le long de la droite + rotation</td><td>2</td></tr>
+<tr><td>Engrenage</td><td>roulement + écartement des roues (tenu par les pivots)</td><td>2</td></tr>
+<tr><td>Came-poussoir</td><td>glissement le long du profil + rotation</td><td>2</td></tr>
+</table>
+
+<a name="mobilite"></a>
+<h2>Mobilité d'un mécanisme</h2>
+<p>La <b>mobilité</b> m est le nombre de paramètres indépendants qu'il faut se donner pour connaître la position de tous les solides. C'est aussi le nombre de moteurs nécessaires pour piloter le mécanisme.</p>
+<p class="formule">Formule de Grübler (plan) :  m = 3·(N − 1) − Σ (3 − ddl<sub>i</sub>)</p>
+<p>N : nombre de solides, bâti compris. Exemple : bielle-manivelle (4 solides, 3 pivots, 1 glissière) : m = 3·3 − 4·2 = 1.</p>
+<p class="remarque">Cette formule suppose des liaisons indépendantes. Sikax calcule la vraie mobilité par le rang des équations de fermeture, ce qui détecte aussi les mobilités internes et les configurations particulières.</p>

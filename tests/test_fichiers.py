@@ -379,9 +379,12 @@ def test_erreur_de_syntaxe_localisee():
 
 
 def test_fichier_minimal_et_cles_inconnues():
-    resultat = depuis_json('{"format": "sikax", "version": 1, "solides": [{"id": "S0", "bati": true}], "inconnu": 3, "_note": "ok"}')
+    resultat = depuis_json('{"format": "sikax", "version": 2, "solides": [{"id": "S0", "bati": true}], "inconnu": 3, "_note": "ok"}')
     assert resultat.mecanisme.est_vide()
     assert [(d.code, d.parametres) for d in resultat.rapport] == [("cle_inconnue", {"cle": "inconnu"})]
+    # un fichier de Sikax 1.0 s'ouvre tel quel, avec une simple note de conversion
+    ancien = depuis_json('{"format": "sikax", "version": 1, "solides": [{"id": "S0", "bati": true}]}')
+    assert [(d.niveau, d.code) for d in ancien.rapport] == [("info", "fichier_migre")]
 
 
 def test_cles_en_double_signalees():

@@ -3,16 +3,18 @@
 from __future__ import annotations
 
 import argparse
+import importlib
+import os
 import sys
 from typing import List, Optional
 
-from PySide6.QtCore import QLibraryInfo, QLocale, QSettings, Qt, QTranslator
+from PySide6.QtCore import QLibraryInfo, QLocale, QSettings, Qt, QTimer, QTranslator
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 from . import __app_name__, __organisation__, __version__
 from . import journal
-from .chemins import dossier_exemples, icone_application
+from .chemins import dossier_cours, dossier_exemples, icone_application
 from .i18n import LANGUE_PAR_DEFAUT, tr, traducteur
 from .ui.theme import THEME_PAR_DEFAUT, THEMES, theme
 
@@ -111,12 +113,64 @@ def autotest(rapport: Optional[str] = None) -> int:
     verifier(bool(fichiers), f"{len(fichiers)} exemples dans {dossier}")
     verifier(icone_application().is_file(), f"icône {icone_application().name}")
 
+    verifier((dossier_cours() / LANGUE_PAR_DEFAUT).is_dir() and len(list((dossier_cours() / LANGUE_PAR_DEFAUT).glob("*.html"))) >= 12, f"fiches de cours dans {dossier_cours()}")
+
+    for module in ("scipy.integrate", "openpyxl", "cv2"):
+        try:
+            importlib.import_module(module)
+            verifier(True, f"module {module}")
+        except Exception as erreur:  # noqa: BLE001
+            verifier(False, f"module {module} : {type(erreur).__name__} : {erreur}")
+
     for fichier in fichiers:
         try:
             etude = lancer_etude(charger(str(fichier)).mecanisme)
             verifier(etude.complet, f"{fichier.name:34s} {etude.type_etude:12s} {etude.nb_instants:5d} instants")
         except Exception as erreur:  # le but est de tout signaler
             verifier(False, f"{fichier.name} : {type(erreur).__name__} : {erreur}")
+
+    # dynamique : chaque intégrateur proposé, sur un pendule
+    try:
+        from .modele import bibliotheque
+        from .modele.etude import METHODES
+
+        for methode in METHODES:
+            pendule = bibliotheque.pendule_simple()
+            pendule.etude.duree, pendule.etude.methode = 0.5, methode
+            etude = lancer_etude(pendule)
+            verifier(etude.complet and etude.methode == methode, f"dynamique, intégrateur {methode}")
+    except Exception as erreur:  # noqa: BLE001
+        verifier(False, f"dynamique : {type(erreur).__name__} : {erreur}")
+
+    # export Excel et détection des formes d'une photo
+    try:
+        import tempfile
+
+        from .fichiers.excel import exporter_excel
+
+        with tempfile.TemporaryDirectory() as dossier_temporaire:
+            chemin = os.path.join(dossier_temporaire, "autotest.xlsx")
+            etude = lancer_etude(charger(str(fichiers[0])).mecanisme) if fichiers else None
+            ecrites = exporter_excel(etude, chemin) if etude is not None else 0
+            from openpyxl import load_workbook
+
+            verifier(ecrites > 0 and load_workbook(chemin).active.max_row == ecrites + 1, f"export Excel ({ecrites} lignes)")
+    except Exception as erreur:  # noqa: BLE001
+        verifier(False, f"export Excel : {type(erreur).__name__} : {erreur}")
+    try:
+        import cv2
+        import numpy as np
+
+        from .vision import detecter
+
+        image = np.full((300, 400, 3), 255, np.uint8)
+        cv2.line(image, (50, 250), (200, 60), (20, 20, 20), 5)
+        cv2.line(image, (200, 60), (350, 250), (20, 20, 20), 5)
+        cv2.circle(image, (200, 200), 45, (20, 20, 20), 3)
+        detection = detecter(cv2.imencode(".png", image)[1].tobytes())
+        verifier(len(detection.segments) == 2 and len(detection.disques()) == 1, f"détection sur une photo ({len(detection.segments)} traits, {len(detection.disques())} disque)")
+    except Exception as erreur:  # noqa: BLE001
+        verifier(False, f"détection : {type(erreur).__name__} : {erreur}")
 
     try:
         application = creer_application([])
@@ -136,12 +190,28 @@ def autotest(rapport: Optional[str] = None) -> int:
         verifier(not traducteur.cles_manquantes, "interface : tous les textes sont traduits")
         fenetre.doc.modifie = False
         fenetre.close()
+        detruire_fenetre(fenetre)
     except Exception as erreur:
         verifier(False, f"interface : {type(erreur).__name__} : {erreur}")
         noter(traceback.format_exc())
 
     noter("Tout est en ordre." if not echecs else f"{echecs} vérification(s) en échec.")
     return 1 if echecs else 0
+
+
+def detruire_fenetre(fenetre) -> None:
+    """Détruit la fenêtre tant que l'application Qt existe encore.
+
+    Sans cela, la fin de l'interpréteur Python libère l'application et la
+    fenêtre dans un ordre quelconque : si l'application part la première, la
+    destruction des panneaux (scènes des courbes, minuteries) fait planter le
+    programme au moment de quitter (« Python a quitté de manière imprévue »).
+    """
+    from PySide6.QtCore import QCoreApplication, QEvent
+
+    fenetre.deleteLater()
+    QCoreApplication.sendPostedEvents(None, QEvent.DeferredDelete)
+    QCoreApplication.processEvents()
 
 
 def lancer(argv: Optional[List[str]] = None) -> int:
@@ -178,4 +248,9 @@ def lancer(argv: Optional[List[str]] = None) -> int:
     fenetre.show()
     if options.fichier:
         fenetre.ouvrir(options.fichier)
-    return application.exec()
+    elif fenetre.accueil_au_demarrage():
+        # « Es-tu nouveau sur Sikax ? » une fois la fenêtre affichée
+        QTimer.singleShot(350, fenetre, fenetre.accueillir)
+    code = application.exec()
+    detruire_fenetre(fenetre)
+    return code

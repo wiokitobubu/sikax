@@ -1,0 +1,27 @@
+<h1>Isostatisme et hyperstatisme</h1>
+
+<a name="definition"></a>
+<h2>Définition</h2>
+<p>Un mécanisme est <b>isostatique</b> quand le principe fondamental de la statique suffit à calculer toutes les actions de liaison. S'il reste plus d'inconnues que d'équations indépendantes, il est <b>hyperstatique</b> ; le nombre d'inconnues en trop est le <b>degré d'hyperstatisme</b> h.</p>
+
+<a name="formule"></a>
+<h2>Formule</h2>
+<p class="formule">h = I<sub>s</sub> − E<sub>s</sub> + m</p>
+<ul>
+<li>I<sub>s</sub> : somme des inconnues statiques des liaisons ;</li>
+<li>E<sub>s</sub> : nombre d'équations du PFS, 3·(N − 1) dans le plan, 6·(N − 1) dans l'espace ;</li>
+<li>m : mobilité.</li>
+</ul>
+<p>Approche cinématique équivalente : h = E<sub>c</sub> − r<sub>c</sub>, où E<sub>c</sub> = 3γ (6γ dans l'espace) est le nombre d'équations de fermeture des γ boucles et r<sub>c</sub> leur rang.</p>
+
+<a name="consequences"></a>
+<h2>Conséquences</h2>
+<ul>
+<li><b>h = 0</b> : efforts déterminés par la statique ; le montage tolère les défauts de fabrication.</li>
+<li><b>h &gt; 0</b> : la répartition des efforts dépend des jeux, des déformations et des tolérances. Plus rigide, mais exige un montage précis. Sikax donne alors la solution de norme minimale et le signale.</li>
+</ul>
+
+<a name="modele_spatial"></a>
+<h2>Plan ou espace ?</h2>
+<p>Un schéma plan cache des contraintes : une articulation dessinée peut être une pivot (5 inconnues dans l'espace), une rotule (3) ou une linéaire annulaire (2). Un quadrilatère articulé plan, isostatique dans le plan, est hyperstatique d'ordre 3 dans l'espace avec quatre pivots. Le <b>modèle spatial</b> de chaque liaison, dans ses propriétés, permet de faire l'analyse réelle dans l'onglet Validation.</p>
+<p class="remarque">Exemple : un engrenage droit à denture droite entre deux pivots parfaites est hyperstatique d'ordre 1 dans l'espace (contact linéique) ; une denture bombée (contact ponctuel) le rend isostatique.</p>

@@ -1,0 +1,292 @@
+{
+  "format": "sikax",
+  "version": 2,
+  "application": {
+    "nom": "Sikax",
+    "version": "1.0.0"
+  },
+  "dimension": 2,
+  "meta": {
+    "titre": "Train d'engrenages (réducteur 1/9)",
+    "auteur": "Sikax",
+    "description": "",
+    "modifie_le": "2026-11-14T12:01:35+00:00"
+  },
+  "unites": {
+    "longueur": "mm",
+    "angle": "deg"
+  },
+  "solides": [
+    {
+      "id": "S0",
+      "nom": "Bâti",
+      "bati": true,
+      "couleur": "#7C8696",
+      "pose": {
+        "x": 0.0,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "A",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "B",
+          "x": 0.06,
+          "y": 0.0
+        },
+        {
+          "id": "P3",
+          "nom": "C",
+          "x": 0.1091491226573395,
+          "y": 0.03441458618106276
+        }
+      ],
+      "segments": [],
+      "inertie": {
+        "masse": 0.0,
+        "g": [
+          0.0,
+          0.0
+        ],
+        "jz": 0.0
+      }
+    },
+    {
+      "id": "S1",
+      "nom": "Pignon d'entrée",
+      "bati": false,
+      "couleur": "#3B82F6",
+      "pose": {
+        "x": 0.0,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "A",
+          "x": 0.0,
+          "y": 0.0
+        }
+      ],
+      "segments": [],
+      "inertie": {
+        "masse": 0.05,
+        "g": [
+          0.0,
+          0.0
+        ],
+        "jz": 5.6249999999999995e-06
+      },
+      "cercles": [
+        {
+          "id": "C1",
+          "centre": "P1",
+          "rayon": 0.015
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "nom": "Arbre intermédiaire",
+      "bati": false,
+      "couleur": "#F97316",
+      "pose": {
+        "x": 0.06,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "B",
+          "x": 0.0,
+          "y": 0.0
+        }
+      ],
+      "segments": [],
+      "inertie": {
+        "masse": 0.4,
+        "g": [
+          0.0,
+          0.0
+        ],
+        "jz": 0.000405
+      },
+      "cercles": [
+        {
+          "id": "C1",
+          "centre": "P1",
+          "rayon": 0.045
+        },
+        {
+          "id": "C2",
+          "centre": "P1",
+          "rayon": 0.015
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "nom": "Roue de sortie",
+      "bati": false,
+      "couleur": "#22C55E",
+      "pose": {
+        "x": 0.1091491226573395,
+        "y": 0.03441458618106276,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "C",
+          "x": 0.0,
+          "y": 0.0
+        }
+      ],
+      "segments": [],
+      "inertie": {
+        "masse": 0.4,
+        "g": [
+          0.0,
+          0.0
+        ],
+        "jz": 0.000405
+      },
+      "cercles": [
+        {
+          "id": "C1",
+          "centre": "P1",
+          "rayon": 0.045
+        }
+      ]
+    }
+  ],
+  "liaisons": [
+    {
+      "id": "L1",
+      "nom": "Pivot A",
+      "type": "pivot",
+      "solide_a": "S0",
+      "point_a": "P1",
+      "solide_b": "S1",
+      "point_b": "P1",
+      "modele_spatial": "pivot_z",
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    },
+    {
+      "id": "L2",
+      "nom": "Pivot B",
+      "type": "pivot",
+      "solide_a": "S0",
+      "point_a": "P2",
+      "solide_b": "S2",
+      "point_b": "P1",
+      "modele_spatial": "pivot_z",
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    },
+    {
+      "id": "L3",
+      "nom": "Pivot C",
+      "type": "pivot",
+      "solide_a": "S0",
+      "point_a": "P3",
+      "solide_b": "S3",
+      "point_b": "P1",
+      "modele_spatial": "pivot_z",
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    },
+    {
+      "id": "L4",
+      "nom": "Étage 1",
+      "type": "engrenage",
+      "solide_a": "S1",
+      "point_a": "P1",
+      "solide_b": "S2",
+      "point_b": "P1",
+      "modele_spatial": "lineaire_rectiligne_y",
+      "nature": "exterieur",
+      "z_a": 15.0,
+      "z_b": 45.0,
+      "module": 0.002,
+      "angle_pression": 0.3490658503988659,
+      "rendement": 0.98,
+      "angle_axe": 0.0
+    },
+    {
+      "id": "L5",
+      "nom": "Étage 2",
+      "type": "engrenage",
+      "solide_a": "S2",
+      "point_a": "P1",
+      "solide_b": "S3",
+      "point_b": "P1",
+      "modele_spatial": "lineaire_rectiligne_y",
+      "nature": "exterieur",
+      "z_a": 15.0,
+      "z_b": 45.0,
+      "module": 0.002,
+      "angle_pression": 0.3490658503988659,
+      "rendement": 0.98,
+      "angle_axe": 0.0
+    }
+  ],
+  "actions": [
+    {
+      "id": "A1",
+      "nom": "Couple résistant",
+      "type": "couple",
+      "actif": true,
+      "solide": "S3",
+      "mz": -2.0
+    }
+  ],
+  "moteurs": [
+    {
+      "id": "M1",
+      "nom": "Moteur d'entrée",
+      "liaison": "L1",
+      "relatif": true,
+      "actif": true,
+      "loi": {
+        "type": "vitesse_constante",
+        "parametres": {
+          "vitesse": 12.566370614359172,
+          "position_initiale": 0.0
+        }
+      }
+    }
+  ],
+  "etude": {
+    "type": "cinematique",
+    "duree": 2.0,
+    "pas": 0.005,
+    "pesanteur": false,
+    "gravite": [
+      0.0,
+      -9.81
+    ],
+    "inertie": true,
+    "tolerance": 1e-10,
+    "precision": 1e-08,
+    "methode": "Radau"
+  },
+  "affichage": {
+    "grille": true,
+    "pas_grille": 0.01,
+    "aimantation": true,
+    "noms_points": true,
+    "noms_liaisons": false,
+    "centres_gravite": true,
+    "echelle_forces": 0.0
+  }
+}

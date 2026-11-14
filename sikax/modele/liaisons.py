@@ -15,6 +15,17 @@ Ponctuelle     translation Tx, rotation Rz Y                    1
 Les composantes sont exprimées dans le repère local de la liaison : ``x`` est
 l'axe de la liaison (direction de glissement), ``y`` sa normale.
 
+Deux liaisons de *contact* complètent la liste. Leur point de contact n'est
+pas un point dessiné mais se déduit de la géométrie, à chaque instant :
+
+- ``Engrenage`` : deux roues dentées (extérieur, intérieur) ou un pignon et
+  une crémaillère ; contact au point primitif ;
+- ``Came`` : un cercle (came excentrique) et un poussoir à pointe, à galet ou
+  à plateau ; contact sur le cercle.
+
+Chacune supprime une seule mobilité : comme une ponctuelle, elle transmet un
+effort unique, porté par la normale au contact.
+
 La classe ne contient que les données et les propriétés topologiques. Les
 équations de contrainte utilisées par le solveur sont dans
 ``sikax.calcul.contraintes`` : c'est ce module qu'il faudra doubler d'une
@@ -23,6 +34,7 @@ version spatiale pour passer en 3D, sans toucher au modèle.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, fields
 from typing import Any, ClassVar, Dict, Optional, Tuple, Type
 
@@ -35,6 +47,10 @@ __all__ = [
     "Glissiere",
     "Encastrement",
     "Ponctuelle",
+    "Engrenage",
+    "Came",
+    "NATURES_ENGRENAGE",
+    "NATURES_CAME",
     "REGISTRE_LIAISONS",
     "TYPES_LIAISON",
     "classe_liaison",
@@ -70,6 +86,12 @@ class Liaison:
     MODELES_SPATIAUX: ClassVar[Tuple[str, ...]] = ()
     """Modèles 3D compatibles ; le premier est le modèle par défaut."""
     CHAMPS: ClassVar[Tuple[Champ, ...]] = ()
+    OPTIONS: ClassVar[Tuple[Tuple[str, Tuple[str, ...]], ...]] = ()
+    """Paramètres à valeurs choisies dans une liste : (nom, valeurs admises)."""
+    REFERENCES: ClassVar[Tuple[str, ...]] = ()
+    """Paramètres qui désignent un autre objet du modèle (un cercle du solide A)."""
+    CONTACT: ClassVar[bool] = False
+    """Vrai si le point de la liaison se déduit de la géométrie (engrenage, came)."""
 
     def __post_init__(self) -> None:
         if not self.modele_spatial:
@@ -118,8 +140,11 @@ class Liaison:
 
     # -- paramètres ---------------------------------------------------------
     def parametres(self) -> Dict[str, Any]:
-        """Paramètres propres au type (ceux de ``CHAMPS``)."""
-        return {c.nom: getattr(self, c.nom) for c in self.CHAMPS}
+        """Paramètres propres au type (``CHAMPS``, ``OPTIONS`` et ``REFERENCES``)."""
+        valeurs: Dict[str, Any] = {nom: getattr(self, nom) for nom, _ in self.OPTIONS}
+        valeurs.update({nom: getattr(self, nom) for nom in self.REFERENCES})
+        valeurs.update({c.nom: getattr(self, c.nom) for c in self.CHAMPS})
+        return valeurs
 
     def copie(self) -> "Liaison":
         return type(self)(**{f.name: getattr(self, f.name) for f in fields(self)})
@@ -208,9 +233,138 @@ class Ponctuelle(Liaison):
     CHAMPS: ClassVar[Tuple[Champ, ...]] = (Champ("angle_axe", "angle", 0.0),)
 
 
+NATURES_ENGRENAGE = ("exterieur", "interieur", "cremaillere")
+NATURES_CAME = ("pointe", "galet", "plat")
+
+
+@dataclass
+class Engrenage(Liaison):
+    """Engrenage entre la roue A et la roue (ou la crémaillère) B.
+
+    ``point_a`` et ``point_b`` sont les centres des roues, normalement les
+    points de leurs liaisons pivots. Pour une crémaillère, ``point_b`` est un
+    point de sa ligne primitive, de direction ``angle_axe`` (repère de B).
+
+    - ``exterieur`` : les roues tournent en sens inverses, ω_b/ω_a = −Z_a/Z_b ;
+    - ``interieur`` : B est une couronne à denture intérieure, même sens ;
+    - ``cremaillere`` : B translate de r_a·Δθ_a (r_a = m·Z_a/2).
+
+    Le contact a lieu au point primitif I ; l'effort de A sur B a une
+    composante tangentielle Ft (qui transmet le couple) et une composante
+    radiale Fr = |Ft|·tan α (qui écarte les roues). Le rendement η < 1 retire
+    à la roue menée la fraction 1 − η de la puissance reçue.
+    """
+
+    nature: str = "exterieur"
+    z_a: float = 20.0
+    z_b: float = 40.0
+    module: float = 0.002
+    angle_pression: float = math.radians(20.0)
+    rendement: float = 1.0
+    angle_axe: float = 0.0
+
+    TYPE: ClassVar[str] = "engrenage"
+    MOBILITES: ClassVar[Tuple[bool, bool, bool]] = (True, False, True)
+    MODELES_SPATIAUX: ClassVar[Tuple[str, ...]] = ("lineaire_rectiligne_y", "ponctuelle_y")
+    CHAMPS: ClassVar[Tuple[Champ, ...]] = (
+        Champ("z_a", "sans", 20.0, minimum=1.0, entier=True, cle="champ.z_a"),
+        Champ("z_b", "sans", 40.0, minimum=1.0, entier=True, cle="champ.z_b"),
+        Champ("module", "longueur", 0.002, minimum=0.0, strict=True),
+        Champ("angle_pression", "angle", math.radians(20.0), minimum=0.0, maximum=math.radians(45.0)),
+        Champ("rendement", "sans", 1.0, minimum=0.0, maximum=1.0, strict=True),
+        Champ("angle_axe", "angle", 0.0),
+    )
+    OPTIONS: ClassVar[Tuple[Tuple[str, Tuple[str, ...]], ...]] = (("nature", NATURES_ENGRENAGE),)
+    CONTACT: ClassVar[bool] = True
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if self.nature not in NATURES_ENGRENAGE:
+            self.nature = "exterieur"
+
+    @property
+    def cremaillere(self) -> bool:
+        return self.nature == "cremaillere"
+
+    def rayon_primitif_a(self) -> float:
+        return self.module * self.z_a / 2.0
+
+    def rayon_primitif_b(self) -> float:
+        """Rayon primitif de la roue B (infini pour une crémaillère : on rend 0)."""
+        return 0.0 if self.cremaillere else self.module * self.z_b / 2.0
+
+    def entraxe_theorique(self) -> float:
+        """a = m·(Z_a + Z_b)/2 (extérieur), m·(Z_b − Z_a)/2 (intérieur), r_a (crémaillère)."""
+        if self.nature == "interieur":
+            return self.module * (self.z_b - self.z_a) / 2.0
+        if self.cremaillere:
+            return self.rayon_primitif_a()
+        return self.module * (self.z_a + self.z_b) / 2.0
+
+    def rapport(self) -> float:
+        """Rapport de transmission r = ω_b/ω_a (roues), ou v_b/ω_a en m/rad (crémaillère)."""
+        if self.cremaillere:
+            return self.rayon_primitif_a()
+        signe = 1.0 if self.nature == "interieur" else -1.0
+        return signe * self.z_a / self.z_b
+
+    def composantes_statiques(self) -> Tuple[str, ...]:
+        return ("Ft",)
+
+    def composantes_cinematiques(self) -> Tuple[str, ...]:
+        return ("ωz", "Vr")
+
+
+@dataclass
+class Came(Liaison):
+    """Contact came-poussoir : le cercle ``cercle`` du solide A touche le poussoir B.
+
+    ``point_a`` est le centre du cercle, ``point_b`` le point du poussoir :
+
+    - ``pointe`` : la pointe P reste sur le cercle, |CP| = R ;
+    - ``galet``  : P est le centre d'un galet de rayon ``rayon_galet`` qui roule
+      sur la came, |CP| = R + ρ ;
+    - ``plat``   : le plateau du poussoir (droite par P de direction
+      ``angle_axe``, repère de B) reste tangent au cercle.
+
+    Le contact glisse librement : la came peut faire des tours complets. La
+    liaison est bilatérale ; un effort normal qui change de signe signale un
+    décollement que seul un ressort de rappel empêcherait.
+    """
+
+    nature: str = "pointe"
+    cercle: str = ""
+    rayon_galet: float = 0.0
+    angle_axe: float = 0.0
+
+    TYPE: ClassVar[str] = "came"
+    MOBILITES: ClassVar[Tuple[bool, bool, bool]] = (True, False, True)
+    MODELES_SPATIAUX: ClassVar[Tuple[str, ...]] = ("ponctuelle_y", "lineaire_rectiligne_y")
+    CHAMPS: ClassVar[Tuple[Champ, ...]] = (
+        Champ("rayon_galet", "longueur", 0.0, minimum=0.0),
+        Champ("angle_axe", "angle", 0.0),
+    )
+    OPTIONS: ClassVar[Tuple[Tuple[str, Tuple[str, ...]], ...]] = (("nature", NATURES_CAME),)
+    REFERENCES: ClassVar[Tuple[str, ...]] = ("cercle",)
+    CONTACT: ClassVar[bool] = True
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if self.nature not in NATURES_CAME:
+            self.nature = "pointe"
+
+    def composantes_statiques(self) -> Tuple[str, ...]:
+        return ("Fn",)
+
+    def composantes_cinematiques(self) -> Tuple[str, ...]:
+        return ("ωz", "Vt")
+
+
 REGISTRE_LIAISONS: Dict[str, Type[Liaison]] = {
-    cls.TYPE: cls for cls in (Pivot, Glissiere, Encastrement, Ponctuelle)
+    cls.TYPE: cls for cls in (Pivot, Glissiere, Encastrement, Ponctuelle, Engrenage, Came)
 }
+TYPES_POINT: Tuple[str, ...] = ("pivot", "glissiere", "encastrement", "ponctuelle")
+"""Liaisons entre deux points : on peut passer de l'une à l'autre sans rien perdre."""
 TYPES_LIAISON: Tuple[str, ...] = tuple(REGISTRE_LIAISONS)
 
 

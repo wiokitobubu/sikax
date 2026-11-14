@@ -6,7 +6,10 @@ from .etude import Etude
 from .liaisons import (
     REGISTRE_LIAISONS,
     TYPES_LIAISON,
+    TYPES_POINT,
+    Came,
     Encastrement,
+    Engrenage,
     Glissiere,
     Liaison,
     Pivot,
@@ -16,13 +19,16 @@ from .liaisons import (
 from .lois import LOIS, TYPES_LOI, LoiMouvement
 from .mecanisme import Mecanisme, Probleme
 from .moteur import Moteur
-from .solide import ID_BATI, Inertie, Point, Solide
+from .solide import ID_BATI, Cercle, Inertie, Point, Solide
 
 __all__ = [
     "ActionMecanique",
+    "Came",
+    "Cercle",
     "Champ",
     "Couple",
     "Encastrement",
+    "Engrenage",
     "Etude",
     "Force",
     "Glissiere",
@@ -41,6 +47,7 @@ __all__ = [
     "Ressort",
     "Solide",
     "TYPES_LIAISON",
+    "TYPES_POINT",
     "TYPES_LOI",
     "creer_liaison",
 ]

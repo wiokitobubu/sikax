@@ -207,6 +207,128 @@ def parallelogramme_double(longueur: float = 0.2, hauteur: float = 0.12, vitesse
     return m
 
 
+def _roue(m: Mecanisme, x: float, y: float, z: float, module: float, nom: str, masse: float):
+    """Roue dentée : disque de rayon primitif m·Z/2, articulé au bâti en son centre."""
+    roue = m.creer_disque(x, y, module * z / 2.0, nom=nom)
+    roue.inertie = roue.inertie_disque_homogene(masse)
+    pivot = m.creer_liaison_en("pivot", x, y, ID_BATI, roue.id)
+    return roue, pivot
+
+
+def came_poussoir(
+    rayon: float = 0.03,
+    excentricite: float = 0.01,
+    rayon_galet: float = 0.006,
+    vitesse: float = 2.0 * math.pi,
+    raideur: float = 400.0,
+) -> Mecanisme:
+    """Came excentrique (disque décentré) et poussoir à galet rappelé par un ressort.
+
+    La levée du poussoir vaut e·sin θ + √((R + ρ)² − e²·cos² θ) : sa course
+    est 2·e. Le ressort maintient le contact (effort normal toujours positif).
+    """
+    m = Mecanisme(titre="Came et poussoir")
+    came = m.creer_disque(excentricite, 0.0, rayon, nom="Came")
+    came.inertie = came.inertie_disque_homogene(0.4)
+    axe = m.creer_point(came.id, 0.0, 0.0, nom="O")
+    came.ajouter_segment(axe.id, came.cercles["C1"].centre)
+    pivot = m.creer_liaison("pivot", ID_BATI, m.creer_point(ID_BATI, 0.0, 0.0, nom="O").id, came.id, axe.id)
+    contact = rayon + rayon_galet
+    y0 = math.sqrt(contact * contact - excentricite * excentricite)
+    poussoir = _barre(m, [(0.0, y0), (0.0, y0 + 0.07)], "Poussoir", 0.15)
+    m.creer_liaison_en("glissiere", 0.0, y0 + 0.035, ID_BATI, poussoir.id, angle_axe_global=math.pi / 2.0, nom="Guidage")
+    ancrage = m.creer_point(ID_BATI, 0.0, y0 + 0.12, nom="R")
+    m.creer_ressort(ID_BATI, ancrage.id, poussoir.id, "P2", raideur, 1.0, 0.07, nom="Ressort de rappel")
+    m.creer_came(came.id, "C1", poussoir.id, "P1", nature="galet", rayon_galet=rayon_galet, nom="Contact came-galet")
+    m.creer_moteur(pivot.id, LoiMouvement("vitesse_constante", {"vitesse": vitesse}), nom="Moteur came")
+    m.etude.type = "cinematique"
+    m.etude.duree = 2.0 * abs(2.0 * math.pi / vitesse) if vitesse else 2.0
+    m.etude.pas = m.etude.duree / 400.0
+    return m
+
+
+def train_engrenages(module: float = 0.002, vitesse: float = 4.0 * math.pi, couple_resistant: float = 2.0) -> Mecanisme:
+    """Réducteur à deux étages : Z1 = 15 → Z2 = 45 | Z3 = 15 → Z4 = 45, rapport 1/9.
+
+    Les roues 2 et 3 forment un seul solide (arbre intermédiaire). La roue de
+    sortie est freinée par un couple résistant ; chaque engrènement a un
+    rendement de 0,98.
+    """
+    m = Mecanisme(titre="Train d'engrenages (réducteur 1/9)")
+    z1, z2, z3, z4 = 15.0, 45.0, 15.0, 45.0
+    a12 = module * (z1 + z2) / 2.0
+    a34 = module * (z3 + z4) / 2.0
+    angle = math.radians(35.0)
+    o2 = (a12, 0.0)
+    o4 = (o2[0] + a34 * math.cos(angle), o2[1] + a34 * math.sin(angle))
+    entree, pivot_entree = _roue(m, 0.0, 0.0, z1, module, "Pignon d'entrée", 0.05)
+    intermediaire, _ = _roue(m, o2[0], o2[1], z2, module, "Arbre intermédiaire", 0.4)
+    m.creer_cercle(intermediaire.id, o2[0], o2[1], module * z3 / 2.0, rayon_capture=1e-9)
+    sortie, _ = _roue(m, o4[0], o4[1], z4, module, "Roue de sortie", 0.4)
+    m.creer_engrenage(entree.id, intermediaire.id, "exterieur", z1, z2, module, nom="Étage 1", rendement=0.98)
+    m.creer_engrenage(intermediaire.id, sortie.id, "exterieur", z3, z4, module, nom="Étage 2", rendement=0.98)
+    m.creer_moteur(pivot_entree.id, LoiMouvement("vitesse_constante", {"vitesse": vitesse}), nom="Moteur d'entrée")
+    # la sortie tourne dans le sens de l'entrée (deux engrènements extérieurs) : le couple s'y oppose
+    m.creer_couple(sortie.id, -math.copysign(couple_resistant, vitesse), nom="Couple résistant")
+    m.etude.type = "cinematique"
+    m.etude.pesanteur = False
+    m.etude.duree = 2.0
+    m.etude.pas = 0.005
+    return m
+
+
+def train_epicycloidal(module: float = 0.002, vitesse: float = 2.0 * math.pi) -> Mecanisme:
+    """Train épicycloïdal : soleil Z = 20, satellite Z = 10, couronne fixe Z = 40.
+
+    Le porte-satellites est motorisé. Formule de Willis, couronne fixe :
+    ω_soleil = ω_porte·(1 + Z_couronne/Z_soleil) = 3·ω_porte.
+    """
+    m = Mecanisme(titre="Train épicycloïdal")
+    zs, zp, zr = 20.0, 10.0, 40.0
+    rs, rp = module * zs / 2.0, module * zp / 2.0
+    soleil = m.creer_disque(0.0, 0.0, rs, nom="Soleil")
+    soleil.inertie = soleil.inertie_disque_homogene(0.2)
+    porte = _barre(m, [(0.0, 0.0), (rs + rp, 0.0)], "Porte-satellites", 0.1)
+    satellite = m.creer_disque(rs + rp, 0.0, rp, nom="Satellite")
+    satellite.inertie = satellite.inertie_disque_homogene(0.05)
+    m.creer_liaison_en("pivot", 0.0, 0.0, ID_BATI, soleil.id, nom="Pivot soleil")
+    pivot_porte = m.creer_liaison_en("pivot", 0.0, 0.0, ID_BATI, porte.id, nom="Pivot porte-satellites")
+    m.creer_liaison_en("pivot", rs + rp, 0.0, porte.id, satellite.id, nom="Pivot satellite")
+    m.creer_cercle(ID_BATI, 0.0, 0.0, module * zr / 2.0)
+    m.creer_engrenage(soleil.id, satellite.id, "exterieur", zs, zp, module, nom="Soleil–satellite")
+    m.creer_engrenage(satellite.id, ID_BATI, "interieur", zp, zr, module, nom="Satellite–couronne")
+    m.creer_moteur(pivot_porte.id, LoiMouvement("vitesse_constante", {"vitesse": vitesse}), nom="Moteur porte-satellites")
+    m.etude.type = "cinematique"
+    m.etude.pesanteur = False
+    m.etude.duree = 1.0
+    m.etude.pas = 0.0025
+    return m
+
+
+def pignon_cremaillere(module: float = 0.002, z: float = 20.0, vitesse: float = math.pi, charge: float = 50.0) -> Mecanisme:
+    """Pignon motorisé entraînant une crémaillère guidée en translation, qui pousse une charge."""
+    m = Mecanisme(titre="Pignon-crémaillère")
+    r = module * z / 2.0
+    pignon, pivot = _roue(m, 0.0, r, z, module, "Pignon", 0.1)
+    cremaillere = _barre(m, [(-0.08, 0.0), (0.08, 0.0)], "Crémaillère", 0.5)
+    m.creer_liaison_en("glissiere", -0.08, 0.0, ID_BATI, cremaillere.id, angle_axe_global=0.0, nom="Guidage")
+    m.creer_engrenage(pignon.id, cremaillere.id, "cremaillere", z, None, module, nom="Pignon-crémaillère")
+    m.creer_moteur(pivot.id, LoiMouvement("sinusoidale", {"amplitude": math.pi / 2.0, "frequence": 0.5}), nom="Moteur pignon")
+    m.creer_force(cremaillere.id, "P2", -charge, 0.0, nom="Charge")
+    m.etude.type = "cinematique"
+    m.etude.pesanteur = False
+    m.etude.duree = 2.0
+    m.etude.pas = 0.005
+    return m
+
+
+MODELES: Dict[str, Callable[[], Mecanisme]] = {
+    "pendule_simple": pendule_simple,
+    "came_poussoir": came_poussoir,
+    "train_engrenages": train_engrenages,
+}
+"""Modèles proposés par « Nouveau depuis un modèle » : des points de départ prêts à modifier."""
+
 EXEMPLES: Dict[str, Callable[[], Mecanisme]] = {
     "bielle_manivelle": lambda: bielle_manivelle(angle_initial=math.radians(50.0)),
     "quatre_barres": quatre_barres,
@@ -217,4 +339,8 @@ EXEMPLES: Dict[str, Callable[[], Mecanisme]] = {
     "poutre_deux_appuis": poutre_sur_deux_appuis,
     "poutre_bi_articulee": poutre_bi_articulee,
     "parallelogramme_double": parallelogramme_double,
+    "came_poussoir": came_poussoir,
+    "train_engrenages": train_engrenages,
+    "train_epicycloidal": train_epicycloidal,
+    "pignon_cremaillere": pignon_cremaillere,
 }

@@ -36,6 +36,20 @@ class Point:
 
 
 @dataclass
+class Cercle:
+    """Cercle (contour d'un disque, d'une came excentrique) lié à un solide.
+
+    Le centre est un point du solide : il peut porter une liaison, et le
+    cercle suit le solide dans tous ses mouvements.
+    """
+
+    id: str
+    centre: str
+    """Identifiant du point centre, dans le même solide."""
+    rayon: float = 0.0
+
+
+@dataclass
 class Inertie:
     """Caractéristiques d'inertie d'un solide plan."""
 
@@ -62,6 +76,7 @@ class Solide:
     points: Dict[str, Point] = field(default_factory=dict)
     segments: List[Tuple[str, str]] = field(default_factory=list)
     inertie: Inertie = field(default_factory=Inertie)
+    cercles: Dict[str, Cercle] = field(default_factory=dict)
 
     # -- points ------------------------------------------------------------
     def point(self, point_id: str) -> Point:
@@ -85,6 +100,7 @@ class Solide:
     def supprimer_point(self, point_id: str) -> None:
         self.points.pop(point_id, None)
         self.segments = [s for s in self.segments if point_id not in s]
+        self.cercles = {cid: c for cid, c in self.cercles.items() if c.centre != point_id}
 
     def position_globale(self, point_id: str) -> Vec2:
         p = self.point(point_id)
@@ -116,6 +132,29 @@ class Solide:
     def segments_globaux(self) -> List[Tuple[Vec2, Vec2]]:
         return [(self.position_globale(a), self.position_globale(b)) for a, b in self.segments]
 
+    # -- cercles -----------------------------------------------------------
+    def cercle(self, cercle_id: str) -> Cercle:
+        try:
+            return self.cercles[cercle_id]
+        except KeyError:
+            raise KeyError(f"cercle « {cercle_id} » inconnu dans le solide « {self.id} »") from None
+
+    def prochain_id_cercle(self) -> str:
+        numeros = [int(c[1:]) for c in self.cercles if c[:1] == "C" and c[1:].isdigit()]
+        return f"C{max(numeros, default=0) + 1}"
+
+    def ajouter_cercle(self, centre: str, rayon: float, cercle_id: Optional[str] = None) -> Cercle:
+        self.point(centre)
+        cid = cercle_id or self.prochain_id_cercle()
+        if cid in self.cercles:
+            raise ValueError(f"le cercle « {cid} » existe déjà dans « {self.id} »")
+        cercle = Cercle(cid, centre, float(rayon))
+        self.cercles[cid] = cercle
+        return cercle
+
+    def centre_cercle_global(self, cercle_id: str) -> Vec2:
+        return self.position_globale(self.cercle(cercle_id).centre)
+
     # -- inertie -----------------------------------------------------------
     def centre_gravite_global(self) -> Vec2:
         return self.pose.vers_global(self.inertie.gx, self.inertie.gy)
@@ -126,6 +165,16 @@ class Solide:
             pa, pb = self.points[a], self.points[b]
             total += math.hypot(pb.x - pa.x, pb.y - pa.y)
         return total
+
+    def inertie_disque_homogene(self, masse: float, cercle_id: Optional[str] = None) -> Inertie:
+        """Inertie d'un disque plein homogène (J = m·R²/2, G au centre du cercle)."""
+        if cercle_id is None:
+            if not self.cercles:
+                raise ValueError(f"le solide « {self.id} » n'a pas de cercle")
+            cercle_id = max(self.cercles.values(), key=lambda c: c.rayon).id
+        cercle = self.cercle(cercle_id)
+        centre = self.point(cercle.centre)
+        return Inertie(masse, centre.x, centre.y, 0.5 * masse * cercle.rayon * cercle.rayon)
 
     def inertie_barres_homogenes(self, masse: float) -> Inertie:
         """Inertie du solide vu comme un assemblage de barres minces homogènes.

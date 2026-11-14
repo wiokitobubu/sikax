@@ -1,12 +1,12 @@
 ; Installateur Windows de Sikax (Inno Setup 6).
 ;
-;   iscc /DVersion=1.0.0 packaging\sikax.iss
+;   iscc /DVersion=2.0.0 packaging\sikax.iss
 ;
 ; À lancer après PyInstaller : l'installateur emballe le dossier dist\Sikax,
 ; crée les raccourcis et associe les fichiers .sikax à l'application.
 
 #ifndef Version
-  #define Version "1.0.0"
+  #define Version "2.0.0"
 #endif
 
 [Setup]

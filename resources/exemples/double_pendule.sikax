@@ -1,6 +1,6 @@
 {
   "format": "sikax",
-  "version": 1,
+  "version": 2,
   "application": {
     "nom": "Sikax",
     "version": "1.0.0"
@@ -10,7 +10,7 @@
     "titre": "Double pendule",
     "auteur": "Sikax",
     "description": "",
-    "modifie_le": "2026-10-12T20:51:11+00:00"
+    "modifie_le": "2026-11-14T12:01:35+00:00"
   },
   "unites": {
     "longueur": "mm",
@@ -163,7 +163,8 @@
     ],
     "inertie": true,
     "tolerance": 1e-10,
-    "precision": 1e-08
+    "precision": 1e-08,
+    "methode": "Radau"
   },
   "affichage": {
     "grille": true,

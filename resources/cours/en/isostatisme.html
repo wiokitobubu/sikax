@@ -1,0 +1,23 @@
+<h1>Isostatism and hyperstatism</h1>
+<a name="definition"></a>
+<h2>Definition</h2>
+<p>A mechanism is <b>isostatic</b> when the equilibrium equations are enough to compute every joint force. If more unknowns than independent equations remain, it is <b>hyperstatic</b>; the number of extra unknowns is the <b>degree of hyperstatism</b> h.</p>
+<a name="formule"></a>
+<h2>Formula</h2>
+<p class="formule">h = I<sub>s</sub> − E<sub>s</sub> + m</p>
+<ul>
+<li>I<sub>s</sub>: sum of the joints' static unknowns;</li>
+<li>E<sub>s</sub>: number of equilibrium equations, 3·(N − 1) in the plane, 6·(N − 1) in space;</li>
+<li>m: mobility.</li>
+</ul>
+<p>Equivalent kinematic approach: h = E<sub>c</sub> − r<sub>c</sub>, where E<sub>c</sub> = 3γ (6γ in space) is the number of closure equations of the γ loops and r<sub>c</sub> their rank.</p>
+<a name="consequences"></a>
+<h2>Consequences</h2>
+<ul>
+<li><b>h = 0</b>: forces determined by statics; the assembly tolerates manufacturing errors.</li>
+<li><b>h &gt; 0</b>: the force distribution depends on clearances, deformations and tolerances. Stiffer, but needs precise assembly. Sikax then gives the minimum-norm solution and says so.</li>
+</ul>
+<a name="modele_spatial"></a>
+<h2>Plane or space?</h2>
+<p>A planar diagram hides constraints: a drawn hinge may be a revolute joint (5 unknowns in space), a ball joint (3) or a sphere-cylinder joint (2). A planar four-bar linkage, isostatic in the plane, is hyperstatic of order 3 in space with four revolute joints. Each joint's <b>spatial model</b>, in its properties, lets the Validation tab do the real analysis.</p>
+<p class="remarque">Example: a straight spur gear between two perfect revolute joints is hyperstatic of order 1 in space (line contact); crowned teeth (point contact) make it isostatic.</p>

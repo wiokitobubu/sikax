@@ -61,6 +61,7 @@ def analyse_statique(
     Q = systeme.forces(q, nul, t)
     multiplicateurs, r, _ = resoudre(J.T / w[:, None], Q / w)
     residu = float(np.linalg.norm((J.T @ multiplicateurs - Q) / w))
+    multiplicateurs = systeme.completer_multiplicateurs(q, J, multiplicateurs, Q)
     equilibre = residu <= TOL_EQUILIBRE * _niveau_efforts(systeme, Q / w)
 
     enregistreur = Enregistreur(systeme, 1)

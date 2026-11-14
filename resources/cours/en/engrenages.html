@@ -1,0 +1,55 @@
+<h1>Gears</h1>
+<p>A gear transmits rotation from one shaft to another through meshing teeth, without slipping: the speed ratio is exact and constant.</p>
+<p><img src="figure:engrenage" width="360"></p>
+<a name="rubrique"></a>
+<a name="nature"></a>
+<h2>Three kinds of gears</h2>
+<ul>
+<li><b>External</b>: two wheels with external teeth; they turn in <b>opposite</b> directions.</li>
+<li><b>Internal</b>: a pinion turns inside a ring with internal teeth; same direction, shorter centre distance.</li>
+<li><b>Rack and pinion</b>: a wheel and a toothed bar; turns a rotation into a translation.</li>
+</ul>
+<a name="module"></a>
+<a name="dents"></a>
+<a name="formules"></a>
+<h2>Module and dimensions</h2>
+<p>The <b>module</b> m (mm) sets the size of the teeth. Two wheels only mesh if they have the <b>same module</b> (and the same pressure angle).</p>
+<a name="diametre"></a>
+<a name="pas"></a>
+<table>
+<tr><th>Quantity</th><th>Formula</th></tr>
+<tr><td>Pitch diameter</td><td>d = m · Z</td></tr>
+<tr><td>Pitch (on the pitch circle)</td><td>p = π · m</td></tr>
+<tr><td>Tip diameter</td><td>d<sub>a</sub> = d + 2·m</td></tr>
+<tr><td>Root diameter</td><td>d<sub>f</sub> = d − 2.5·m</td></tr>
+<tr><td>Tooth height</td><td>h = 2.25·m</td></tr>
+</table>
+<p class="remarque">With α = 20° and standard teeth, at least 17 teeth are needed to avoid interference (uncorrected cutting).</p>
+<a name="entraxe"></a>
+<h2>Centre distance</h2>
+<p class="formule">external: a = (d₁ + d₂)/2 = m·(Z₁ + Z₂)/2        internal: a = (d₂ − d₁)/2 = m·(Z₂ − Z₁)/2</p>
+<p>For a rack, the pinion axis is d/2 from the pitch line. Sikax compares the diagram's centre distance with the theoretical one and offers to adjust it.</p>
+<a name="rapport"></a>
+<h2>Transmission ratio</h2>
+<p>The pitch circles roll without slipping: r₁·ω₁ = ∓ r₂·ω₂, hence</p>
+<p class="formule">r = ω₂/ω₁ = − Z₁/Z₂ (external)       r = + Z₁/Z₂ (internal)       v = (m·Z/2)·ω (rack)</p>
+<p>For a <b>train</b> of several gears:</p>
+<p class="formule">r = (−1)<sup>n</sup> · (product of driving Z) / (product of driven Z)    n: number of external contacts</p>
+<p>An idler wheel changes the direction but not the ratio. For a <b>planetary train</b> (carrier C), Willis' formula reads, between sun 1 and ring 3:</p>
+<p class="formule">(ω₁ − ω<sub>C</sub>) / (ω₃ − ω<sub>C</sub>) = − Z₃/Z₁</p>
+<a name="efforts"></a>
+<h2>Tooth forces</h2>
+<p>The contact force <b>F<sub>n</sub></b> acts along the <b>line of action</b>, inclined by the pressure angle α (usually 20°) to the common tangent of the pitch circles. It is split at the pitch point I:</p>
+<a name="angle_pression"></a>
+<p class="formule">F<sub>t</sub> = C₁ / r₁ = 2·C₁ / d₁       F<sub>r</sub> = F<sub>t</sub> · tan α       F<sub>n</sub> = F<sub>t</sub> / cos α</p>
+<ul>
+<li><b>F<sub>t</sub></b>, <b>tangential</b> force: it transmits the torque.</li>
+<li><b>F<sub>r</sub></b>, <b>radial</b> force: it pushes the wheels apart and loads their bearings.</li>
+</ul>
+<p>The wheels' revolute joints carry the whole F<sub>n</sub>: this is what Sikax shows in their torsors.</p>
+<a name="couples"></a>
+<a name="rendement"></a>
+<h2>Transmitted torques and efficiency</h2>
+<p class="formule">P = C · ω       η = P<sub>out</sub> / P<sub>in</sub>       C₂ = η · C₁ · Z₂/Z₁</p>
+<p>The <b>efficiency</b> η (often 0.95 to 0.99 for a spur gear) accounts for tooth friction: the driven wheel receives η times the power delivered. For several stages, efficiencies multiply: η<sub>total</sub> = η₁·η₂·…</p>
+<p class="sikax"><b>In Sikax:</b> draw two discs (Circle tool), hinge them with revolute joints, then Gear tool (key E): click the first wheel, then the second. Kind and numbers of teeth are deduced from the drawn radii; adjust Z, m, α and η in the properties.</p>

@@ -3,7 +3,7 @@
 Arborescence attendue à côté du programme ::
 
     locales/      fichiers de langue (fr.json, en.json…)
-    resources/    icons/, themes/, exemples/
+    resources/    icons/, themes/, exemples/, cours/, tutoriel/
 
 En développement, ces dossiers sont à la racine du projet. Dans la
 distribution Windows produite par PyInstaller, ils sont à côté de
@@ -65,6 +65,16 @@ def dossier_themes() -> Path:
 
 def dossier_exemples() -> Path:
     return trouver("resources", "exemples")
+
+
+def dossier_cours() -> Path:
+    """Fiches de cours : une page HTML par fiche, dans un sous-dossier par langue."""
+    return trouver("resources", "cours")
+
+
+def dossier_tutoriel() -> Path:
+    """Animations facultatives du tutoriel (``<étape>.gif``), qui remplacent les démonstrations dessinées."""
+    return trouver("resources", "tutoriel")
 
 
 def icone_application() -> Path:

@@ -1,0 +1,31 @@
+<h1>Cinématique, statique et dynamique</h1>
+<p>Les trois études de Sikax répondent à trois questions différentes sur le même mécanisme. Elles ne demandent pas les mêmes données et ne donnent pas les mêmes résultats.</p>
+
+<a name="nature"></a>
+<h2>Quelle étude choisir ?</h2>
+<table>
+<tr><th>Étude</th><th>On impose</th><th>On calcule</th><th>Principe utilisé</th></tr>
+<tr><td><b>Cinématique</b></td><td>le mouvement (moteurs)</td><td>positions, vitesses, accélérations ; efforts et couple moteur nécessaires</td><td>lois de fermeture + PFD (dynamique inverse)</td></tr>
+<tr><td><b>Statique</b></td><td>les actions extérieures, une position</td><td>les efforts dans les liaisons à l'équilibre</td><td>PFS</td></tr>
+<tr><td><b>Dynamique</b></td><td>les forces, couples et la position de départ</td><td>le mouvement qui en résulte, et les efforts</td><td>PFD intégré dans le temps</td></tr>
+</table>
+
+<a name="cinematique"></a>
+<h2>Cinématique : le mouvement est imposé</h2>
+<p>La <b>cinématique</b> étudie le mouvement sans s'occuper de ses causes. Un moteur impose l'angle d'une pivot ou le déplacement d'une glissière en fonction du temps ; Sikax en déduit la position de chaque solide, puis les vitesses et les accélérations, en dérivant les <i>équations de fermeture</i> des liaisons :</p>
+<p class="formule">Φ(q, t) = 0  ⇒  Φq · q̇ = −Φt  ⇒  Φq · q̈ = γ</p>
+<p>Quand l'option « effets d'inertie » est cochée, Sikax calcule ensuite les efforts qu'il faut pour produire ce mouvement : c'est la <b>dynamique inverse</b>. Le couple moteur obtenu est celui qu'un moteur réel devrait fournir.</p>
+<p class="remarque">Il faut autant de moteurs que de mobilités : un système bielle-manivelle (mobilité 1) se pilote avec un seul moteur.</p>
+
+<a name="statique"></a>
+<h2>Statique : le principe fondamental de la statique (PFS)</h2>
+<p>Un solide (ou un ensemble de solides) est en <b>équilibre</b> quand la somme des actions mécaniques qui s'exercent sur lui est nulle :</p>
+<p class="formule">Σ F<sub>ext</sub> = 0     et     Σ M<sub>A</sub>(F<sub>ext</sub>) = 0  (en tout point A)</p>
+<p>Dans le plan, cela donne <b>trois équations par solide</b> (deux de résultante, une de moment). Les inconnues sont les composantes des actions de liaison. Si le mécanisme est isostatique, autant d'équations que d'inconnues : la solution est unique. S'il est hyperstatique, certaines inconnues restent indéterminées (voir la fiche <a href="fiche:isostatisme">Isostatisme</a>).</p>
+
+<a name="dynamique"></a>
+<h2>Dynamique : le principe fondamental de la dynamique (PFD)</h2>
+<p>Pour un solide de masse m, de centre de gravité G et de moment d'inertie J<sub>G</sub> autour de l'axe (G, z) :</p>
+<p class="formule">Σ F<sub>ext</sub> = m · a<sub>G</sub>     Σ M<sub>G</sub>(F<sub>ext</sub>) = J<sub>G</sub> · θ̈</p>
+<p>L'étude dynamique <b>calcule le mouvement</b> à partir des forces : on donne une position et des vitesses de départ, Sikax intègre ces équations pas à pas dans le temps (méthode de Radau, voir la fiche <a href="fiche:methodes">Méthodes de calcul</a>). C'est la seule étude qui fait franchir les points morts par l'inertie, comme un volant d'inertie dans un moteur.</p>
+<p class="sikax"><b>Dans Sikax :</b> panneau Étude → Nature de l'étude. Un pendule, une masse sur un ressort, un mécanisme lâché sous la pesanteur relèvent de la dynamique ; un mécanisme entraîné par un moteur à vitesse imposée relève de la cinématique.</p>

@@ -9,6 +9,7 @@ L'ancienne version est conservée à côté sous le nom ``<fichier>.bak``.
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import shutil
@@ -42,6 +43,8 @@ def mecanisme_vers_dict(mecanisme: Mecanisme, horodatage: Optional[str] = None) 
                 },
             }
         )
+        if solide.cercles:
+            solides[-1]["cercles"] = [{"id": c.id, "centre": c.centre, "rayon": c.rayon} for c in solide.cercles.values()]
 
     liaisons = []
     for liaison in mecanisme.liaisons.values():
@@ -80,7 +83,7 @@ def mecanisme_vers_dict(mecanisme: Mecanisme, horodatage: Optional[str] = None) 
     ]
 
     etude = mecanisme.etude
-    return {
+    document = {
         "format": FORMAT,
         "version": VERSION,
         "application": {"nom": __app_name__, "version": __version__},
@@ -105,9 +108,26 @@ def mecanisme_vers_dict(mecanisme: Mecanisme, horodatage: Optional[str] = None) 
             "inertie": etude.inertie,
             "tolerance": etude.tolerance,
             "precision": etude.precision,
+            "methode": etude.methode,
         },
         "affichage": dict(mecanisme.affichage),
     }
+    if mecanisme.fond is not None:
+        fond = mecanisme.fond
+        document["fond"] = {
+            "nom": fond.nom,
+            "format": fond.format,
+            "largeur_px": fond.largeur_px,
+            "hauteur_px": fond.hauteur_px,
+            "x": fond.x,
+            "y": fond.y,
+            "largeur": fond.largeur,
+            "angle": fond.angle,
+            "opacite": fond.opacite,
+            "visible": fond.visible,
+            "image": base64.b64encode(fond.donnees).decode("ascii"),
+        }
+    return document
 
 
 def vers_json(mecanisme: Mecanisme, horodatage: Optional[str] = None) -> str:

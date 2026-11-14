@@ -16,7 +16,11 @@ et d'en **tracer** les résultats.
 | Actions mécaniques, inertie | Forces, couples, ressorts-amortisseurs, pesanteur ; masse, centre de gravité, moment d'inertie |
 | Configuration initiale et mouvement | Outil *Manipuler*, position des liaisons, moteurs à lois de mouvement |
 | Cinématique, torseurs par PFS/PFD | Trois études : statique, cinématique (dynamique inverse), dynamique |
-| Courbes | Panneau *Courbes*, animation, export CSV et image |
+| Courbes | Panneau *Courbes* : tableau de bord (position, vitesse, accélération, efforts, couples, énergie) ou courbes au choix ; animation ; export **Excel** (`.xlsx`) et image |
+| Solveur stable, points morts | Intégrateurs SciPy (Radau par défaut, BDF, LSODA…), efforts bornés et points morts franchis, emballement détecté et expliqué |
+| Cercles, cames, engrenages | Outil *Cercle* (disque, came excentrique), contact came-poussoir (pointe, galet, plateau), engrenages extérieur, intérieur, pignon-crémaillère avec rendement |
+| Prise en main | Fenêtre de bienvenue, tutoriel animé (`F1`), fiches de cours et boutons « ? » (`Maj+F1`) |
+| Photo d'un schéma | Import d'une photo en fond, étalonnage par deux clics, détection automatique des barres, disques et pivots (OpenCV) |
 | Langue | Français par défaut, anglais fourni, fichiers `locales/*.json` |
 | Distribution Windows | Dossier `Sikax.exe` + `runtime/` + `locales/` + `resources/` par PyInstaller |
 
@@ -56,8 +60,13 @@ python main.py --autotest        vérifie l'installation sans ouvrir de fenêtre
 
 ## 2. Prise en main
 
-Le plus simple est de partir d'un exemple : *Fichier → Exemples → Bielle-manivelle*, puis
-`F5` pour lancer l'étude.
+Au premier lancement, Sikax demande : *Es-tu nouveau sur Sikax ?* Répondre oui lance le
+**tutoriel** : la fenêtre s'assombrit, l'outil présenté est mis en lumière, et un panneau
+montre une courte animation, deux ou trois consignes et les boutons *Suivant* et
+*Compris*. On le relance à tout moment par *Aide → Tutoriel* (`F1`).
+
+Le plus simple est ensuite de partir d'un exemple : *Fichier → Exemples → Bielle-manivelle*,
+puis `F5` pour lancer l'étude.
 
 Pour construire un mécanisme soi-même :
 
@@ -76,12 +85,35 @@ Pour construire un mécanisme soi-même :
 
    ![Validation d'une bielle-manivelle, thème clair](docs/images/sikax_clair.png)
 
-4. **Charger et motoriser.** Outils *Force* (`F`), *Couple* (`C`), *Ressort* (`R`),
+   Plus rapide : cliquer **n'importe où sur un premier solide, puis sur un second**. La
+   liaison est posée au premier clic et les points manquants sont créés sur les deux
+   solides.
+4. **Cercles, cames, engrenages.** Outil *Cercle* (`D`) : clic au centre, glisser jusqu'au
+   rayon. Posé sur un point d'un solide, le cercle s'ajoute à ce solide (came
+   excentrique). Outil *Came* (`K`) : cliquer le cercle de la came, puis la pointe du
+   poussoir. Outil *Engrenage* (`E`) : cliquer deux roues articulées par des pivots (ou
+   une roue et une crémaillère) ; nombres de dents, module, angle de pression et
+   rendement se règlent dans les propriétés, qui affichent diamètres, entraxe et rapport.
+5. **Charger et motoriser.** Outils *Force* (`F`), *Couple* (`C`), *Ressort* (`R`),
    *Moteur* (`O`). Masse et inertie se règlent dans les propriétés de chaque solide ; le
    bouton *Calculer G et l'inertie* les déduit d'une masse répartie sur les barres.
-5. **Étudier.** Onglet *Étude* : choisir statique, cinématique ou dynamique, puis *Lancer
-   l'étude* (`F5`). L'animation démarre ; les onglets *Courbes* et *Efforts* donnent les
-   résultats. Un clic sur une liaison affiche son torseur dans les propriétés.
+6. **Étudier.** Onglet *Étude* : choisir statique, cinématique ou dynamique (et, pour la
+   dynamique, l'intégrateur), puis *Lancer l'étude* (`F5`). L'animation démarre ; l'onglet
+   *Courbes* montre d'emblée position, vitesse, accélération, efforts et couples, l'onglet
+   *Efforts* le tableau des liaisons. Un clic sur une liaison affiche son torseur dans les
+   propriétés. *Fichier → Exporter les résultats (Excel)* (`Ctrl+E`) écrit un classeur
+   `.xlsx` avec les valeurs et des graphiques Excel.
+
+Les boutons **« ? »** des panneaux donnent une définition en deux lignes (cinématique,
+statique, dynamique, moment, couple moteur, torseur, centre de gravité, inertie,
+excentricité, degrés de liberté, isostatisme, engrenages…) ; un clic ouvre la fiche de
+cours correspondante dans l'onglet *Cours* (`Maj+F1`).
+
+**Partir d'une photo.** *Fichier → Importer une photo de schéma* (`Ctrl+Maj+I`) : la
+photo (JPG ou PNG) s'affiche en transparence sous la grille. Cliquer deux points dont on
+connaît la distance, puis la saisir en mm : l'échelle est réglée. *Modèle → Photo de
+fond → Détecter les formes* propose ensuite de créer les barres, les disques et les pivots
+reconnus, à corriger à la main. La photo est enregistrée dans le projet.
 
 Pour changer la **configuration initiale** : outil *Manipuler* (`M`) et glisser un solide,
 ou saisir l'angle d'une pivot dans ses propriétés, ou encore *Étude → Prendre la position
@@ -95,9 +127,12 @@ affichée comme configuration initiale* pendant une animation.
 | `M` | Manipuler le mécanisme | `Espace` | Lire / mettre en pause |
 | `B` | Solide (barre) | `A` | Ajuster la vue |
 | `P` | Point | `G` | Grille |
+| `D` | Cercle (disque, came) | `Ctrl+E` | Exporter vers Excel |
 | `1` `2` `3` `4` | Pivot, glissière, encastrement, ponctuelle | `Ctrl+T` | Thème sombre |
-| `F` `C` `R` `O` | Force, couple, ressort, moteur | `Ctrl+Z` / `Ctrl+Y` | Annuler / rétablir |
-| `Échap` | Abandonner, revenir à la sélection | `Suppr` | Supprimer |
+| `E` `K` | Engrenage, came | `F1` | Tutoriel |
+| `F` `C` `R` `O` | Force, couple, ressort, moteur | `Maj+F1` | Fiches de cours |
+| `Échap` | Abandonner, revenir à la sélection | `Ctrl+Z` / `Ctrl+Y` | Annuler / rétablir |
+| `Suppr` | Supprimer | `Ctrl+Maj+I` | Importer une photo |
 
 Molette : zoom. Clic droit maintenu ou bouton du milieu : déplacer la vue.
 
@@ -118,8 +153,10 @@ sikax/                          dossier à ouvrir dans VS Code
 │   ├── physique/               torseur.py, unites.py
 │   ├── util/                   expression.py (formules du temps, sans eval)
 │   ├── modele/                 LE MODÈLE MÉCANIQUE
-│   │   ├── solide.py           Solide, Point, Inertie
-│   │   ├── liaisons.py         Liaison + Pivot, Glissiere, Encastrement, Ponctuelle
+│   │   ├── solide.py           Solide, Point, Cercle, Inertie
+│   │   ├── liaisons.py         Liaison + Pivot, Glissiere, Encastrement, Ponctuelle, Engrenage, Came
+│   │   ├── contacts.py         géométrie des engrenages et des cames
+│   │   ├── fond.py             photo de fond et son étalonnage
 │   │   ├── catalogue_spatial.py   liaisons normalisées 3D
 │   │   ├── actions.py          Force, Couple, Ressort
 │   │   ├── moteur.py, lois.py  moteurs et lois de mouvement
@@ -131,31 +168,37 @@ sikax/                          dossier à ouvrir dans VS Code
 │   │   ├── systeme.py          mise en équations
 │   │   ├── topologie.py        mobilité, hyperstatisme, graphe
 │   │   ├── assemblage.py       résolution en position
-│   │   ├── cinematique.py      étude cinématique + efforts
+│   │   ├── cinematique.py      étude cinématique + efforts, points morts
 │   │   ├── statique.py         PFS, position d'équilibre
-│   │   ├── dynamique.py        PFD, intégration
-│   │   └── resultats.py        grandeurs calculées, export CSV
+│   │   ├── dynamique.py        PFD, intégration (SciPy solve_ivp)
+│   │   └── resultats.py        grandeurs calculées
 │   ├── fichiers/               LES FICHIERS .sikax
 │   │   ├── lecture.py          lecteur robuste
 │   │   ├── ecriture.py         écriture atomique
 │   │   ├── diagnostics.py      rapport d'anomalies
-│   │   └── migrations.py       anciens formats
+│   │   ├── migrations.py       anciens formats
+│   │   └── excel.py            export des résultats en .xlsx
+│   ├── vision/                 detection.py : traits et cercles d'une photo (OpenCV)
 │   ├── i18n/                   traducteur.py
 │   └── ui/                     L'INTERFACE
 │       ├── fenetre_principale.py
 │       ├── document.py         modèle ouvert, sélection, annuler/rétablir
+│       ├── aide.py             boutons « ? » vers les fiches de cours
 │       ├── theme/              gestionnaire des thèmes clair et sombre
 │       ├── schema/             vue.py, rendu.py, outils.py
-│       ├── panneaux/           arbre, propriétés, étude, validation, courbes…
-│       ├── dialogues/          à propos, compte rendu de lecture
+│       ├── panneaux/           arbre, propriétés, étude, validation, courbes, cours…
+│       ├── tutoriel/           accueil, superposition, étapes, animations
+│       ├── dialogues/          à propos, compte rendu de lecture, détection
 │       └── widgets/            champs de saisie avec unités
 │
 ├── locales/                    fr.json (référence), en.json
 ├── resources/
 │   ├── icons/                  sikax.ico, sikax.png, sikax.svg
 │   ├── themes/                 style.qss, clair.json, sombre.json
-│   └── exemples/               neuf projets .sikax
-├── tests/                      environ 500 tests
+│   ├── exemples/               treize projets .sikax (dont came, engrenages, épicycloïdal)
+│   ├── cours/                  fiches de cours, fr/ et en/
+│   └── tutoriel/               animations GIF facultatives du tutoriel
+├── tests/                      environ 700 tests
 ├── packaging/                  sikax.spec, build_windows.ps1, sikax.iss
 ├── outils/                     génération de l'icône et des exemples
 └── docs/                       architecture, théorie, format, distribution
@@ -216,9 +259,14 @@ contrôle, puis en fait une archive. Le détail est dans
 - Mécanismes **plans** uniquement. L'architecture prépare la 3D (voir
   [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)) mais le solveur spatial reste à écrire.
 - Les liaisons sont **parfaites et bilatérales** : pas de frottement sec, pas de jeu, et
-  une ponctuelle retient dans les deux sens (un changement de signe de l'effort normal
-  est signalé comme un décollement).
-- Pas d'engrenages, de cames ni de courroies.
+  une ponctuelle ou un contact de came retient dans les deux sens (un changement de
+  signe de l'effort normal est signalé comme un décollement). Seuls les engrenages
+  peuvent avoir un rendement.
+- Les cames sont **circulaires** (disque excentrique) ; pas de profil de came quelconque,
+  pas de courroies ni de chaînes. Les engrenages sont droits, à denture droite.
+- La détection des formes sur une photo est une **aide** : elle reconnaît bien un schéma
+  net (traits, cercles d'articulation), moins bien un croquis à main levée ; le résultat
+  se corrige à la main.
 - Un mécanisme **hyperstatique** est calculé, mais la répartition des efforts entre
   liaisons surabondantes n'est pas unique sans modèle de déformation : Sikax donne la
   solution de norme minimale et le dit.

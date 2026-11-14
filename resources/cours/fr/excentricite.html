@@ -1,0 +1,27 @@
+<h1>Excentricité, came et poussoir</h1>
+<p><img src="figure:came" width="360"></p>
+
+<a name="excentricite"></a>
+<h2>Excentricité</h2>
+<p>Un disque est <b>excentrique</b> quand il tourne autour d'un point O différent de son centre C. L'<b>excentricité</b> e est la distance OC. En tournant, le centre C décrit un cercle de rayon e : le bord du disque s'éloigne puis se rapproche de l'axe, ce qui produit un mouvement alternatif.</p>
+<a name="cercle"></a>
+<p class="sikax"><b>Dans Sikax :</b> outil Cercle (touche D) pour tracer le disque, puis une liaison pivot sur un autre point du disque : la distance entre ce point et le centre est l'excentricité, affichée dans les propriétés du solide.</p>
+
+<a name="came"></a>
+<h2>Came et poussoir</h2>
+<p>Une <b>came</b> transforme une rotation en un mouvement de translation (ou d'oscillation) du <b>poussoir</b> qui s'appuie sur elle. Avec une came circulaire excentrique et un poussoir guidé sur un axe passant par O :</p>
+<p class="formule">course = 2·e       y(θ) = e·sin θ + √((R + ρ)² − e²·cos² θ)</p>
+<p>R est le rayon de la came, ρ celui du galet (ρ = 0 pour une pointe).</p>
+
+<a name="poussoirs"></a>
+<h2>Types de poussoirs</h2>
+<ul>
+<li><b>Pointe</b> : contact en un point, la pointe reste sur le profil (|CP| = R). Simple, mais s'use vite.</li>
+<li><b>Galet</b> : une roulette de rayon ρ roule sur la came (|CP| = R + ρ). Frottement réduit.</li>
+<li><b>Plateau</b> (poussoir plat) : une face plane reste tangente à la came. Pour un excentrique, la levée est exactement sinusoïdale : y = e·sin θ + R.</li>
+</ul>
+<p>Dans Sikax, le contact glisse librement : la came peut faire des tours complets sans bloquer le calcul.</p>
+
+<a name="effort_normal"></a>
+<h2>Effort normal et décollement</h2>
+<p>La came pousse le poussoir selon la <b>normale au contact</b>, qui passe par le centre C du cercle. Un contact réel ne peut que pousser : si l'effort normal devient négatif, le poussoir <b>décolle</b>. Il faut alors un ressort de rappel assez raide ; Sikax signale l'instant du décollement.</p>

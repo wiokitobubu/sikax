@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import numpy as np
 
@@ -24,6 +24,8 @@ class Enregistreur:
         self.qdd = np.zeros((nb_instants, n))
         self.torseurs = np.zeros((nb_instants, nl, 5))
         self.efforts_moteurs = np.zeros((nb_instants, nm))
+        self.contacts: Dict[str, Dict[str, np.ndarray]] = {}
+        """Grandeurs propres aux engrenages et aux cames, par liaison."""
         self.avec_efforts = False
         self.nb = 0
 
@@ -46,11 +48,15 @@ class Enregistreur:
             self.avec_efforts = True
             for j, info in enumerate(systeme.liaisons.values()):
                 self.torseurs[i, j] = systeme.torseur_liaison(q, J, multiplicateurs, info)
+                if info.bloc is not None:
+                    grandeurs = self.contacts.setdefault(info.liaison.id, {})
+                    for nom, valeur in systeme.grandeurs_contact(q, qd, multiplicateurs, info).items():
+                        grandeurs.setdefault(nom, np.zeros(self.t.size))[i] = valeur
             for j, info in enumerate(systeme.moteurs.values()):
                 self.efforts_moteurs[i, j] = systeme.effort_moteur(multiplicateurs, info)
         else:
             for j, info in enumerate(systeme.liaisons.values()):
-                px, py = systeme.position(q, info.attache_b)
+                px, py = info.bloc.point_contact(q) if info.bloc is not None else systeme.position(q, info.attache_b)
                 self.torseurs[i, j, 3:] = (px, py)
         self.nb += 1
 
@@ -113,6 +119,8 @@ class Enregistreur:
             angle = np.zeros(nb)
             vitesse = np.zeros(nb)
             rotation = np.zeros(nb)
+            if liaison.CONTACT:
+                tx = rz = False  # le mouvement relatif au contact se lit sur les solides
             for i in range(nb):
                 deplacement[i], angle[i] = systeme.coordonnee_liaison(Q[i], info)
                 vitesse[i], rotation[i] = systeme.vitesse_liaison(Q[i], QD[i], info)
@@ -137,6 +145,10 @@ class Enregistreur:
                     res.ajouter(base + "Fn", "force", normal, liaison.nom)
                     if liaison.type == "ponctuelle":
                         self._signaler_decollement(res, liaison.nom, t, normal)
+                for nom, valeurs in self.contacts.get(liaison.id, {}).items():
+                    res.ajouter(base + nom, "moment" if nom.startswith("couple") else "force", valeurs[:nb], liaison.nom)
+                if liaison.type == "came" and base + "Fn" in res.canaux:
+                    self._signaler_decollement(res, liaison.nom, t, res.valeurs(base + "Fn"))
 
         for j, info in enumerate(systeme.moteurs.values()):
             moteur = info.moteur

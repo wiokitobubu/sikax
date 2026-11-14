@@ -17,7 +17,12 @@ from .format import VERSION
 
 Migration = Callable[[Dict[str, Any]], Dict[str, Any]]
 
-MIGRATIONS: Dict[int, Migration] = {}
+def _version_1_vers_2(donnees: Dict[str, Any]) -> Dict[str, Any]:
+    """La version 2 n'ajoute que des éléments facultatifs : un fichier 1 est déjà valide."""
+    return donnees
+
+
+MIGRATIONS: Dict[int, Migration] = {1: _version_1_vers_2}
 
 
 def migrer(donnees: Dict[str, Any], version: int, rapport: Rapport) -> Dict[str, Any]:

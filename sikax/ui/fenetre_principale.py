@@ -12,10 +12,11 @@ import os
 from typing import Dict, List, Optional
 
 import numpy as np
-from PySide6.QtCore import QByteArray, QPoint, QSettings, QSize, Qt, QThread, QTimer, Signal
-from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QIcon, QKeySequence, QPainter
+from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QPoint, QPointF, QSettings, QSize, Qt, QThread, QTimer, Signal
+from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QIcon, QImage, QKeySequence, QPainter
 from PySide6.QtSvg import QSvgGenerator
 from PySide6.QtWidgets import (
+    QDialog,
     QDockWidget,
     QFileDialog,
     QLabel,
@@ -41,14 +42,19 @@ from ..calcul import (
 )
 from ..chemins import dossier_exemples, icone_application
 from ..fichiers import EXTENSION, ErreurEcriture, ErreurLecture, charger
+from ..fichiers.excel import Textes, exporter_excel
 from ..i18n import texte_diagnostic, texte_erreur_calcul, texte_erreur_fichier, texte_message_calcul, tr, traducteur
 from ..modele import Mecanisme
+from ..modele.bibliotheque import MODELES
+from ..modele.fond import FondPlan, format_image
+from .aide import aide
 from .dialogues.a_propos import DialogueAPropos
 from .dialogues.diagnostics import DialogueDiagnostics
 from .document import Document, Ref
 from .icones import icone
 from .panneaux.arbre import PanneauArbre
 from .panneaux.courbes import PanneauCourbes
+from .panneaux.cours import PanneauCours
 from .panneaux.etude import PanneauEtude
 from .panneaux.journal import PanneauJournal
 from .panneaux.lecteur import BarreLecture
@@ -57,8 +63,12 @@ from .panneaux.resultats import PanneauResultats
 from .panneaux.validation import PanneauValidation
 from .schema import VueSchema
 from .theme import theme
+from .tutoriel import DialogueAccueil, SuperpositionTutoriel
 
 RECENTS_MAX = 8
+COTE_MAX_PHOTO = 4000
+"""Une photo plus grande est réduite à l'import : le projet reste léger, la précision suffit."""
+FORMATS_PHOTO = "*.png *.jpg *.jpeg *.bmp *.gif *.webp"
 
 # nom de l'outil → (pictogramme, raccourci clavier)
 OUTILS = {
@@ -66,14 +76,19 @@ OUTILS = {
     "manipuler": ("manipuler", "M"),
     "barre": ("barre", "B"),
     "point": ("point", "P"),
+    "cercle": ("cercle", "D"),
     "pivot": ("pivot", "1"),
     "glissiere": ("glissiere", "2"),
     "encastrement": ("encastrement", "3"),
     "ponctuelle": ("ponctuelle", "4"),
+    "engrenage": ("engrenage", "E"),
+    "came": ("came", "K"),
     "force": ("force", "F"),
     "couple": ("couple", "C"),
     "ressort": ("ressort", "R"),
     "moteur": ("moteur", "O"),
+    "etalonnage": ("etalon", None),
+    "photo": ("deplacer", None),
 }
 
 
@@ -138,18 +153,21 @@ class FenetrePrincipale(QMainWindow):
         self.courbes = PanneauCourbes(self.doc)
         self.resultats = PanneauResultats(self.doc)
         self.journal = PanneauJournal()
+        self.cours = PanneauCours()
+        self._tutoriel: Optional[SuperpositionTutoriel] = None
 
         # Trois blocs ancrables : le modèle à gauche, l'inspecteur à droite (propriétés,
         # étude) et l'analyse en bas (validation, courbes, efforts, journal).
         self.onglets: Dict[str, QWidget] = {
             "proprietes": self.proprietes,
             "etude": self.etude,
+            "cours": self.cours,
             "validation": self.validation,
             "courbes": self.courbes,
             "resultats": self.resultats,
             "journal": self.journal,
         }
-        self.onglets_droite = self._onglets("proprietes", "etude")
+        self.onglets_droite = self._onglets("proprietes", "etude", "cours")
         self.onglets_bas = self._onglets("validation", "courbes", "resultats", "journal")
         self.docks: Dict[str, QDockWidget] = {}
         self._ancrer("arbre", self.arbre, Qt.LeftDockWidgetArea)
@@ -177,7 +195,10 @@ class FenetrePrincipale(QMainWindow):
         self.etude.lancer.connect(self.lancer_etude)
         self.etude.annuler.connect(self.arreter_calcul)
         self.etude.equilibre.connect(self.chercher_equilibre)
-        self.courbes.exporter_csv.connect(self.exporter_resultats)
+        self.courbes.exporter_demande.connect(self.exporter_resultats)
+        self.proprietes.outil_demande.connect(self.vue.choisir_outil)
+        self.proprietes.detection_demandee.connect(self.detecter_formes)
+        aide.ouvrir.connect(self.ouvrir_cours)
         theme.change.connect(lambda _: self._icones())
         traducteur.abonner(self.traduire)
 
@@ -233,8 +254,11 @@ class FenetrePrincipale(QMainWindow):
         a("ouvrir", self.ouvrir, QKeySequence.Open, "ouvrir")
         a("enregistrer", self.enregistrer, QKeySequence.Save, "enregistrer")
         a("enregistrer_sous", self.enregistrer_sous, QKeySequence("Ctrl+Shift+S"))
+        a("importer_photo", self.importer_photo, QKeySequence("Ctrl+Shift+I"), "photo")
+        a("detecter_formes", self.detecter_formes, None, "detecter")
+        a("supprimer_photo", lambda: self.doc.supprimer(Ref("fond", "fond")), None, "supprimer")
         a("exporter_image", self.exporter_image, None, "image")
-        a("exporter_resultats", lambda: self.exporter_resultats([]), None, "exporter")
+        a("exporter_resultats", lambda: self.exporter_resultats([]), QKeySequence("Ctrl+E"), "tableur")
         a("quitter", self.close, QKeySequence("Ctrl+Q"))
 
         a("annuler", self.doc.annuler, QKeySequence.Undo, "annuler")
@@ -260,7 +284,7 @@ class FenetrePrincipale(QMainWindow):
         self.groupe_outils = QActionGroup(self)
         self.groupe_outils.setExclusive(True)
         for nom, (pictogramme, raccourci) in OUTILS.items():
-            action = a(f"outil_{nom}", lambda etat, n=nom: etat and self.vue.choisir_outil(n), QKeySequence(raccourci), pictogramme, cochable=True)
+            action = a(f"outil_{nom}", lambda etat, n=nom: etat and self.vue.choisir_outil(n), QKeySequence(raccourci) if raccourci else None, pictogramme, cochable=True)
             self.groupe_outils.addAction(action)
         a("pivots_automatiques", lambda etat: setattr(self.vue, "pivots_automatiques", etat), None, "pivot_auto", cochable=True)
 
@@ -271,6 +295,9 @@ class FenetrePrincipale(QMainWindow):
         a("effacer_resultats", lambda: self.doc.definir_resultats(None))
         a("lecture", self.lecteur.basculer, QKeySequence("Space"), "lancer")
         a("a_propos", lambda: DialogueAPropos(self).exec(), None, "info")
+        a("tutoriel", self.tutoriel, QKeySequence("F1"), "tutoriel")
+        a("cours", lambda: self.ouvrir_cours(self.cours.fiche, ""), QKeySequence("Shift+F1"), "cours")
+        a("accueil", self.accueillir, None, "aide")
 
     def _creer_menus(self) -> None:
         barre = self.menuBar()
@@ -279,12 +306,15 @@ class FenetrePrincipale(QMainWindow):
             self.menus[nom] = barre.addMenu("")
         m, a = self.menus, self.commandes
 
-        m["fichier"].addActions([a["nouveau"], a["ouvrir"]])
+        m["fichier"].addAction(a["nouveau"])
+        self.menu_modeles = m["fichier"].addMenu("")
+        m["fichier"].addAction(a["ouvrir"])
         self.menu_recents = m["fichier"].addMenu("")
         self.menu_exemples = m["fichier"].addMenu("")
         m["fichier"].addSeparator()
         m["fichier"].addActions([a["enregistrer"], a["enregistrer_sous"]])
         m["fichier"].addSeparator()
+        m["fichier"].addAction(a["importer_photo"])
         m["fichier"].addActions([a["exporter_image"], a["exporter_resultats"]])
         m["fichier"].addSeparator()
         m["fichier"].addAction(a["quitter"])
@@ -308,13 +338,18 @@ class FenetrePrincipale(QMainWindow):
 
         m["modele"].addActions([a["outil_selection"], a["outil_manipuler"]])
         m["modele"].addSeparator()
-        m["modele"].addActions([a["outil_barre"], a["outil_point"]])
+        m["modele"].addActions([a["outil_barre"], a["outil_point"], a["outil_cercle"]])
         m["modele"].addSeparator()
-        m["modele"].addActions([a[f"outil_{n}"] for n in ("pivot", "glissiere", "encastrement", "ponctuelle")])
+        m["modele"].addActions([a[f"outil_{n}"] for n in ("pivot", "glissiere", "encastrement", "ponctuelle", "engrenage", "came")])
         m["modele"].addSeparator()
         m["modele"].addActions([a[f"outil_{n}"] for n in ("force", "couple", "ressort", "moteur")])
         m["modele"].addSeparator()
         m["modele"].addAction(a["pivots_automatiques"])
+        m["modele"].addSeparator()
+        self.menu_photo = m["modele"].addMenu("")
+        self.menu_photo.addActions([a["importer_photo"], a["outil_etalonnage"], a["outil_photo"], a["detecter_formes"]])
+        self.menu_photo.addSeparator()
+        self.menu_photo.addAction(a["supprimer_photo"])
 
         m["etude"].addActions([a["lancer"], a["arreter"]])
         m["etude"].addSeparator()
@@ -322,6 +357,8 @@ class FenetrePrincipale(QMainWindow):
         m["etude"].addSeparator()
         m["etude"].addActions([a["lecture"], a["effacer_resultats"]])
 
+        m["aide"].addActions([a["tutoriel"], a["cours"], a["accueil"]])
+        m["aide"].addSeparator()
         m["aide"].addAction(a["a_propos"])
 
     def _creer_barres(self) -> None:
@@ -351,7 +388,12 @@ class FenetrePrincipale(QMainWindow):
         self.barre_outils.setIconSize(QSize(22, 22))
         self.barre_outils.setOrientation(Qt.Vertical)
         self.addToolBar(Qt.LeftToolBarArea, self.barre_outils)
-        for groupe in (("selection", "manipuler"), ("barre", "point"), ("pivot", "glissiere", "encastrement", "ponctuelle"), ("force", "couple", "ressort", "moteur")):
+        for groupe in (
+            ("selection", "manipuler"),
+            ("barre", "point", "cercle"),
+            ("pivot", "glissiere", "encastrement", "ponctuelle", "engrenage", "came"),
+            ("force", "couple", "ressort", "moteur"),
+        ):
             if groupe[0] != "selection":
                 self.barre_outils.addSeparator()
             self.barre_outils.addActions([a[f"outil_{n}"] for n in groupe])
@@ -380,6 +422,10 @@ class FenetrePrincipale(QMainWindow):
             menu.setTitle(tr(f"menu.{nom}"))
         self.menu_recents.setTitle(tr("menu.recents"))
         self.menu_exemples.setTitle(tr("menu.exemples"))
+        self.menu_modeles.setTitle(tr("menu.modeles"))
+        self.menu_modeles.setIcon(icone("modeles"))
+        self.menu_photo.setTitle(tr("menu.photo"))
+        self.menu_photo.setIcon(icone("photo"))
         self.menu_langue.setTitle(tr("menu.langue"))
         self.menu_panneaux.setTitle(tr("menu.panneaux"))
         for nom, dock in self.docks.items():
@@ -393,6 +439,7 @@ class FenetrePrincipale(QMainWindow):
         self._remplir_langues()
         self._remplir_recents()
         self._remplir_exemples()
+        self._remplir_modeles()
         self._icones()
         self._sur_etat()
         self._sur_modele()
@@ -500,6 +547,14 @@ class FenetrePrincipale(QMainWindow):
             self.menu_exemples.addAction(action)
         self.menu_exemples.setEnabled(bool(fichiers))
 
+    def _remplir_modeles(self) -> None:
+        self.menu_modeles.clear()
+        for nom in MODELES:
+            action = QAction(icone("modeles"), tr(f"modele_depart.{nom}"), self.menu_modeles)
+            action.setToolTip(tr(f"modele_depart.{nom}_aide"))
+            action.triggered.connect(lambda _=False, n=nom: self.nouveau_depuis_modele(n))
+            self.menu_modeles.addAction(action)
+
     # ---------------------------------------------------------------- réactions
     def _sur_etat(self) -> None:
         doc = self.doc
@@ -514,6 +569,9 @@ class FenetrePrincipale(QMainWindow):
         a["effacer_resultats"].setEnabled(resultats)
         a["adopter_configuration"].setEnabled(resultats and doc.resultats.nb_instants > 1)
         a["lecture"].setEnabled(resultats and doc.resultats.nb_instants > 1)
+        photo = doc.mecanisme.fond is not None
+        for nom in ("detecter_formes", "supprimer_photo", "outil_etalonnage", "outil_photo"):
+            a[nom].setEnabled(photo)
         en_cours = self._calcul is not None
         a["lancer"].setEnabled(not en_cours)
         a["arreter"].setEnabled(en_cours)
@@ -536,7 +594,7 @@ class FenetrePrincipale(QMainWindow):
                 action.blockSignals(True)
                 action.setChecked(bool(affichage.get(cle, True)))
                 action.blockSignals(False)
-        QTimer.singleShot(0, lambda: self.etiquette_bilan.setText(self.validation.resume()))
+        QTimer.singleShot(0, self, lambda: self.etiquette_bilan.setText(self.validation.resume()))
 
     def _sur_outil(self, nom: str) -> None:
         action = self.commandes.get(f"outil_{nom}")
@@ -660,6 +718,17 @@ class FenetrePrincipale(QMainWindow):
         self.vue.demander_ajustement()
         return True
 
+    def nouveau_depuis_modele(self, nom: str) -> bool:
+        """Nouveau projet sans titre construit à partir d'un modèle de départ (pendule, came, engrenages)."""
+        if not self._confirmer_abandon():
+            return False
+        self.arreter_calcul()
+        mecanisme = MODELES[nom]()
+        self.doc.nouveau(mecanisme)
+        self.noter("info", tr("fichier.modele_ouvert", nom=tr(f"modele_depart.{nom}")))
+        self.vue.demander_ajustement()
+        return True
+
     def ouvrir_exemple(self, chemin: str) -> bool:
         """Ouvre un exemple comme nouveau projet sans titre : l'original n'est jamais écrasé."""
         if not self._confirmer_abandon():
@@ -721,23 +790,151 @@ class FenetrePrincipale(QMainWindow):
         return reussi
 
     def exporter_resultats(self, cles: Optional[List[str]] = None, chemin: Optional[str] = None) -> bool:
+        """Classeur Excel des grandeurs données (toutes si ``cles`` est vide), avec ses graphiques."""
         resultats = self.doc.resultats
         if resultats is None:
             return False
         if not chemin:
-            depart = os.path.splitext(self.doc.chemin or tr("fenetre.sans_titre"))[0] + ".csv"
-            chemin, _ = QFileDialog.getSaveFileName(self, tr("fichier.dialogue.csv"), depart, "CSV (*.csv)")
+            depart = os.path.splitext(self.doc.chemin or tr("fenetre.sans_titre"))[0] + ".xlsx"
+            chemin, _ = QFileDialog.getSaveFileName(self, tr("fichier.dialogue.excel"), depart, tr("fichier.filtre_excel"))
             if not chemin:
                 return False
+        if not chemin.lower().endswith(".xlsx"):
+            chemin += ".xlsx"
         choisies = list(cles) if cles else list(resultats.canaux)
-        entetes = {cle: self.courbes.libelle(cle, avec_unite=False) for cle in choisies}
+        m = self.doc.mecanisme
+        unites = m.unites
+        etude = m.etude
+        informations = [
+            (tr("excel.projet"), m.titre or self.doc.nom or tr("fenetre.sans_titre")),
+            (tr("excel.auteur"), m.auteur),
+            (tr("excel.etude"), tr(f"etude.type.{resultats.type_etude}")),
+            (tr("excel.duree"), f"{float(resultats.temps[-1]) if resultats.nb_instants else 0.0:g} s"),
+            (tr("excel.instants"), str(resultats.nb_instants)),
+            (tr("excel.unites"), f"{unites.longueur}, {unites.angle}"),
+            (tr("excel.mobilite"), str(resultats.mobilite_libre)),
+            (tr("excel.hyperstatisme"), str(resultats.hyperstatisme)),
+        ]
+        if resultats.type_etude == "dynamique":
+            informations.append((tr("excel.methode"), f"{resultats.methode or etude.methode} (rtol = {etude.precision:g})"))
+        textes = Textes(
+            feuille_resultats=tr("excel.feuille_resultats"),
+            feuille_graphiques=tr("excel.feuille_graphiques"),
+            feuille_informations=tr("excel.feuille_informations"),
+            temps=tr("excel.temps"),
+            informations=informations,
+            messages_titre=tr("excel.messages"),
+            messages=[texte_message_calcul(message) for message in resultats.messages],
+        )
+        libelles = {cle: self.courbes.libelle(cle, avec_unite=False) for cle in choisies}
         try:
-            lignes = resultats.vers_csv(chemin, choisies, self.doc.mecanisme.unites, entetes=entetes)
-        except OSError as erreur:
-            self.noter("erreur", tr("fichier.export_impossible", nom=os.path.basename(chemin)) + f" ({erreur.strerror})")
+            lignes = exporter_excel(resultats, chemin, choisies, unites, libelles, self.courbes.graphiques_excel(), textes)
+        except ErreurEcriture as erreur:
+            self._erreur_fichier(erreur)
             return False
-        self.noter("succes", tr("fichier.csv_exporte", nom=os.path.basename(chemin), lignes=lignes, colonnes=len(choisies)))
+        self.noter("succes", tr("fichier.excel_exporte", nom=os.path.basename(chemin), lignes=lignes, colonnes=len(choisies)))
         return True
+
+    # -------------------------------------------------------------- photo de fond
+    def importer_photo(self, chemin: Optional[str] = None) -> bool:
+        """Place la photo d'un schéma sous le mécanisme, puis propose de l'étalonner."""
+        if not chemin:
+            depart = os.path.dirname(self.doc.chemin) if self.doc.chemin else ""
+            chemin, _ = QFileDialog.getOpenFileName(self, tr("fichier.dialogue.photo"), depart, f"{tr('fichier.filtre_photo')} ({FORMATS_PHOTO})")
+            if not chemin:
+                return False
+        image = QImage(chemin)
+        if image.isNull():
+            self.noter("erreur", tr("fichier.photo_illisible", nom=os.path.basename(chemin)))
+            return False
+        try:
+            with open(chemin, "rb") as fichier:
+                donnees = fichier.read()
+        except OSError as erreur:
+            self.noter("erreur", tr("fichier.photo_illisible", nom=os.path.basename(chemin)) + f" ({erreur.strerror})")
+            return False
+        nature = format_image(donnees)
+        if nature is None or max(image.width(), image.height()) > COTE_MAX_PHOTO:
+            # format exotique ou image démesurée : réencodée en JPEG, d'une taille raisonnable
+            if max(image.width(), image.height()) > COTE_MAX_PHOTO:
+                image = image.scaled(COTE_MAX_PHOTO, COTE_MAX_PHOTO, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            octets = QByteArray()
+            tampon = QBuffer(octets)
+            tampon.open(QIODevice.WriteOnly)
+            image.convertToFormat(QImage.Format_RGB32).save(tampon, "JPEG", 90)
+            donnees, nature = bytes(octets), "jpeg"
+        vue = self.vue
+        largeur = 0.8 * vue.width() / vue.echelle
+        centre_x, centre_y = vue.monde(QPointF(vue.width() / 2.0, vue.height() / 2.0))
+        hauteur = largeur * image.height() / max(image.width(), 1)
+        fond = FondPlan(donnees, nature, image.width(), image.height(), centre_x - largeur / 2.0, centre_y - hauteur / 2.0, largeur, nom=os.path.basename(chemin))
+        with self.doc.modification() as m:
+            m.fond = fond
+        self.doc.selectionner(Ref("fond", "fond"))
+        self.vue.choisir_outil("etalonnage")
+        self.noter("info", tr("fichier.photo_importee", nom=fond.nom))
+        return True
+
+    def detecter_formes(self) -> None:
+        """Détection automatique des traits et des cercles de la photo de fond."""
+        from ..vision import creer_solides, disponible
+        from .dialogues.detection import DialogueDetection
+
+        fond = self.doc.mecanisme.fond
+        if fond is None:
+            self.noter("avertissement", tr("outil.etalonnage.sans_photo"))
+            return
+        if not disponible():
+            QMessageBox.information(self, __app_name__, tr("detection.indisponible"))
+            return
+        dialogue = DialogueDetection(fond, self)
+        if dialogue.exec() != QDialog.Accepted or dialogue.detection is None:
+            return
+        with self.doc.modification() as m:
+            nombres = creer_solides(m, m.fond, dialogue.detection, dialogue.barres.isChecked(), dialogue.disques.isChecked(), dialogue.pivots.isChecked())
+        self.noter("succes", tr("detection.cree", barres=nombres[0], disques=nombres[1], pivots=nombres[2]))
+
+    # ----------------------------------------------------------- aide et tutoriel
+    def ouvrir_cours(self, fiche: str, section: str = "") -> None:
+        """Montre une fiche de cours (à une section donnée) dans le panneau « Cours »."""
+        self.docks["inspecteur"].show()
+        self.montrer("cours")
+        self.cours.afficher(fiche, section)
+
+    def tutoriel(self, debut: int = 0) -> SuperpositionTutoriel:
+        """Lance (ou relance) le tutoriel animé, par-dessus la fenêtre."""
+        if self._tutoriel is not None:
+            try:
+                self._tutoriel.fermer()
+            except RuntimeError:
+                pass
+        self.vue.choisir_outil("selection")
+        self._tutoriel = SuperpositionTutoriel(self, debut=debut)
+        self._tutoriel.termine.connect(self._tutoriel_termine)
+        return self._tutoriel
+
+    def _tutoriel_termine(self) -> None:
+        self._tutoriel = None
+        self.noter("info", tr("tutoriel.termine_message"))
+
+    def accueillir(self) -> Optional[str]:
+        """Fenêtre de bienvenue ; retourne le choix (``nouveau`` ou ``habitue``)."""
+        reglages = self._reglages()
+        masque = bool(reglages.value("accueil/masquer", False, bool)) if reglages is not None else False
+        dialogue = DialogueAccueil(self, masque)
+        dialogue.exec()
+        if reglages is not None:
+            reglages.setValue("accueil/masquer", dialogue.ne_plus_demander)
+        if dialogue.choix == DialogueAccueil.NOUVEAU:
+            self.tutoriel()
+        elif dialogue.choix == DialogueAccueil.HABITUE:
+            self.noter("info", tr("accueil_dialogue.bon_travail"))
+        return dialogue.choix
+
+    def accueil_au_demarrage(self) -> bool:
+        """Vrai si la fenêtre de bienvenue doit s'ouvrir au lancement."""
+        reglages = self._reglages()
+        return reglages is not None and not bool(reglages.value("accueil/masquer", False, bool))
 
     # ------------------------------------------------------------------- calcul
     def lancer_etude(self) -> None:

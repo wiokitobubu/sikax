@@ -1,0 +1,23 @@
+<h1>Moment of a force</h1>
+<p>The moment of a force measures its ability to make a body <b>turn</b> about a point.</p>
+<p><img src="figure:moment" width="360"></p>
+<a name="definition"></a>
+<h2>Definition</h2>
+<p>For a force <b>F</b> applied at point P, its moment at point A is the vector:</p>
+<p class="formule">M<sub>A</sub>(F) = AP ∧ F</p>
+<p>In the (x, y) plane this vector lies along z; only its component is kept:</p>
+<p class="formule">M<sub>A</sub> = (x<sub>P</sub> − x<sub>A</sub>) · F<sub>y</sub> − (y<sub>P</sub> − y<sub>A</sub>) · F<sub>x</sub></p>
+<ul>
+<li>Positive: the force turns anticlockwise.</li>
+<li>Negative: clockwise.</li>
+<li>Unit: the newton-metre (N·m).</li>
+</ul>
+<a name="bras_de_levier"></a>
+<h2>Lever arm</h2>
+<p>The moment only depends on the <b>distance d</b> between A and the force's line of action (the lever arm):</p>
+<p class="formule">|M<sub>A</sub>(F)| = F · d</p>
+<p>A force whose line of action passes through A has zero moment at A: it does not turn about A. This is what happens at a slider-crank's <a href="fiche:points_morts">dead point</a>.</p>
+<a name="force"></a>
+<h2>Forces in Sikax</h2>
+<p>A force is given by its components F<sub>x</sub>, F<sub>y</sub> (N), in the global frame or in the body frame (a “follower” force turning with the body). Components accept an expression of time, for example <code>50*sin(2*pi*t)</code>.</p>
+<p class="sikax"><b>In Sikax:</b> Force tool (key F): click the point of application and drag in the force's direction.</p>

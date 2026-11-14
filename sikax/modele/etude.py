@@ -6,6 +6,14 @@ from dataclasses import dataclass, replace
 
 TYPES_ETUDE = ("statique", "cinematique", "dynamique")
 
+METHODES = ("Radau", "BDF", "LSODA", "DOP853", "RK45")
+"""Intégrateurs de ``scipy.integrate.solve_ivp`` proposés pour l'étude dynamique.
+
+Radau et BDF sont implicites (robustes face aux problèmes raides : ressorts
+très rigides, amortissements forts, solides très légers) ; LSODA bascule seul
+entre une méthode explicite et BDF ; DOP853 et RK45 sont explicites."""
+METHODE_PAR_DEFAUT = "Radau"
+
 
 @dataclass
 class Etude:
@@ -31,9 +39,14 @@ class Etude:
     precision: float = 1e-8
     """Tolérance relative de l'intégrateur en dynamique."""
 
+    methode: str = METHODE_PAR_DEFAUT
+    """Intégrateur de l'étude dynamique (voir ``METHODES``)."""
+
     def __post_init__(self) -> None:
         if self.type not in TYPES_ETUDE:
             self.type = "cinematique"
+        if self.methode not in METHODES:
+            self.methode = METHODE_PAR_DEFAUT
 
     def nombre_de_pas(self) -> int:
         if self.pas <= 0.0 or self.duree <= 0.0:

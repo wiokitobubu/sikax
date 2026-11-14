@@ -1,0 +1,30 @@
+<h1>Points morts</h1>
+<p><img src="figure:point_mort" width="360"></p>
+
+<a name="definition"></a>
+<h2>Définition</h2>
+<p>Un <b>point mort</b> est une position où l'organe moteur n'a plus de prise sur le mécanisme : une petite variation de la commande ne produit aucun mouvement de l'autre organe, ou au contraire une vitesse infinie serait nécessaire pour le suivre.</p>
+<ul>
+<li><b>Bielle-manivelle</b> : au point mort haut et au point mort bas, la manivelle et la bielle sont alignées. La force du piston passe par l'axe de la manivelle : son moment est nul.</li>
+<li><b>Quadrilatère articulé</b> : quand le balancier atteint une position extrême, la manivelle et la bielle sont alignées.</li>
+</ul>
+
+<a name="franchir"></a>
+<h2>Comment les franchir</h2>
+<ul>
+<li>Piloter l'organe qui garde le contrôle (la manivelle plutôt que le piston).</li>
+<li>Utiliser l'<b>inertie</b> : un volant d'inertie emmène le mécanisme au-delà du point mort (moteur thermique, machine à coudre à pédale). C'est une étude <b>dynamique</b>.</li>
+<li>Associer plusieurs mécanismes décalés (moteur à plusieurs cylindres).</li>
+</ul>
+
+<a name="transmission"></a>
+<h2>Angle de transmission</h2>
+<p>Pour un quadrilatère, l'angle de transmission μ est l'angle entre la bielle et le balancier. La transmission est bonne pour μ proche de 90° ; elle devient mauvaise (efforts très grands pour un couple donné) quand μ tend vers 0° ou 180°, c'est-à-dire près d'un point mort.</p>
+
+<a name="sikax"></a>
+<h2>Ce que fait Sikax</h2>
+<ul>
+<li>En cinématique, le mécanisme est suivi au travers des points morts quand la loi du moteur le permet (piston piloté sur toute sa course, avec une vitesse nulle aux extrémités) : la manivelle continue dans le sens du mouvement. Vitesses et accélérations y sont tirées des positions, et les efforts restent bornés.</li>
+<li>Si la loi demande l'impossible (pousser le piston au-delà de sa course), le calcul s'arrête proprement et l'explique.</li>
+<li>Les intervalles passés près d'un point mort sont grisés dans les courbes ; un effort moteur qui s'y envole est signalé.</li>
+</ul>

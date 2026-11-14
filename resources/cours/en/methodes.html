@@ -1,0 +1,26 @@
+<h1>How Sikax computes</h1>
+<p>This sheet describes, for the curious, what happens when you click “Run”.</p>
+<a name="equations"></a>
+<h2>The equations</h2>
+<p>Each moving body is described by three coordinates q = (x<sub>G</sub>, y<sub>G</sub>, θ). Each joint is written as constraint equations Φ(q, t) = 0; joint forces are the <b>Lagrange multipliers</b> λ:</p>
+<p class="formule">M · q̈ + Φqᵀ · λ = Q(q, q̇, t)        Φ(q, t) = 0</p>
+<a name="positions"></a>
+<h2>Positions</h2>
+<p>The position satisfying the joints is found by the Gauss-Newton method, starting from the previous position (continuation). Near a dead point the prediction extends the positions already computed, to cross the dead point in the direction of motion.</p>
+<a name="methode"></a>
+<h2>Dynamic study: the integrator</h2>
+<p>The motion is obtained by integrating the equations in time with <code>scipy.integrate.solve_ivp</code>. Several methods are offered:</p>
+<table>
+<tr><th>Method</th><th>Type</th><th>When to use it</th></tr>
+<tr><td><b>Radau</b> (default)</td><td>implicit, order 5</td><td>robust and accurate; stiff springs, strong damping, light bodies</td></tr>
+<tr><td><b>BDF</b></td><td>implicit, variable order</td><td>stiff problems, often faster than Radau</td></tr>
+<tr><td><b>LSODA</b></td><td>automatic</td><td>switches by itself between an explicit method and BDF; very fast</td></tr>
+<tr><td><b>DOP853</b>, <b>RK45</b></td><td>explicit (Runge-Kutta)</td><td>smooth motions without stiffness</td></tr>
+</table>
+<p>To keep these integrators stable everywhere, even at dead points, Sikax computes accelerations with an <b>augmented Lagrangian</b> (the joints are weighted by a very large coefficient α, and the exact solution is recovered by iterations) and makes the joints <b>attractive</b>: a small numerical drift fades by itself. At output times, the position is projected exactly back onto the joints.</p>
+<a name="precision"></a>
+<h2>Precision</h2>
+<p>The precision is the integrator's relative tolerance (10⁻⁸ by default): the error made at each step stays of that order. A looser precision (10⁻⁶) computes faster; a stricter one brings nothing beyond 10⁻¹⁰. The mechanical energy of a frictionless system is a good witness: it must stay constant.</p>
+<a name="emballement"></a>
+<h2>Runaway</h2>
+<p>If a constant motor torque is balanced by nothing, the speed grows without end and the forces with it (they grow with the square of the speed). This is not a computing error: Sikax warns, and stops the computation beyond 10,000 rad/s.</p>

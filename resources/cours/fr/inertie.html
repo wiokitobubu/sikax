@@ -1,0 +1,27 @@
+<h1>Moment d'inertie</h1>
+<p>Le moment d'inertie mesure la résistance d'un solide à la mise en <b>rotation</b>, comme la masse mesure sa résistance à la mise en mouvement de translation.</p>
+<p><img src="figure:inertie" width="360"></p>
+
+<a name="jz"></a>
+<h2>Définition</h2>
+<p class="formule">J<sub>Δ</sub> = ∫ r² dm      (r : distance à l'axe Δ ; unité kg·m²)</p>
+<p>Sikax demande J<sub>G</sub>, le moment d'inertie autour de l'axe (G, z) perpendiculaire au plan.</p>
+
+<a name="formules"></a>
+<h2>Formules usuelles (solides homogènes de masse m)</h2>
+<table>
+<tr><th>Solide</th><th>Axe</th><th>J</th></tr>
+<tr><td>Barre mince de longueur L</td><td>par son milieu</td><td>m·L²/12</td></tr>
+<tr><td>Barre mince de longueur L</td><td>par une extrémité</td><td>m·L²/3</td></tr>
+<tr><td>Disque plein de rayon R</td><td>par son centre</td><td>m·R²/2</td></tr>
+<tr><td>Anneau (couronne mince) de rayon R</td><td>par son centre</td><td>m·R²</td></tr>
+<tr><td>Point matériel à la distance d</td><td>—</td><td>m·d²</td></tr>
+</table>
+
+<a name="huygens"></a>
+<h2>Théorème de Huygens</h2>
+<p>Autour d'un axe parallèle à (G, z), situé à la distance d de G :</p>
+<p class="formule">J<sub>A</sub> = J<sub>G</sub> + m · d²</p>
+<a name="rubrique"></a>
+<h2>Rôle dans les calculs</h2>
+<p>Le théorème du moment dynamique donne Σ M<sub>G</sub> = J<sub>G</sub>·θ̈ : à couple égal, un volant d'inertie (J grand) accélère peu. En dynamique, l'inertie fait franchir les points morts ; en cinématique avec effets d'inertie, elle augmente le couple moteur pendant les accélérations.</p>

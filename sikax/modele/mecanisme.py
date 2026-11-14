@@ -11,25 +11,32 @@ from __future__ import annotations
 import copy
 import math
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
 from ..geometrie import Pose
 from ..geometrie.vecteurs import Vec2
 from ..physique.unites import Unites
 from ..util.expression import ErreurExpression, compiler
 from .actions import ActionMecanique, Couple, Force, Ressort
+from .contacts import Contact, contact_came_plateau, contact_came_point, contact_cremaillere, contact_roues
 from .etude import Etude
-from .liaisons import Encastrement, Glissiere, Liaison, classe_liaison
+from .fond import FondPlan
+from .liaisons import Came, Encastrement, Engrenage, Glissiere, Liaison, Pivot, classe_liaison
 from .lois import LoiMouvement
 from .moteur import Moteur
-from .solide import COULEUR_BATI, COULEURS_SOLIDES, ID_BATI, Point, Solide
+from .solide import COULEUR_BATI, COULEURS_SOLIDES, ID_BATI, Cercle, Point, Solide
 
 NOMS_LIAISONS = {
     "pivot": "Pivot",
     "glissiere": "Glissière",
     "encastrement": "Encastrement",
     "ponctuelle": "Ponctuelle",
+    "engrenage": "Engrenage",
+    "came": "Came",
 }
+
+Position = Callable[[str, str], Vec2]
+Orientation = Callable[[str], float]
 
 # Au-delà, une valeur n'a plus de sens physique et ferait déborder les calculs.
 VALEUR_MAX = 1e15
@@ -75,6 +82,8 @@ class Mecanisme:
     moteurs: Dict[str, Moteur] = field(default_factory=dict)
     etude: Etude = field(default_factory=Etude)
     affichage: Dict[str, Any] = field(default_factory=lambda: dict(AFFICHAGE_PAR_DEFAUT))
+    fond: Optional[FondPlan] = None
+    """Photo d'un schéma affichée sous le mécanisme (voir ``sikax.modele.fond``)."""
 
     def __post_init__(self) -> None:
         if ID_BATI not in self.solides:
@@ -114,14 +123,46 @@ class Mecanisme:
         return None
 
     def angle_axe_global(self, liaison: Liaison) -> float:
-        """Direction de l'axe d'une liaison dans le repère global (0 si sans axe)."""
+        """Direction de l'axe d'une liaison dans le repère global (0 si sans axe).
+
+        Pour un engrenage ou une came, c'est la direction du mouvement relatif
+        libre au point de contact.
+        """
+        if liaison.CONTACT:
+            return self.contact(liaison).angle_glissement
         if not liaison.A_UN_AXE:
             return 0.0
         return self.solide(liaison.solide_a).pose.angle + getattr(liaison, "angle_axe", 0.0)
 
     def position_liaison(self, liaison: Liaison) -> Vec2:
-        """Point de réduction du torseur de la liaison (le point porté par B)."""
+        """Point de réduction du torseur de la liaison (le point porté par B, ou le point de contact)."""
+        if liaison.CONTACT:
+            return self.contact(liaison).point
         return self.point_global(liaison.solide_b, liaison.point_b)
+
+    def contact(self, liaison: Liaison, position: Optional[Position] = None, orientation: Optional[Orientation] = None) -> Contact:
+        """Géométrie du contact d'un engrenage ou d'une came.
+
+        ``position(solide, point)`` et ``orientation(solide)`` donnent la
+        configuration à utiliser : par défaut celle du modèle ; la vue passe la
+        configuration animée.
+        """
+        position = position or self.point_global
+        orientation = orientation or (lambda sid: self.solide(sid).pose.angle)
+        if isinstance(liaison, Engrenage):
+            oa = position(liaison.solide_a, liaison.point_a)
+            ob = position(liaison.solide_b, liaison.point_b)
+            if liaison.cremaillere:
+                return contact_cremaillere(liaison.rayon_primitif_a(), oa, ob, orientation(liaison.solide_b) + liaison.angle_axe)
+            return contact_roues(liaison.z_a, liaison.z_b, liaison.nature == "interieur", liaison.module, oa, ob)
+        if isinstance(liaison, Came):
+            cercle = self.solide(liaison.solide_a).cercle(liaison.cercle)
+            centre = position(liaison.solide_a, cercle.centre)
+            p = position(liaison.solide_b, liaison.point_b)
+            if liaison.nature == "plat":
+                return contact_came_plateau(centre, cercle.rayon, p, orientation(liaison.solide_b) + liaison.angle_axe)
+            return contact_came_point(centre, cercle.rayon, p)
+        raise ValueError(f"la liaison « {liaison.nom} » n'est pas une liaison de contact")
 
     def est_vide(self) -> bool:
         return (
@@ -130,6 +171,7 @@ class Mecanisme:
             and not self.liaisons
             and not self.actions
             and not self.moteurs
+            and self.fond is None
         )
 
     def copie(self) -> "Mecanisme":
@@ -287,6 +329,150 @@ class Mecanisme:
             return existant
         return self.creer_point(solide_id, gx, gy, nom)
 
+    # ----------------------------------------------------- cercles et contacts
+    def creer_cercle(self, solide_id: str, gx: float, gy: float, rayon: float, rayon_capture: float = 1e-9) -> Cercle:
+        """Ajoute au solide un cercle de centre (gx, gy) ; le centre devient un point du solide."""
+        if not (rayon > 0.0 and math.isfinite(rayon)):
+            raise ValueError("le rayon d'un cercle doit être strictement positif")
+        centre = self._point_en(solide_id, gx, gy, rayon_capture, None)
+        return self.solide(solide_id).ajouter_cercle(centre.id, rayon)
+
+    def creer_disque(self, gx: float, gy: float, rayon: float, nom: Optional[str] = None, couleur: Optional[str] = None) -> Solide:
+        """Nouveau solide réduit à un disque de centre (gx, gy)."""
+        solide = self.creer_solide(nom, couleur, x=gx, y=gy)
+        if nom is None:
+            solide.nom = self._nom_libre("Disque", (s.nom for s in self.solides.values()))
+        self.creer_cercle(solide.id, gx, gy, rayon)
+        return solide
+
+    def supprimer_cercle(self, solide_id: str, cercle_id: str) -> None:
+        """Supprime un cercle et les cames qui s'appuient dessus."""
+        for liaison in [l for l in self.liaisons.values() if isinstance(l, Came) and l.solide_a == solide_id and l.cercle == cercle_id]:
+            self.supprimer_liaison(liaison.id)
+        if solide_id in self.solides:
+            self.solides[solide_id].cercles.pop(cercle_id, None)
+
+    def centre_de_rotation(self, solide_id: str) -> Optional[Point]:
+        """Point du solide où il s'articule par une pivot (le premier trouvé), ou ``None``."""
+        solide = self.solide(solide_id)
+        for liaison in self.liaisons.values():
+            if isinstance(liaison, Pivot) and liaison.concerne(solide_id):
+                return solide.point(liaison.point_a if liaison.solide_a == solide_id else liaison.point_b)
+        return None
+
+    def creer_engrenage(
+        self,
+        roue_a: str,
+        roue_b: str,
+        nature: Optional[str] = None,
+        z_a: Optional[float] = None,
+        z_b: Optional[float] = None,
+        module: float = 0.002,
+        nom: Optional[str] = None,
+        **parametres: Any,
+    ) -> Engrenage:
+        """Engrène la roue A avec la roue (ou la crémaillère) B.
+
+        Les centres sont les points de pivot des roues. Sans nature imposée, B
+        est une crémaillère si elle n'a pas de pivot, une couronne si elle
+        entoure A (grand cercle autour du centre de A), une roue extérieure
+        sinon. Les nombres de dents par défaut découlent des rayons des cercles
+        tracés, ou à défaut de l'entraxe, au module donné.
+        """
+        if roue_a == roue_b:
+            raise ValueError("un engrenage relie deux solides différents")
+        centre_a = self.centre_de_rotation(roue_a)
+        if centre_a is None:
+            raise ValueError("la roue A doit être articulée par une liaison pivot")
+        a, b = self.solide(roue_a), self.solide(roue_b)
+        oa = a.position_globale(centre_a.id)
+        centre_b = self.centre_de_rotation(roue_b)
+        if nature is None:
+            nature = "cremaillere" if centre_b is None else "exterieur"
+            if centre_b is not None:
+                ob = b.position_globale(centre_b.id)
+                rayon_b = max((c.rayon for c in b.cercles.values() if c.centre == centre_b.id), default=0.0)
+                if rayon_b > math.hypot(ob[0] - oa[0], ob[1] - oa[1]) > 0.0:
+                    nature = "interieur"
+        if nature not in ("exterieur", "interieur", "cremaillere"):
+            raise ValueError(f"nature d'engrenage inconnue : « {nature} »")
+        if nature == "cremaillere":
+            direction = parametres.pop("angle_axe_global", None)
+            if direction is None:
+                glissiere = next((l for l in self.liaisons.values() if isinstance(l, Glissiere) and l.concerne(roue_b)), None)
+                direction = self.angle_axe_global(glissiere) if glissiere is not None else 0.0
+            if z_a is None:
+                rayon_a = max((c.rayon for c in a.cercles.values() if c.centre == centre_a.id), default=0.0)
+                z_a = float(max(6, round(2.0 * rayon_a / module))) if rayon_a > 0.0 else 20.0
+            rayon = module * z_a / 2.0
+            ux, uy = math.cos(direction), math.sin(direction)
+            # point primitif : à la distance r du centre du pignon, du côté de la crémaillère
+            gx, gy = b.position_globale(next(iter(b.points))) if b.points else (oa[0], oa[1] - rayon)
+            nx, ny = -uy, ux
+            if nx * (oa[0] - gx) + ny * (oa[1] - gy) < 0.0:
+                nx, ny = -nx, -ny
+            primitif = (oa[0] - rayon * nx, oa[1] - rayon * ny)
+            point_b = self._point_en(roue_b, primitif[0], primitif[1], 1e-9, None)
+            parametres.setdefault("angle_axe", direction - b.pose.angle)
+            z_b = z_b if z_b is not None else 1.0
+        else:
+            if centre_b is None:
+                raise ValueError("la roue B doit être articulée par une liaison pivot")
+            point_b = centre_b
+            ob = b.position_globale(centre_b.id)
+            entraxe = math.hypot(ob[0] - oa[0], ob[1] - oa[1])
+            if z_a is None or z_b is None:
+                rayon_a = max((c.rayon for c in a.cercles.values() if c.centre == centre_a.id), default=0.0)
+                rayon_b = max((c.rayon for c in b.cercles.values() if c.centre == centre_b.id), default=0.0)
+                if rayon_a <= 0.0 and rayon_b <= 0.0:
+                    rayon_a = rayon_b = entraxe / 2.0
+                elif rayon_a <= 0.0:
+                    rayon_a = abs(entraxe - rayon_b) if nature == "exterieur" else rayon_b - entraxe
+                elif rayon_b <= 0.0:
+                    rayon_b = entraxe - rayon_a if nature == "exterieur" else entraxe + rayon_a
+                z_a = z_a if z_a is not None else float(max(6, round(2.0 * abs(rayon_a) / module)))
+                z_b = z_b if z_b is not None else float(max(6, round(2.0 * abs(rayon_b) / module)))
+        lid = self._prochain_id("L", self.liaisons)
+        if nom is None:
+            nom = self._nom_libre(f"Engrenage {a.nom}–{b.nom}", (l.nom for l in self.liaisons.values()))
+        liaison = Engrenage(lid, nom, roue_a, centre_a.id, roue_b, point_b.id, nature=nature, z_a=float(z_a), z_b=float(z_b), module=module, **parametres)
+        self.liaisons[lid] = liaison
+        return liaison
+
+    def creer_came(
+        self,
+        solide_came: str,
+        cercle_id: str,
+        solide_poussoir: str,
+        point_poussoir: str,
+        nature: str = "pointe",
+        nom: Optional[str] = None,
+        **parametres: Any,
+    ) -> Came:
+        """Contact entre le cercle d'une came et le point d'un poussoir."""
+        if solide_came == solide_poussoir:
+            raise ValueError("une came et son poussoir sont deux solides différents")
+        came = self.solide(solide_came)
+        cercle = came.cercle(cercle_id)
+        poussoir = self.solide(solide_poussoir)
+        poussoir.point(point_poussoir)
+        if nature == "plat" and "angle_axe" not in parametres:
+            # Plateau perpendiculaire au guidage du poussoir, sinon à la droite centre-poussoir.
+            guidage = next((l for l in self.liaisons.values() if isinstance(l, Glissiere) and l.concerne(solide_poussoir)), None)
+            if guidage is not None:
+                direction = self.angle_axe_global(guidage) + math.pi / 2.0
+            else:
+                c = came.position_globale(cercle.centre)
+                p = poussoir.position_globale(point_poussoir)
+                direction = math.atan2(p[1] - c[1], p[0] - c[0]) + math.pi / 2.0
+            parametres["angle_axe"] = direction - poussoir.pose.angle
+        lid = self._prochain_id("L", self.liaisons)
+        if nom is None:
+            nom = self._nom_libre(f"Came {poussoir.point(point_poussoir).nom}", (l.nom for l in self.liaisons.values()))
+        liaison = Came(lid, nom, solide_came, cercle.centre, solide_poussoir, point_poussoir, nature=nature, cercle=cercle_id, **parametres)
+        self.liaisons[lid] = liaison
+        return liaison
+
     def changer_type_liaison(self, liaison_id: str, type_liaison: str) -> Liaison:
         """Remplace une liaison par une liaison d'un autre type entre les mêmes points.
 
@@ -296,6 +482,8 @@ class Mecanisme:
         classe = classe_liaison(type_liaison)
         if type(ancienne) is classe:
             return ancienne
+        if classe.CONTACT or ancienne.CONTACT:
+            raise ValueError("un engrenage ou une came ne se transforme pas en une autre liaison")
         a, b = self.solide(ancienne.solide_a), self.solide(ancienne.solide_b)
         parametres: Dict[str, Any] = {}
         if classe.A_UN_AXE:
@@ -317,6 +505,8 @@ class Mecanisme:
     def inverser_liaison(self, liaison_id: str) -> Liaison:
         """Échange les rôles des solides A et B (B porte alors l'axe de la liaison)."""
         liaison = self.liaison(liaison_id)
+        if liaison.CONTACT:
+            raise ValueError("les rôles d'un engrenage ou d'une came sont fixés par sa géométrie")
         direction = self.angle_axe_global(liaison)
         liaison.solide_a, liaison.solide_b = liaison.solide_b, liaison.solide_a
         liaison.point_a, liaison.point_b = liaison.point_b, liaison.point_a
@@ -394,7 +584,10 @@ class Mecanisme:
         self.moteurs.pop(moteur_id, None)
 
     def supprimer_point(self, solide_id: str, point_id: str) -> None:
-        """Supprime un point ainsi que les liaisons et actions qui s'y appuient."""
+        """Supprime un point ainsi que les liaisons, actions et cercles qui s'y appuient."""
+        if solide_id in self.solides:
+            for cercle in [c for c in self.solides[solide_id].cercles.values() if c.centre == point_id]:
+                self.supprimer_cercle(solide_id, cercle.id)
         for liaison in [l for l in self.liaisons.values() if l.utilise_point(solide_id, point_id)]:
             self.supprimer_liaison(liaison.id)
         for action in [a for a in self.actions.values() if a.utilise_point(solide_id, point_id)]:
@@ -470,6 +663,11 @@ class Mecanisme:
             for a, b in solide.segments:
                 if a not in solide.points or b not in solide.points or a == b:
                     signaler("segment_invalide", "erreur", solide.id, a=a, b=b)
+            for cercle in solide.cercles.values():
+                if cercle.centre not in solide.points:
+                    signaler("cercle_invalide", "erreur", solide.id, cercle=cercle.id)
+                elif not fini(cercle.rayon) or cercle.rayon <= 0.0:
+                    signaler("valeur_hors_bornes", "erreur", solide.id, champ=f"cercle {cercle.id}")
             inertie = solide.inertie
             if not fini(inertie.masse, inertie.gx, inertie.gy, inertie.jz):
                 signaler("valeur_non_finie", "erreur", solide.id, champ="inertie")
@@ -490,8 +688,19 @@ class Mecanisme:
                 valeur = getattr(liaison, champ.nom)
                 if not fini(valeur):
                     signaler("valeur_non_finie", "erreur", liaison.id, champ=champ.nom)
-                elif champ.minimum is not None and valeur < champ.minimum:
+                elif not champ.admet(valeur):
                     signaler("valeur_hors_bornes", "erreur", liaison.id, champ=champ.nom)
+            for nom, admises in liaison.OPTIONS:
+                if getattr(liaison, nom) not in admises:
+                    signaler("option_inconnue", "erreur", liaison.id, champ=nom, valeur=str(getattr(liaison, nom)))
+            if isinstance(liaison, Came) and liaison.solide_a in self.solides:
+                cercle = self.solides[liaison.solide_a].cercles.get(liaison.cercle)
+                if cercle is None:
+                    signaler("cercle_inconnu", "erreur", liaison.id, cercle=liaison.cercle)
+                elif cercle.centre != liaison.point_a:
+                    signaler("cercle_invalide", "erreur", liaison.id, cercle=liaison.cercle)
+            if isinstance(liaison, Engrenage) and liaison.nature == "interieur" and liaison.z_b <= liaison.z_a:
+                signaler("couronne_trop_petite", "erreur", liaison.id)
 
         for action in self.actions.values():
             if isinstance(action, Ressort):
@@ -543,6 +752,11 @@ class Mecanisme:
                 moteur.loi.verifier()
             except ValueError as exc:
                 signaler("loi_invalide", "erreur", moteur.id, message=str(exc))
+
+        if self.fond is not None:
+            fond = self.fond
+            if not fini(fond.x, fond.y, fond.largeur, fond.angle, fond.opacite) or fond.largeur <= 0.0:
+                signaler("valeur_non_finie", "erreur", "fond", champ="fond")
 
         etude = self.etude
         if not fini(etude.duree, etude.pas, etude.gx, etude.gy, etude.tolerance, etude.precision):

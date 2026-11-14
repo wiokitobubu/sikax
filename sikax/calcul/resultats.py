@@ -61,6 +61,10 @@ class Resultats:
     duree_calcul: float = 0.0
     complet: bool = True
     """Faux si le calcul s'est arrêté avant la fin (mouvement impossible, annulation)."""
+    methode: str = ""
+    """Intégrateur effectivement utilisé (étude dynamique)."""
+    zones_singulieres: List[Tuple[float, float]] = field(default_factory=list)
+    """Intervalles de temps passés près d'un point mort (étude cinématique)."""
 
     # ------------------------------------------------------------------ accès
     @property

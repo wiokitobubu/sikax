@@ -14,7 +14,8 @@ from PySide6.QtCore import QPointF, QRectF, Qt
 from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen, QPolygonF
 
 from ...modele import Couple, Force, Ressort
-from ...modele.liaisons import Encastrement, Glissiere, Liaison, Pivot, Ponctuelle
+from ...modele.contacts import rayon_pied, rayon_tete
+from ...modele.liaisons import Came, Encastrement, Engrenage, Glissiere, Liaison, Pivot, Ponctuelle
 from ...modele.solide import ID_BATI
 from ...util.expression import ErreurExpression, evaluer
 from ..document import Document, Ref
@@ -164,12 +165,17 @@ class Rendu:
             self._trajectoires(p, ecran)
         elif doc.resultats is not None and doc.selection is not None and doc.selection.genre == "point":
             self._trajectoire(p, ecran, doc.selection.id, doc.selection.sous)
+        self._cercles(p, ecran, echelle)
         self._solides(p, ecran)
+        self._roues_dessinees: Set[Tuple[str, float]] = set()
+        for liaison in m.liaisons.values():
+            if isinstance(liaison, Engrenage):
+                self._engrenage(p, ecran, echelle, liaison)
         for action in m.actions.values():
             if isinstance(action, Ressort):
                 self._ressort(p, ecran, action)
         for liaison in m.liaisons.values():
-            self._liaison(p, ecran, liaison)
+            self._liaison(p, ecran, liaison, echelle)
         self._points(p, ecran)
         if m.affichage.get("centres_gravite", True):
             self._centres_gravite(p, ecran)
@@ -200,6 +206,143 @@ class Rendu:
             p.setPen(_plume(couleur, largeur))
             for a, b in segments:
                 p.drawLine(a, b)
+
+    def _cercles(self, p: QPainter, ecran: Ecran, echelle: float) -> None:
+        """Disques et cercles des solides, avec un rayon repère qui tourne avec eux."""
+        doc = self.doc
+        accent = theme.couleur("accent")
+        for solide in doc.mecanisme.solides.values():
+            if not solide.cercles:
+                continue
+            couleur = QColor(solide.couleur) if not solide.bati else theme.couleur("trait")
+            choisi = self._selectionne("solide", solide.id)
+            survole = self._survole("solide", solide.id)
+            angle = doc.pose(solide.id)[2]
+            for cercle in solide.cercles.values():
+                if cercle.centre not in solide.points:
+                    continue
+                c = ecran(*doc.position(solide.id, cercle.centre))
+                r = cercle.rayon * echelle
+                if r < 0.5:
+                    continue
+                if choisi or survole:
+                    p.setPen(_plume(QColor(accent.red(), accent.green(), accent.blue(), 150 if choisi else 70), 8.0))
+                    p.setBrush(Qt.NoBrush)
+                    p.drawEllipse(c, r, r)
+                remplissage = QColor(couleur)
+                remplissage.setAlpha(0 if solide.bati else (46 if theme.sombre else 34))
+                p.setPen(_plume(couleur, 2.4 if solide.bati else 2.2))
+                p.setBrush(remplissage)
+                p.drawEllipse(c, r, r)
+                if not solide.bati and r > 9.0:
+                    bout = QPointF(c.x() + 0.72 * r * math.cos(angle), c.y() - 0.72 * r * math.sin(angle))
+                    p.setPen(_plume(couleur, 1.4, Qt.DashLine))
+                    p.drawLine(c, bout)
+
+    # ------------------------------------------------------------- engrenages
+    def _phase(self, liaison: Engrenage, solide_id: str, point_id: str, z: float, creux: bool) -> float:
+        """Angle (repère du solide) d'une dent : dents en prise au point primitif dans la configuration du modèle."""
+        m = self.doc.mecanisme
+        contact = m.contact(liaison)
+        centre = m.point_global(solide_id, point_id)
+        direction = math.atan2(contact.point[1] - centre[1], contact.point[0] - centre[0])
+        return direction - m.solide(solide_id).pose.angle + (math.pi / z if creux else 0.0)
+
+    def _denture(self, p: QPainter, centre: QPointF, rayon_t: float, rayon_p: float, z: int, phase: float, couleur: QColor) -> None:
+        """Couronne de z dents (rayons de tête et de pied à l'écran), la première à l'angle ``phase``."""
+        beta = 2.0 * math.pi / z
+        points = []
+        for i in range(z):
+            phi = phase + i * beta
+            for decalage, rayon in ((-0.30, rayon_p), (-0.17, rayon_t), (0.17, rayon_t), (0.30, rayon_p)):
+                a = phi + decalage * beta
+                points.append(QPointF(centre.x() + rayon * math.cos(a), centre.y() - rayon * math.sin(a)))
+        remplissage = QColor(couleur)
+        remplissage.setAlpha(40 if theme.sombre else 30)
+        p.setPen(_plume(couleur, 1.3))
+        p.setBrush(remplissage)
+        p.drawPolygon(QPolygonF(points))
+
+    def _roue(self, p: QPainter, ecran: Ecran, echelle: float, liaison: Engrenage, solide_id: str, point_id: str, z: float, interieur: bool, creux: bool) -> None:
+        doc = self.doc
+        cle = (solide_id, round(liaison.module * z, 12))
+        if cle in self._roues_dessinees:
+            return
+        self._roues_dessinees.add(cle)
+        solide = doc.mecanisme.solides[solide_id]
+        couleur = theme.couleur("trait") if solide.bati else QColor(solide.couleur)
+        centre = ecran(*doc.position(solide_id, point_id))
+        primitif = liaison.module * z / 2.0 * echelle
+        p.setPen(_plume(couleur, 1.0, Qt.DashLine))
+        p.setBrush(Qt.NoBrush)
+        p.drawEllipse(centre, primitif, primitif)
+        nombre = int(round(z))
+        if primitif < 6.0 or nombre < 3 or 2.0 * math.pi * primitif / nombre < 2.5:
+            return  # dents trop petites à l'écran : le cercle primitif suffit
+        angle = doc.pose(solide_id)[2] + self._phase(liaison, solide_id, point_id, z, creux)
+        self._denture(
+            p,
+            centre,
+            rayon_tete(liaison.module, z, interieur) * echelle,
+            rayon_pied(liaison.module, z, interieur) * echelle,
+            nombre,
+            angle,
+            couleur,
+        )
+
+    def _cremaillere(self, p: QPainter, ecran: Ecran, echelle: float, liaison: Engrenage) -> None:
+        """Dents de la crémaillère, le long de sa ligne primitive, du côté du pignon."""
+        doc = self.doc
+        m = doc.mecanisme
+        solide = m.solides[liaison.solide_b]
+        couleur = theme.couleur("trait") if solide.bati else QColor(solide.couleur)
+        ob = doc.position(liaison.solide_b, liaison.point_b)
+        direction = doc.pose(liaison.solide_b)[2] + liaison.angle_axe
+        ux, uy = math.cos(direction), math.sin(direction)
+        contact = m.contact(liaison, doc.position, lambda sid: doc.pose(sid)[2])
+        nx, ny = contact.glissement  # normale orientée vers le pignon
+        pas = math.pi * liaison.module
+        # abscisses (repère de la crémaillère) de ses points, et premier creux en prise dans le modèle
+        abscisses = [(px - ob[0]) * ux + (py - ob[1]) * uy for px, py in (doc.position(solide.id, pid) for pid in solide.points)]
+        debut, fin = min(abscisses + [-4.0 * pas]), max(abscisses + [4.0 * pas])
+        modele = m.contact(liaison)
+        mob = m.point_global(liaison.solide_b, liaison.point_b)
+        mdir = solide.pose.angle + liaison.angle_axe
+        s0 = (modele.point[0] - mob[0]) * math.cos(mdir) + (modele.point[1] - mob[1]) * math.sin(mdir) + pas / 2.0
+        k0, k1 = math.ceil((debut - s0) / pas), math.floor((fin - s0) / pas)
+        if (k1 - k0) > 400 or pas * echelle < 3.0:
+            k0 = k1 + 1
+        tete, pied = liaison.module, -1.25 * liaison.module
+        points = []
+        for k in range(k0, k1 + 1):
+            s = s0 + k * pas
+            for ds, h in ((-0.30, pied), (-0.17, tete), (0.17, tete), (0.30, pied)):
+                x = ob[0] + (s + ds * pas) * ux + h * nx
+                y = ob[1] + (s + ds * pas) * uy + h * ny
+                points.append(ecran(x, y))
+        a = ecran(ob[0] + debut * ux, ob[1] + debut * uy)
+        b = ecran(ob[0] + fin * ux, ob[1] + fin * uy)
+        p.setPen(_plume(couleur, 1.0, Qt.DashLine))
+        p.drawLine(a, b)
+        if points:
+            remplissage = QColor(couleur)
+            remplissage.setAlpha(40 if theme.sombre else 30)
+            p.setPen(_plume(couleur, 1.3))
+            p.setBrush(remplissage)
+            p.drawPolyline(QPolygonF(points))
+
+    def _engrenage(self, p: QPainter, ecran: Ecran, echelle: float, liaison: Engrenage) -> None:
+        m = self.doc.mecanisme
+        if liaison.solide_a not in m.solides or liaison.solide_b not in m.solides:
+            return
+        try:
+            self._roue(p, ecran, echelle, liaison, liaison.solide_a, liaison.point_a, liaison.z_a, False, False)
+            if liaison.cremaillere:
+                self._cremaillere(p, ecran, echelle, liaison)
+            else:
+                self._roue(p, ecran, echelle, liaison, liaison.solide_b, liaison.point_b, liaison.z_b, liaison.nature == "interieur", True)
+        except (KeyError, ValueError):
+            return
 
     def _points(self, p: QPainter, ecran: Ecran) -> None:
         doc = self.doc
@@ -263,7 +406,7 @@ class Rendu:
             p.drawPie(rect, 180 * 16, 90 * 16)
 
     # ---------------------------------------------------------------- liaisons
-    def _liaison(self, p: QPainter, ecran: Ecran, liaison: Liaison) -> None:
+    def _liaison(self, p: QPainter, ecran: Ecran, liaison: Liaison, echelle: float = 1.0) -> None:
         doc = self.doc
         m = doc.mecanisme
         if liaison.solide_a not in m.solides or liaison.solide_b not in m.solides:
@@ -272,6 +415,9 @@ class Rendu:
             pa = ecran(*doc.position(liaison.solide_a, liaison.point_a))
             pb = ecran(*doc.position(liaison.solide_b, liaison.point_b))
         except KeyError:
+            return
+        if liaison.CONTACT:
+            self._contact(p, ecran, echelle, liaison)
             return
         choisi = self._selectionne("liaison", liaison.id)
         survole = self._survole("liaison", liaison.id)
@@ -367,6 +513,67 @@ class Rendu:
 
         if m.affichage.get("noms_liaisons", False) or choisi:
             self._texte(p, QPointF(pb.x() + 12.0, pb.y() + 30.0), liaison.nom, theme.couleur("texte_secondaire"), 9.0)
+
+    def position_contact(self, liaison: Liaison) -> Optional[Tuple[float, float]]:
+        """Point de contact d'un engrenage ou d'une came dans la configuration affichée."""
+        doc = self.doc
+        try:
+            return doc.mecanisme.contact(liaison, doc.position, lambda sid: doc.pose(sid)[2]).point
+        except (KeyError, ValueError):
+            return None
+
+    def _contact(self, p: QPainter, ecran: Ecran, echelle: float, liaison: Liaison) -> None:
+        """Symbole d'un engrenage (point primitif) ou d'une came (poussoir et point de contact)."""
+        doc = self.doc
+        m = doc.mecanisme
+        try:
+            contact = m.contact(liaison, doc.position, lambda sid: doc.pose(sid)[2])
+        except (KeyError, ValueError):
+            return
+        choisi = self._selectionne("liaison", liaison.id)
+        survole = self._survole("liaison", liaison.id)
+        accent = theme.couleur("accent")
+        trait = theme.couleur("trait")
+        fond = theme.couleur("canevas")
+        k = ecran(*contact.point)
+        if choisi or survole:
+            p.setPen(Qt.NoPen)
+            p.setBrush(QColor(accent.red(), accent.green(), accent.blue(), 110 if choisi else 55))
+            p.drawEllipse(k, 14.0, 14.0)
+        if isinstance(liaison, Came):
+            poussoir = m.solides[liaison.solide_b]
+            couleur = QColor(poussoir.couleur) if not poussoir.bati else trait
+            centre_p = ecran(*doc.position(liaison.solide_b, liaison.point_b))
+            if liaison.nature == "galet":
+                rayon = max(4.0, liaison.rayon_galet * echelle)
+                p.setPen(_plume(couleur, 2.0))
+                p.setBrush(fond)
+                p.drawEllipse(centre_p, rayon, rayon)
+                p.setBrush(couleur)
+                p.setPen(Qt.NoPen)
+                p.drawEllipse(centre_p, 2.2, 2.2)
+            elif liaison.nature == "plat":
+                ux, uy = contact.glissement
+                cercle = m.solide(liaison.solide_a).cercle(liaison.cercle)
+                demi = max(26.0, 1.15 * cercle.rayon * echelle)
+                pied = QPointF(centre_p.x() + (k.x() - centre_p.x()), centre_p.y() + (k.y() - centre_p.y()))
+                a = QPointF(pied.x() - ux * demi, pied.y() + uy * demi)
+                b = QPointF(pied.x() + ux * demi, pied.y() - uy * demi)
+                p.setPen(_plume(couleur, 3.2))
+                p.drawLine(a, b)
+            else:
+                ex, ey = contact.normale
+                base = QPointF(centre_p.x() + ex * 11.0, centre_p.y() - ey * 11.0)
+                nx, ny = -ey, ex
+                p.setPen(_plume(couleur, 1.8))
+                p.setBrush(fond)
+                p.drawPolygon(QPolygonF([centre_p, QPointF(base.x() + nx * 5.0, base.y() - ny * 5.0), QPointF(base.x() - nx * 5.0, base.y() + ny * 5.0)]))
+        # point de contact (point primitif d'un engrenage)
+        p.setPen(_plume(accent if choisi else trait, 1.6))
+        p.setBrush(fond)
+        p.drawEllipse(k, 3.6, 3.6)
+        if m.affichage.get("noms_liaisons", False) or choisi:
+            self._texte(p, QPointF(k.x() + 12.0, k.y() + 26.0), liaison.nom, theme.couleur("texte_secondaire"), 9.0)
 
     # ----------------------------------------------------------------- actions
     def echelle_forces(self) -> float:

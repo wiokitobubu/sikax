@@ -1,0 +1,26 @@
+<h1>Dead points</h1>
+<p><img src="figure:point_mort" width="360"></p>
+<a name="definition"></a>
+<h2>Definition</h2>
+<p>A <b>dead point</b> is a position where the driving member has lost its grip on the mechanism: a small change of the input produces no motion of the other member, or an infinite speed would be needed to follow it.</p>
+<ul>
+<li><b>Slider-crank</b>: at top and bottom dead centre, crank and connecting rod are aligned. The piston force passes through the crank axis: its moment is zero.</li>
+<li><b>Four-bar linkage</b>: when the rocker reaches an extreme position, crank and coupler are aligned.</li>
+</ul>
+<a name="franchir"></a>
+<h2>How to get past them</h2>
+<ul>
+<li>Drive the member that keeps control (the crank rather than the piston).</li>
+<li>Use <b>inertia</b>: a flywheel carries the mechanism past the dead point (combustion engine, treadle sewing machine). This is a <b>dynamic</b> study.</li>
+<li>Combine several out-of-phase mechanisms (multi-cylinder engine).</li>
+</ul>
+<a name="transmission"></a>
+<h2>Transmission angle</h2>
+<p>For a four-bar linkage, the transmission angle μ is the angle between coupler and rocker. Transmission is good for μ near 90°; it becomes poor (very large forces for a given torque) as μ approaches 0° or 180°, that is near a dead point.</p>
+<a name="sikax"></a>
+<h2>What Sikax does</h2>
+<ul>
+<li>In kinematics, the mechanism is followed through dead points when the motor law allows it (piston driven over its whole stroke, with zero speed at the ends): the crank carries on in the direction of motion. Velocities and accelerations there come from the positions, and forces stay bounded.</li>
+<li>If the law asks for the impossible (pushing the piston past its stroke), the computation stops cleanly and explains why.</li>
+<li>Intervals spent near a dead point are shaded in the curves; a motor effort that shoots up there is reported.</li>
+</ul>

@@ -29,7 +29,9 @@
     "recents": "Recent projects",
     "exemples": "Examples",
     "langue": "Language",
-    "panneaux": "Panels"
+    "panneaux": "Panels",
+    "modeles": "New from a &template",
+    "photo": "Background &photo"
   },
 
   "barre": {
@@ -46,7 +48,8 @@
     "resultats": "Forces",
     "journal": "Log",
     "inspecteur": "Properties and study",
-    "analyse": "Validation and results"
+    "analyse": "Validation and results",
+    "cours": "Course"
   },
 
   "action": {
@@ -55,7 +58,7 @@
     "enregistrer": "&Save",
     "enregistrer_sous": "Save &As…",
     "exporter_image": "Export Diagram as Image…",
-    "exporter_resultats": "Export Results (CSV)…",
+    "exporter_resultats": "Export results (&Excel)…",
     "quitter": "&Quit",
     "annuler": "&Undo",
     "retablir": "&Redo",
@@ -97,7 +100,18 @@
       "force": "Force",
       "couple": "Torque",
       "ressort": "Spring-damper"
-    }
+    },
+    "importer_photo": "&Import a diagram photo…",
+    "detecter_formes": "Detect shapes (lines, circles)…",
+    "supprimer_photo": "Remove the background photo",
+    "outil_cercle": "Circle / &disc",
+    "outil_engrenage": "&Gear",
+    "outil_came": "Cam-follower contact",
+    "outil_etalonnage": "Calibrate the photo scale",
+    "outil_photo": "Move the photo",
+    "tutoriel": "&Tutorial",
+    "cours": "&Course sheets",
+    "accueil": "&Welcome screen…"
   },
 
   "aide_action": {
@@ -122,7 +136,17 @@
     "pivots_automatiques": "Create a revolute joint when a new body starts from an existing point",
     "lancer": "Compute the study defined in the Study panel",
     "equilibre": "Bring the mechanism to a stable equilibrium position",
-    "adopter_configuration": "The mechanism will start from the position shown in the animation"
+    "adopter_configuration": "The mechanism will start from the position shown in the animation",
+    "exporter_resultats": "Saves every computed quantity in an Excel workbook (.xlsx), with charts",
+    "importer_photo": "Shows a photo of a diagram under the mechanism, to trace over it at scale",
+    "detecter_formes": "Finds the lines and circles of the photo and turns them into bodies",
+    "outil_cercle": "Circle or disc: click the centre, then drag to the radius",
+    "outil_engrenage": "Gear: click a wheel with a revolute joint, then the second wheel or a rack",
+    "outil_came": "Cam-follower: click the cam circle, then the follower tip",
+    "outil_etalonnage": "Click two points of the photo whose real distance you know",
+    "outil_photo": "Drag the background photo to align it with the grid",
+    "tutoriel": "Animated guided tour of Sikax's tools",
+    "cours": "Course sheets: kinematics, statics, dynamics, torsors, gears…"
   },
 
   "contexte": {
@@ -135,11 +159,14 @@
     "solides": "Bodies",
     "liaisons": "Joints",
     "actions": "Loads",
-    "moteurs": "Motors"
+    "moteurs": "Motors",
+    "fond": "Background photo"
   },
 
   "outil": {
-    "selection": {"aide": "Click to select. Drag a point or a joint to change the geometry. Wheel: zoom · hold right button: pan."},
+    "selection": {
+      "aide": "Click to select. Drag a point or a joint to change the geometry. Wheel: zoom · hold right button: pan."
+    },
     "manipuler": {
       "aide": "Drag a body: the mechanism follows while respecting its joints. The resulting position becomes the initial configuration.",
       "rien": "Click a moving body to drag it."
@@ -148,13 +175,18 @@
       "aide": "Click to place the first point of the body.",
       "suite": "Click to add a point · Enter, double-click or right-click to finish · Esc to cancel."
     },
-    "point": {"aide": "Click to add a point to the selected body (to the frame if no body is selected)."},
+    "point": {
+      "aide": "Click to add a point to the selected body (to the frame if no body is selected)."
+    },
     "liaison": {
-      "aide_point": "Click a point: the joint connects the two bodies found there, or the body and the frame.",
-      "aide_axe": "Click a point then drag to set the axis direction (15° steps; Shift for a free angle).",
+      "aide_point": "Click a point shared by two bodies: joint between them. Click the end of a bar: joint with the ground. Click a body then a second one: joint between them, points created automatically.",
+      "aide_axe": "Click a point or a body and drag to set the axis (15° steps; Shift for any angle). On a single body, then click the second body.",
       "aucun_point": "No point here: place the joint on a point of a body.",
       "bati_seul": "This point belongs to the frame only: place the joint on a point of a moving body.",
-      "deja_liee": "These two bodies are already connected here by “{nom}”."
+      "deja_liee": "These two bodies are already connected here by “{nom}”.",
+      "aucun_solide": "Click a body: a point, a bar or a disc.",
+      "second": "Click the second body to join to “{nom}” · empty space: the ground · right click or Esc: cancel.",
+      "meme_solide": "Click another body (or empty space for the ground)."
     },
     "force": {
       "aide": "Click a point of a body then drag to set the direction and magnitude of the force (1 pixel = 1 N).",
@@ -177,6 +209,38 @@
     },
     "message": {
       "fermeture_impossible": "The mechanism can no longer be assembled with this geometry: check the lengths."
+    },
+    "cercle": {
+      "aide": "Click the centre of the circle, then drag to the radius. Placed on a point of a body, the circle is added to that body (eccentric cam); otherwise it becomes a new disc.",
+      "cree": "Circle created. Add a revolute joint (at the centre, or at another point for an eccentric)."
+    },
+    "engrenage": {
+      "aide": "Click the first wheel (a body with a revolute joint), then the second wheel — or a rack guided by a prismatic joint.",
+      "aucune_roue": "Click a wheel: a disc or bar with a revolute joint.",
+      "sans_pivot": "“{nom}” has no revolute joint: first put a revolute joint at its centre.",
+      "seconde": "Click the wheel to mesh with “{nom}” (or a rack) · right click: cancel.",
+      "impossible": "Gear impossible: the second wheel needs a revolute joint, or must be a rack guided by a prismatic joint.",
+      "cree": "Gear created: Z₁ = {za}, Z₂ = {zb}. Adjust teeth, module, pressure angle and efficiency in the properties."
+    },
+    "came": {
+      "aide": "Click the cam circle (a disc), then the follower tip.",
+      "aucun_cercle": "Click a circle or disc: the cam.",
+      "poussoir": "Click the follower tip (a point of another body) · right click: cancel.",
+      "aucun_poussoir": "Click a point or bar of another body: the follower.",
+      "impossible": "The follower cannot reach the cam: move it closer, or check its guide.",
+      "cree": "Cam-follower contact created: choose knife-edge, roller or flat face in the properties."
+    },
+    "etalonnage": {
+      "aide": "Calibration: click two points of the photo whose real distance you know (a dimension, a bar length).",
+      "second": "Click the second point of the known length · Esc: cancel.",
+      "titre": "Calibrate the photo",
+      "question": "Real length between the two points ({unite}):",
+      "trop_court": "The two points are too close: pick a longer length on the photo.",
+      "fait": "Photo calibrated: the chosen length now measures {longueur}.",
+      "sans_photo": "No background photo: first import a diagram photo (File → Import a photo)."
+    },
+    "photo": {
+      "aide": "Drag the background photo to place it. Esc: back to selection."
     }
   },
 
@@ -185,7 +249,9 @@
       "pivot": "Revolute",
       "glissiere": "Prismatic",
       "encastrement": "Fixed",
-      "ponctuelle": "Point-on-line"
+      "ponctuelle": "Point-on-line",
+      "engrenage": "Gear",
+      "came": "Cam-follower"
     }
   },
 
@@ -230,7 +296,18 @@
     "longueur_actuelle": "Current length",
     "expression_admise": "number or expression of t",
     "nombre_attendu": "A number is expected.",
-    "valeur_trop_petite": "Value too small."
+    "valeur_trop_petite": "Value too small.",
+    "z_a": "Teeth on gear A (Z₁)",
+    "z_b": "Teeth on gear B (Z₂)",
+    "module": "Module m",
+    "angle_pression": "Pressure angle α",
+    "rendement": "Efficiency η",
+    "nature": "Kind",
+    "cercle": "Cam circle",
+    "rayon": "Radius",
+    "rayon_galet": "Roller radius ρ",
+    "direction_plateau": "Flat face direction",
+    "direction_cremaillere": "Rack direction"
   },
 
   "unite": {
@@ -310,6 +387,48 @@
       "voir_liaison": "Show joint “{nom}”",
       "loi": "Motion law",
       "tours_minute": "That is"
+    },
+    "modification_refusee": "Change refused: the mechanism cannot be assembled with this value.",
+    "disque": "Inertia of a uniform disc",
+    "disque_aide": "Puts G at the circle centre and takes J = m·R²/2 for the given mass.",
+    "cercles": "Circles",
+    "cercle": {
+      "rayon": "Radius (centre {centre})",
+      "excentricite": "Eccentricity",
+      "supprimer": "Remove the circle centred on {centre}"
+    },
+    "engrenage": {
+      "titre": "Gear",
+      "calculs": "Automatic calculations",
+      "diametre_a": "Pitch diameter d₁",
+      "diametre_b": "Pitch diameter d₂",
+      "pas": "Pitch p = π·m",
+      "entraxe_theorique": "Theoretical centre distance a",
+      "entraxe_reel": "Actual centre distance (diagram)",
+      "rapport": "Ratio r = ω₂/ω₁",
+      "rapport_cremaillere": "v = r·ω, with r = {r} mm",
+      "entraxe_different": "The diagram's centre distance differs from the theoretical one: the wheels are not tangent. The ratio stays exact, but the drawing does not.",
+      "ajuster": "Adjust the centre distance",
+      "ajuster_aide": "Moves wheel B (and the axle carrying it) to the theoretical centre distance.",
+      "ajustement_impossible": "Adjustment impossible: wheel B or its axle cannot be moved."
+    },
+    "came": {
+      "titre": "Cam and follower",
+      "note": "The contact slides freely: the cam can make full turns. A negative normal force means the follower lifts off (add a return spring)."
+    },
+    "fond": {
+      "titre": "Background photo",
+      "sans_nom": "Diagram photo",
+      "visible": "Show the photo",
+      "opacite": "Opacity",
+      "placement": "Position and scale",
+      "largeur": "Width",
+      "taille": "Image size",
+      "note": "Calibrate the scale with a known length, then trace the mechanism over it. The photo is saved in the project.",
+      "etalonner": "Calibrate the scale…",
+      "deplacer": "Move the photo",
+      "detecter": "Detect shapes…",
+      "supprimer": "Remove the photo"
     }
   },
 
@@ -375,7 +494,17 @@
     "bilan": "{type} study finished: {instants} instant(s) computed in {duree} s.",
     "equilibre_trouve": "Equilibrium position found.",
     "equilibre_introuvable": "No equilibrium position found from this configuration.",
-    "configuration_adoptee": "The position at t = {t} s is now the initial configuration."
+    "configuration_adoptee": "The position at t = {t} s is now the initial configuration.",
+    "methode": "Integrator",
+    "methodes": {
+      "Radau": "Radau (implicit, recommended)",
+      "BDF": "BDF (implicit)",
+      "LSODA": "LSODA (automatic)",
+      "DOP853": "DOP853 (explicit, order 8)",
+      "RK45": "RK45 (explicit)"
+    },
+    "precision": "Precision",
+    "precision_aide": "Relative tolerance of the integrator: 1e-8 by default; 1e-6 computes faster."
   },
 
   "lecteur": {
@@ -450,7 +579,27 @@
       "solide": "Bodies",
       "action": "Loads",
       "energie": "Energies"
-    }
+    },
+    "exporter_excel": "Export (Excel)",
+    "exporter_excel_aide": "Saves the displayed quantities in an Excel workbook (.xlsx), with the charts",
+    "mode": {
+      "ensemble": "Overview",
+      "personnalise": "Custom"
+    },
+    "objet_suivi": "Followed object:",
+    "suivi_selection": "The diagram selection",
+    "vue": {
+      "position": "Position",
+      "vitesse": "Velocity",
+      "acceleration": "Acceleration",
+      "efforts": "Joint forces",
+      "couples": "Torques",
+      "energie": "Energy"
+    },
+    "vue_vide": "(nothing to plot)",
+    "pic": "Off-scale peak ({valeur} {unite}) not shown.",
+    "zone_point_mort": "Passing near a dead point: the motor has little grip on the mechanism there.",
+    "suivi": "Followed object: {nom}."
   },
 
   "grandeur": {
@@ -487,7 +636,11 @@
     "effort_force": "Driving force",
     "energie_mecanique": "Mechanical energy",
     "energie_cinetique": "Kinetic energy",
-    "energie_potentielle": "Potential energy"
+    "energie_potentielle": "Potential energy",
+    "Ft": "Tangential force Ft",
+    "Fr": "Radial force Fr",
+    "couple_a": "Torque on gear A",
+    "couple_b": "Torque on gear B"
   },
 
   "resultats": {
@@ -507,7 +660,7 @@
       "aucun_solide": "The mechanism has no moving body: there is nothing to compute.",
       "assemblage_impossible": "The mechanism cannot be assembled: the joints are incompatible with the geometry (remaining gap: {residu:.3g}).",
       "mobilite_non_pilotee": "Kinematic study impossible: {mobilite} mobility(ies) are not driven by any motor. Add motors or run a dynamic study.",
-      "position_initiale_singuliere": "In the initial configuration the motors do not control the motion (dead centre). Move the mechanism with the Move tool, or motorise another joint.",
+      "position_initiale_singuliere": "In the initial configuration the mechanism is on a dead point and the motor law imposes a speed there: an infinite velocity would be needed. Shift the initial position slightly (Manipulate tool), give the motor a law starting at zero speed, or drive another joint.",
       "inertie_insuffisante": "Dynamic study impossible: a mobility carries no inertia. Give a mass and a moment of inertia to the bodies: {solides}.",
       "expression": "Invalid expression for “{objet}”: {message}.",
       "modele_invalide": "The model contains {nombre} error(s). First error, on “{objet}”: {detail}",
@@ -517,7 +670,7 @@
       "inattendue": "Unexpected error during the computation: {message}"
     },
     "message": {
-      "mouvement_impossible": "Motion impossible beyond t = {t} s: the mechanism reaches a limit or singular position. Computation stopped at that instant.",
+      "mouvement_impossible": "Motion impossible beyond t = {t} s: the motor law asks for a position the mechanism cannot reach (end of stroke, limit position). Computation stopped there. To turn the mechanism past a dead point, drive the crank rather than the piston, or run a dynamic study: inertia carries the mechanism through dead points.",
       "configuration_singuliere": "Passing close to a singular configuration around t = {t} s: results are inaccurate there.",
       "hyperstatique_norme_minimale": "Mechanism statically indeterminate to degree {h}: the distribution of forces among redundant joints is not unique. The minimum-norm solution is given.",
       "quasi_statique": "Quasi-static computation: inertia effects are neglected.",
@@ -525,8 +678,15 @@
       "pas_en_equilibre": "The mechanism is not in equilibrium in this configuration: {mobilite} unlocked mobility(ies) in which the loads do work. Add a locking motor or search for the equilibrium position.",
       "equilibre_avec_mobilite": "Equilibrium verified, although {mobilite} mobility(ies) remain free.",
       "integration_interrompue": "Integration stopped at t = {t} s: the time step became too small (singular configuration or out-of-scale forces).",
-      "decollement": "The normal force of the point-on-line joint “{liaison}” changes sign around t = {t} s: a real support would lift off at that instant. The model keeps the contact.",
-      "aucune_mobilite_libre": "No free mobility: the motion is fully imposed by the joints and the motors."
+      "decollement": "The normal force of joint “{liaison}” changes sign around t = {t} s: a real contact would separate at that moment (a stiffer return spring would prevent it). The model keeps the contact.",
+      "aucune_mobilite_libre": "No free mobility: the motion is fully imposed by the joints and the motors.",
+      "methode_de_repli": "The {methode} integrator could not finish: the computation continued with {repli}.",
+      "emballement_rotation": "Body “{solide}” runs away (rotation speed {valeur} rad/s around t = {t} s): computation stopped. A driving torque or force is balanced by no load; add a resisting torque, damping, or a motor with imposed speed.",
+      "emballement_translation": "Body “{solide}” runs away (speed {valeur} m/s around t = {t} s): computation stopped. A driving force is balanced by no load; add a load, damping, or a motor with imposed speed.",
+      "acceleration_continue": "The mechanism keeps accelerating (body “{solide}” reaches {valeur} at the end): nothing balances the driving action, and forces grow with speed. This is the expected physical behaviour; for a steady state, add a load or damping.",
+      "depart_point_mort": "Start on a dead point: at the initial time the motor has no grip on the mechanism. The crossing direction was chosen by the solver; shift the initial position slightly to impose the other one.",
+      "points_morts_franchis": "{nombre} dead point(s) crossed, around t = {t} s: the mechanism goes through in the direction of motion. Velocities and accelerations there are derived from the positions.",
+      "efforts_point_mort": "Near the dead point (t ≈ {t} s), motor “{moteur}” has almost no grip on the mechanism: the effort it must provide reaches {valeur}. This is the exact answer for a rigid mechanism driven this way; drive a joint that controls the motion instead, or run a dynamic study."
     }
   },
 
@@ -551,7 +711,11 @@
       "moteur_non_pilotable": "the motor drives a joint that cannot be motorised.",
       "moteur_en_double": "two motors drive the same joint.",
       "loi_invalide": "the motion law of the motor is invalid.",
-      "etude_invalide": "the duration, step and tolerances of the study must be strictly positive."
+      "etude_invalide": "the duration, step and tolerances of the study must be strictly positive.",
+      "cercle_invalide": "a circle is not centred on a point of its body.",
+      "cercle_inconnu": "a cam refers to a circle that does not exist.",
+      "option_inconnue": "a joint parameter has an unknown value.",
+      "couronne_trop_petite": "in an internal gear, the ring (gear B) must have more teeth than the pinion."
     }
   },
 
@@ -561,7 +725,9 @@
       "ouvrir": "Open a project",
       "enregistrer": "Save the project",
       "image": "Export the diagram",
-      "csv": "Export the results"
+      "csv": "Export the results",
+      "excel": "Export results (Excel)",
+      "photo": "Import a diagram photo"
     },
     "confirmer": {
       "texte": "Save the changes to “{nom}”?",
@@ -589,7 +755,8 @@
       "encodage_invalide": "The file encoding is not recognised.",
       "migration_impossible": "This file was written in a format too old (version {version}) to be converted.",
       "donnees_invalides": "The project contains invalid values and cannot be saved ({message}).",
-      "ecriture_impossible": "Cannot save to {chemin} ({message})."
+      "ecriture_impossible": "Cannot save to {chemin} ({message}).",
+      "module_absent": "The “{module}” module needed for the export is missing from this installation."
     },
     "diag": {
       "cle_en_double": "the key “{cle}” appears twice; the last value is kept.",
@@ -644,8 +811,20 @@
       "mecanisme_referme": "the mechanism was reassembled ({nombre} open joint(s)).",
       "fermeture_impossible": "the mechanism cannot be assembled: {nombre} joint(s) remain open.",
       "fichier_migre": "file converted from format {depuis} to format {vers}.",
-      "encodage_inhabituel": "the file is not UTF-8; it was read as {encodage}."
-    }
+      "encodage_inhabituel": "the file is not UTF-8; it was read as {encodage}.",
+      "methode_inconnue": "unknown integration method “{valeur}”: {defaut} is used.",
+      "cercle_inconnu": "circle “{cercle}” does not exist in body {solide}.",
+      "cercle_invalide": "circle “{cercle}” of body {solide} is not centred on the joint point.",
+      "cercle_deduit": "cam circle not given: “{cercle}”, the only possible one, is used.",
+      "option_inconnue": "{champ} = “{valeur}” is unknown (allowed values: {connues}).",
+      "fond_ignore": "the background photo cannot be read: it is ignored, the rest of the project is opened."
+    },
+    "modele_ouvert": "New project from the “{nom}” template.",
+    "filtre_excel": "Excel workbook (*.xlsx)",
+    "filtre_photo": "Images",
+    "excel_exporte": "Results exported to “{nom}”: {lignes} time steps, {colonnes} quantities, with charts.",
+    "photo_illisible": "Cannot read the image “{nom}”.",
+    "photo_importee": "Photo “{nom}” imported. Calibrate the scale: click two points of a known length."
   },
 
   "diagnostics": {
@@ -676,6 +855,276 @@
     "masse_ressort": "Mass-spring-damper",
     "poutre_deux_appuis": "Simply supported beam",
     "poutre_bi_articulee": "Doubly hinged beam (indeterminate)",
-    "parallelogramme_double": "Double parallelogram"
+    "parallelogramme_double": "Double parallelogram",
+    "came_poussoir": "Eccentric cam and roller follower",
+    "train_engrenages": "Gear train (1/9 reducer)",
+    "train_epicycloidal": "Planetary gear train",
+    "pignon_cremaillere": "Rack and pinion"
+  },
+
+  "accroche": {
+    "milieu": "midpoint",
+    "centre": "centre",
+    "trait": "on the body"
+  },
+
+  "modele_depart": {
+    "pendule_simple": "Pendulum",
+    "pendule_simple_aide": "Heavy bar hinged to the ground, released at rest (dynamic study)",
+    "came_poussoir": "Cam and follower",
+    "came_poussoir_aide": "Motor-driven eccentric cam and roller follower held by a spring",
+    "train_engrenages": "Gear train",
+    "train_engrenages_aide": "Two-stage reducer (ratio 1/9) with a resisting torque and efficiencies"
+  },
+
+  "excel": {
+    "feuille_resultats": "Results",
+    "feuille_graphiques": "Charts",
+    "feuille_informations": "Information",
+    "temps": "t (s)",
+    "projet": "Project",
+    "auteur": "Author",
+    "etude": "Study",
+    "duree": "Duration",
+    "instants": "Time steps computed",
+    "unites": "Display units",
+    "mobilite": "Free mobility",
+    "hyperstatisme": "Degree of hyperstatism",
+    "methode": "Integrator",
+    "messages": "Solver messages"
+  },
+
+  "engrenage": {
+    "nature": {
+      "exterieur": "External gear",
+      "interieur": "Internal gear (ring B)",
+      "cremaillere": "Rack and pinion"
+    }
+  },
+
+  "came": {
+    "nature": {
+      "pointe": "Knife-edge follower",
+      "galet": "Roller follower",
+      "plat": "Flat-faced follower"
+    }
+  },
+
+  "detection": {
+    "titre": "Detect the photo's shapes",
+    "explication": "Sikax finds the lines (orange) and circles (blue: discs, green: joints) of the photo. Tune the sensitivity until the preview matches the diagram, then create the bodies: you can correct them by hand.",
+    "sensibilite": "Sensitivity",
+    "longueur_min": "Minimum line length",
+    "barres": "Create bars",
+    "disques": "Create discs",
+    "pivots": "Revolute joints at small circles",
+    "pivots_aide": "A small circle where lines meet is taken for a joint: a revolute joint is created there.",
+    "creer": "Create the bodies",
+    "bilan": "{traits} line(s), {disques} disc(s), {articulations} small joint circle(s).",
+    "echec": "Detection impossible: {message}",
+    "indisponible": "Automatic detection needs the OpenCV module, which is missing from this installation.",
+    "cree": "Detected shapes added: {barres} bar(s), {disques} disc(s), {pivots} revolute joint(s)."
+  },
+
+  "touches": {
+    "entree": "Enter",
+    "espace": "Space",
+    "maj": "Shift"
+  },
+
+  "accueil_dialogue": {
+    "fenetre": "Welcome to {nom}",
+    "titre": "Welcome to {nom}",
+    "version": "Modelling and simulation of planar mechanisms — version {version}",
+    "question": "Are you new to Sikax?",
+    "nouveau": "Yes, I'm discovering Sikax",
+    "nouveau_detail": "Animated guided tour of the tools, in two minutes",
+    "habitue": "I've used the application before",
+    "habitue_detail": "Go straight to work",
+    "ne_plus_demander": "Don't ask again at startup",
+    "note": "The tutorial is always available: Help menu → Tutorial (F1).",
+    "bon_travail": "Enjoy! The tutorial stays in Help → Tutorial (F1)."
+  },
+
+  "tutoriel": {
+    "etape": "Step {numero} of {total}",
+    "precedent": "Previous",
+    "suivant": "Next",
+    "compris": "Got it",
+    "terminer": "Finish",
+    "termine_message": "Tutorial finished. To see it again: Help → Tutorial (F1).",
+    "bienvenue": {
+      "titre": "Sikax in thirty seconds",
+      "puce1": "<b>Draw</b> the bodies, then <b>join them</b> with joints.",
+      "puce2": "<b>Run the computation</b>: positions, velocities, forces and motor torque.",
+      "puce3": "This tutorial reopens at any time with <b>F1</b>."
+    },
+    "barre": {
+      "titre": "Draw a body",
+      "puce1": "<b>Bar</b> tool (key B).",
+      "puce2": "Each click adds a point; the length is shown near the pointer.",
+      "puce3": "<b>Enter</b>, double click or right click to finish; Esc to cancel."
+    },
+    "pivot": {
+      "titre": "Hinge a bar to the ground",
+      "puce1": "<b>Revolute</b> tool (key 1).",
+      "puce2": "One click on the end of a bar joins it to the ground."
+    },
+    "relier": {
+      "titre": "Join two bodies",
+      "puce1": "Click the first body, anywhere on its bar or disc.",
+      "puce2": "Click the second body: the joint goes at the first click, points are created for you. Empty space: the ground.",
+      "puce3": "Right click or Esc to cancel."
+    },
+    "glissiere": {
+      "titre": "Prismatic joint and point contact",
+      "puce1": "<b>Prismatic</b> tool (key 2), <b>Point contact</b> (key 4).",
+      "puce2": "Click, then drag to set the axis, in 15° steps.",
+      "puce3": "Hold <b>Shift</b> for any angle."
+    },
+    "cercle": {
+      "titre": "Circle, disc, eccentric",
+      "puce1": "<b>Circle</b> tool (key D).",
+      "puce2": "Click the centre, drag to the radius.",
+      "puce3": "A revolute joint off the centre makes it an <b>eccentric</b> (cam)."
+    },
+    "engrenage": {
+      "titre": "Gears",
+      "puce1": "<b>Gear</b> tool (key E); the wheels need revolute joints.",
+      "puce2": "Click the first wheel, then the second (or a rack).",
+      "puce3": "Z, module, pressure angle and efficiency are set in the properties."
+    },
+    "came": {
+      "titre": "Cam and follower",
+      "puce1": "<b>Cam</b> tool (key K).",
+      "puce2": "Click the cam circle, then the follower tip.",
+      "puce3": "Knife-edge, roller or flat face: the cam can make full turns."
+    },
+    "moteur": {
+      "titre": "Drive a joint",
+      "puce1": "<b>Motor</b> tool (key O).",
+      "puce2": "Click a revolute or prismatic joint; the motion law is set in the properties."
+    },
+    "force": {
+      "titre": "Forces and torques",
+      "puce1": "<b>Force</b> tool (key F).",
+      "puce2": "Click a point and drag: direction and magnitude (1 pixel = 1 N).",
+      "puce3": "<b>Torque</b> tool (key C): click the body."
+    },
+    "calcul": {
+      "titre": "Compute and read the results",
+      "puce1": "<b>F5</b> runs the study chosen in the Study tab.",
+      "puce2": "<b>Space</b>: play and pause the animation.",
+      "puce3": "<b>Curves</b> tab: position, velocity, acceleration, forces, torques; <b>Excel</b> export."
+    },
+    "vue": {
+      "titre": "Move around the diagram",
+      "puce1": "<b>Wheel</b>: zoom around the pointer.",
+      "puce2": "<b>Right button held</b> (or middle click): pan the view.",
+      "puce3": "<b>A</b>: fit everything. Ctrl+Z undoes any action."
+    },
+    "photo": {
+      "titre": "Start from a diagram photo",
+      "puce1": "File → <b>Import a diagram photo</b>.",
+      "puce2": "Click two points of a known length and type it: the photo is at scale.",
+      "puce3": "Trace over it, or let Sikax <b>detect the shapes</b>."
+    },
+    "cours": {
+      "titre": "Course sheets",
+      "puce1": "The <b>?</b> button next to an option explains the notion and opens its sheet.",
+      "puce2": "<b>Course</b> tab: statics, dynamics, torsors, gears… <b>F1</b> replays this tutorial."
+    }
+  },
+
+  "aide": {
+    "clic_pour_le_cours": "Click to open the course sheet.",
+    "etudes": {
+      "nature": "<b>Kinematics</b>: motion imposed by the motors. <b>Statics</b>: equilibrium. <b>Dynamics</b>: motion follows from the forces (Newton's second law)."
+    },
+    "methodes": {
+      "methode": "Method of <code>scipy.integrate.solve_ivp</code>. <b>Radau</b> (implicit, order 5) is the most robust; LSODA and DOP853 are faster on smooth motions.",
+      "precision": "Relative tolerance of the integrator. 1e-8 by default; 1e-6 is enough for curves."
+    },
+    "centre_gravite": {
+      "masse": "Mass of the body (kg): it gives its weight m·g and its translational inertia.",
+      "position": "Centre of gravity G, in the body frame: the point where the weight acts."
+    },
+    "inertie": {
+      "rubrique": "Mass, centre of gravity and moment of inertia: what dynamics needs.",
+      "jz": "Moment of inertia J about the axis (G, z), in kg·m². Bar: m·L²/12; disc: m·R²/2."
+    },
+    "excentricite": {
+      "cercle": "Circle attached to the body: disc, cam, wheel. Its centre is a point of the body.",
+      "excentricite": "Distance between the circle centre and the body's rotation axis: an eccentric cam's stroke is 2·e.",
+      "came": "A cam turns a rotation into a reciprocating motion of the follower.",
+      "poussoirs": "Knife-edge: |CP| = R. Roller: |CP| = R + ρ. Flat face: face tangent to the circle.",
+      "effort_normal": "Force of the cam on the follower, along the contact normal. Negative: the follower would lift off."
+    },
+    "ddl": {
+      "type": "Joint type: it sets the motions allowed between the two bodies (degrees of freedom).",
+      "mobilites": "Relative motions allowed by the joint (ω: rotation, V: translation)."
+    },
+    "torseur": {
+      "inconnues": "Force components the joint can transmit: 3 minus its number of mobilities, in the plane.",
+      "liaison": "Torsor of the action of A on B: resultant (X, Y) and moment N at the joint point."
+    },
+    "isostatisme": {
+      "modele_spatial": "How the joint is realised in space: it changes the mechanism's real degree of hyperstatism."
+    },
+    "couple_moteur": {
+      "loi": "The motor imposes the joint's angle (or displacement) as a function of time.",
+      "effort": "Torque (or force) the motor must provide to produce the imposed motion.",
+      "couple": "Torque C (N·m) applied to the body; it may depend on time, for example 5*sin(2*pi*t)."
+    },
+    "moment": {
+      "force": "Force components, in N. Its moment at a point A is AP ∧ F."
+    },
+    "engrenages": {
+      "rubrique": "Toothed wheels: exact ratio Z₁/Z₂, tangential (Ft) and radial (Fr) tooth forces.",
+      "nature": "External: opposite directions. Internal: same direction (B is the ring). Rack: rotation → translation.",
+      "dents": "Number of teeth Z: it sets the ratio and the pitch diameter d = m·Z.",
+      "module": "Module m: tooth size. Two wheels only mesh if they have the same module.",
+      "angle_pression": "Inclination α of the line of action (usually 20°): Fr = Ft·tan α.",
+      "rendement": "η = output power / input power; 0.95 to 0.99 for a spur gear.",
+      "formules": "d = m·Z; p = π·m; a = m·(Z₁ + Z₂)/2; r = −Z₁/Z₂.",
+      "diametre": "Pitch diameter d = m·Z: the pitch circles roll without slipping.",
+      "pas": "Pitch p = π·m: distance between two teeth on the pitch circle.",
+      "entraxe": "Centre distance a = m·(Z₁ + Z₂)/2 (external), m·(Z₂ − Z₁)/2 (internal).",
+      "rapport": "r = ω₂/ω₁ = −Z₁/Z₂ (external), +Z₁/Z₂ (internal).",
+      "efforts": "Ft = 2·C/d transmits the torque; Fr = Ft·tan α pushes the wheels apart; Fn = Ft/cos α.",
+      "couples": "Torque the teeth exert on each wheel, about its centre: C = Ft·r."
+    }
+  },
+
+  "cours": {
+    "introduction": "The mechanics notions behind Sikax. The “?” button next to an option opens the sheet that explains it.",
+    "fiche": {
+      "etudes": "Kinematics, statics, dynamics",
+      "moment": "Moment of a force",
+      "couple_moteur": "Motor torque and power",
+      "torseur": "Torsor of a mechanical action",
+      "centre_gravite": "Centre of gravity",
+      "inertie": "Moment of inertia",
+      "excentricite": "Eccentricity, cam and follower",
+      "ddl": "Degrees of freedom and mobility",
+      "isostatisme": "Isostatism and hyperstatism",
+      "engrenages": "Gears",
+      "points_morts": "Dead points",
+      "methodes": "How Sikax computes"
+    },
+    "resume": {
+      "etudes": "What each study computes, and when to choose it.",
+      "moment": "M_A(F) = AP ∧ F: a force's ability to make a body turn.",
+      "couple_moteur": "Torque, motor with imposed motion, power P = C·ω.",
+      "torseur": "Resultant and moment of an action; torsors transmitted by joints.",
+      "centre_gravite": "Where the weight acts; barycentre of the masses.",
+      "inertie": "Resistance to rotation; usual formulas and the parallel-axis theorem.",
+      "excentricite": "Eccentric disc, cam, follower types, lift-off.",
+      "ddl": "Motions allowed by joints; mobility of a mechanism.",
+      "isostatisme": "h = Is − Es + m: when statics is enough, and when it is not.",
+      "engrenages": "Module, pitch, centre distance, transmission ratio, tooth forces, efficiency.",
+      "points_morts": "Positions where the motor loses its grip; how to get past them.",
+      "methodes": "How Sikax solves the equations: Radau, augmented Lagrangian, dead points."
+    }
   }
 }

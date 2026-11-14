@@ -5,20 +5,20 @@
 Sikax est découpé en couches qui ne dépendent que des couches situées en dessous :
 
 ```text
-          ui            interface Qt : fenêtre, schéma, panneaux
+          ui            interface Qt : fenêtre, schéma, panneaux, tutoriel, cours
            │
-   ┌───────┼────────┐
-fichiers  calcul   i18n     lecture/écriture · solveur · traduction
-   └───────┼────────┘
-        modele              solides, liaisons, actions, moteurs, étude
+   ┌───────┼────────┬────────┐
+fichiers  calcul   vision   i18n   lecture/écriture/Excel · solveur · photos · traduction
+   └───────┼────────┴────────┘
+        modele              solides, liaisons, actions, moteurs, étude, photo de fond
            │
  geometrie · physique · util
 ```
 
 Deux règles tiennent l'ensemble :
 
-- **`modele`, `calcul` et `fichiers` n'importent jamais Qt.** Ils s'utilisent en script
-  et se testent sans interface.
+- **`modele`, `calcul`, `fichiers` et `vision` n'importent jamais Qt.** Ils s'utilisent
+  en script et se testent sans interface.
 - **Le moteur ne parle pas français.** Une erreur de calcul ou de lecture porte un *code*
   et des paramètres (`ErreurCalcul("mobilite_non_pilotee", mobilite=2)`), jamais une
   phrase. Le texte affiché vient de `locales/<langue>.json`.
@@ -58,6 +58,13 @@ l'`etude`, les `unites` d'affichage et les réglages d'`affichage`.
 Un `Solide` a une *pose* (position de l'origine de son repère et angle) et des `points`
 exprimés dans ce repère. Déplacer le mécanisme ne change que les poses ; modifier la
 géométrie ne change que les coordonnées locales des points. Toutes les valeurs sont en SI.
+Un solide peut porter des `cercles` (centre = un de ses points, rayon) : disque, came
+excentrique, cercle primitif d'une roue.
+
+`contacts.py` regroupe la géométrie des liaisons de contact (point primitif d'un
+engrenage, point de contact d'une came) et les formules des engrenages droits. `fond.py`
+décrit la photo de fond (`FondPlan`) : l'image, sa place dans le modèle et son
+étalonnage.
 
 ### La classe `Liaison`
 
@@ -102,16 +109,16 @@ modification.
 
 | Module | Rôle |
 |---|---|
-| `contraintes.py` | `Coincidence`, `AngleRelatif`, `PointSurDroite`, `TranslationPilotee` : résidu, jacobienne, second membre en accélération |
+| `contraintes.py` | `Coincidence`, `AngleRelatif`, `PointSurDroite`, `TranslationPilotee`, et pour les contacts `EngrenageRoues`, `EngrenageCremaillere`, `DistanceConstante` (came à pointe ou à galet), `PlateauTangent` : résidu, jacobienne, second membre en accélération, efforts et pertes |
 | `systeme.py` | assemblage, forces, torseur d'une liaison à partir des multiplicateurs |
 | `algebre.py` | rang, noyau, solutions de norme minimale par SVD |
 | `topologie.py` | graphe des liaisons, boucles, mobilité et hyperstatisme (plan et espace) |
 | `assemblage.py` | fermeture des liaisons (Gauss-Newton), déplacement à la souris |
 | `configuration.py` | régler une liaison, refermer, reprendre une position calculée |
-| `cinematique.py` | positions, vitesses, accélérations, puis efforts (dynamique inverse) |
+| `cinematique.py` | positions, vitesses, accélérations, puis efforts (dynamique inverse) ; franchissement des points morts |
 | `statique.py` | PFS, recherche de position d'équilibre |
-| `dynamique.py`, `integrateur.py` | PFD, Dormand-Prince 5(4), projection sur les liaisons |
-| `enregistreur.py`, `resultats.py` | grandeurs de sortie, export CSV |
+| `dynamique.py` | PFD : `scipy.integrate.solve_ivp` (Radau, BDF, LSODA, DOP853, RK45), lagrangien augmenté, méthodes de repli, détection d'emballement |
+| `enregistreur.py`, `resultats.py` | grandeurs de sortie (dont `Ft`, `Fr`, `Fn` des contacts), zones de points morts, export CSV pour les scripts |
 | `simulation.py` | `lancer_etude(mecanisme)` : point d'entrée unique |
 
 Toutes les résolutions linéaires passent par la décomposition en valeurs singulières : un
@@ -123,6 +130,21 @@ mécanisme hyperstatique (équations liées) ou mobile (inconnues en trop) ne fa
 Voir [FORMAT_FICHIER.md](FORMAT_FICHIER.md). Le lecteur consigne toutes les anomalies dans
 un `Rapport` au lieu de s'arrêter à la première ; l'écrivain remplace le fichier de façon
 atomique et garde une copie `.bak`.
+
+`excel.py` écrit le classeur des résultats avec openpyxl : feuille *Résultats* (de vrais
+nombres, en unités d'affichage, en-têtes figés), feuille *Graphiques* (courbes Excel
+natives), feuille *Informations* (projet, étude, messages). Au-delà de 400 000 cellules
+le classeur est écrit en flux. L'écriture est atomique, comme pour les projets.
+
+## Les photos (`sikax/vision`)
+
+`detection.py` repère, avec OpenCV, les traits et les cercles d'une photo de schéma :
+seuil adaptatif (éclairage inégal), squelette de l'encre (amincissement de Zhang et Suen),
+segments par la transformée de Hough sur ce squelette, cercles par les trous bien ronds de
+l'encre puis par la transformée de Hough à gradient. Les extrémités voisines sont réunies
+et accrochées au centre des petits cercles (symboles d'articulation). `creer_solides`
+transforme le résultat en barres, disques et pivots, à l'échelle de l'étalonnage. OpenCV
+n'est importé qu'à l'appel : sans lui, le reste de Sikax fonctionne.
 
 ## L'interface (`sikax/ui`)
 
@@ -147,7 +169,27 @@ déplacement, aimantation et sélection ; `rendu.py` dessine solides, symboles d
 et vecteurs ; `outils.py` contient un outil par mode de la souris.
 
 Le calcul tourne dans un fil séparé (`Calcul`, un `QThread`) sur une copie du modèle :
-l'interface reste réactive et le calcul peut être arrêté.
+l'interface reste réactive et le calcul peut être arrêté. Le second membre de
+l'intégrateur ne laisse jamais passer d'exception (LSODA est écrit en Fortran : une
+exception levée dans un de ses rappels, hors du fil principal, arrêterait le programme) ;
+l'annulation et les erreurs sont notées puis levées une fois l'intégrateur sorti.
+
+Le panneau *Courbes* (`panneaux/courbes.py`) montre par défaut un tableau de bord de six
+graphes (position, vitesse, accélération, efforts, couples, énergie) avec pyqtgraph ; le
+mode *personnalisé* trace les grandeurs choisies, l'une en fonction de l'autre si besoin.
+Les zones de points morts y sont grisées.
+
+Aide et apprentissage :
+
+- `tutoriel/` : la fenêtre de bienvenue (`accueil.py`), la superposition qui assombrit la
+  fenêtre et met en lumière l'outil présenté (`superposition.py`), les étapes
+  (`etapes.py`) et leurs animations dessinées avec `QPainter` (`demos.py`). Une animation
+  peut être remplacée par un fichier `resources/tutoriel/<étape>.gif`, lu par `QMovie` ;
+- `aide.py` : les boutons « ? » des panneaux. Leur infobulle donne la définition, un clic
+  ouvre la fiche de cours à la bonne section ;
+- `panneaux/cours.py` et `cours_figures.py` : les fiches de cours
+  (`resources/cours/<langue>/*.html`) et leurs figures, dessinées à l'exécution ;
+- `dialogues/detection.py` : réglage de la détection des formes d'une photo, avec aperçu.
 
 ### Thèmes
 
@@ -165,7 +207,8 @@ feuille de style et redessine tout.
    `MODELES_SPATIAUX`, `CHAMPS`, puis l'ajouter à `REGISTRE_LIAISONS`.
 2. Dans `calcul/systeme.py`, méthode `_contraintes_de` : la liste de ses contraintes
    élémentaires (en créer une dans `contraintes.py` si nécessaire).
-3. Dans `ui/schema/rendu.py`, méthode `_liaison` : son symbole.
+3. Dans `ui/schema/rendu.py`, méthode `_liaison` : son symbole. Une liaison de contact
+   (engrenage, came) déclare `CONTACT = True` et sa géométrie va dans `modele/contacts.py`.
 4. Dans `locales/*.json` : `liaison.type.<type>` et `action.outil_<type>`.
 5. Dans `fichiers/lecture.py` : ses synonymes dans `SYNONYMES_LIAISON`.
 

@@ -1,0 +1,248 @@
+{
+  "format": "sikax",
+  "version": 2,
+  "application": {
+    "nom": "Sikax",
+    "version": "1.0.0"
+  },
+  "dimension": 2,
+  "meta": {
+    "titre": "Came et poussoir",
+    "auteur": "Sikax",
+    "description": "",
+    "modifie_le": "2026-11-14T12:01:35+00:00"
+  },
+  "unites": {
+    "longueur": "mm",
+    "angle": "deg"
+  },
+  "solides": [
+    {
+      "id": "S0",
+      "nom": "Bâti",
+      "bati": true,
+      "couleur": "#7C8696",
+      "pose": {
+        "x": 0.0,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "O",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "D",
+          "x": 0.0,
+          "y": 0.06958323293158117
+        },
+        {
+          "id": "P3",
+          "nom": "R",
+          "x": 0.0,
+          "y": 0.15458323293158116
+        }
+      ],
+      "segments": [],
+      "inertie": {
+        "masse": 0.0,
+        "g": [
+          0.0,
+          0.0
+        ],
+        "jz": 0.0
+      }
+    },
+    {
+      "id": "S1",
+      "nom": "Came",
+      "bati": false,
+      "couleur": "#3B82F6",
+      "pose": {
+        "x": 0.01,
+        "y": 0.0,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "A",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "O",
+          "x": -0.01,
+          "y": 0.0
+        }
+      ],
+      "segments": [
+        [
+          "P2",
+          "P1"
+        ]
+      ],
+      "inertie": {
+        "masse": 0.4,
+        "g": [
+          0.0,
+          0.0
+        ],
+        "jz": 0.00017999999999999998
+      },
+      "cercles": [
+        {
+          "id": "C1",
+          "centre": "P1",
+          "rayon": 0.03
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "nom": "Poussoir",
+      "bati": false,
+      "couleur": "#F97316",
+      "pose": {
+        "x": 0.0,
+        "y": 0.034583232931581165,
+        "angle": 0.0
+      },
+      "points": [
+        {
+          "id": "P1",
+          "nom": "B",
+          "x": 0.0,
+          "y": 0.0
+        },
+        {
+          "id": "P2",
+          "nom": "C",
+          "x": 0.0,
+          "y": 0.07
+        },
+        {
+          "id": "P3",
+          "nom": "D",
+          "x": 0.0,
+          "y": 0.035
+        }
+      ],
+      "segments": [
+        [
+          "P1",
+          "P2"
+        ]
+      ],
+      "inertie": {
+        "masse": 0.15,
+        "g": [
+          0.0,
+          0.035
+        ],
+        "jz": 6.125000000000001e-05
+      }
+    }
+  ],
+  "liaisons": [
+    {
+      "id": "L1",
+      "nom": "Pivot O",
+      "type": "pivot",
+      "solide_a": "S0",
+      "point_a": "P1",
+      "solide_b": "S1",
+      "point_b": "P2",
+      "modele_spatial": "pivot_z",
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    },
+    {
+      "id": "L2",
+      "nom": "Guidage",
+      "type": "glissiere",
+      "solide_a": "S0",
+      "point_a": "P2",
+      "solide_b": "S2",
+      "point_b": "P3",
+      "modele_spatial": "glissiere_x",
+      "angle_axe": 1.5707963267948966,
+      "angle_relatif": 0.0,
+      "amortissement": 0.0,
+      "vitesse_initiale": 0.0
+    },
+    {
+      "id": "L3",
+      "nom": "Contact came-galet",
+      "type": "came",
+      "solide_a": "S1",
+      "point_a": "P1",
+      "solide_b": "S2",
+      "point_b": "P1",
+      "modele_spatial": "ponctuelle_y",
+      "nature": "galet",
+      "cercle": "C1",
+      "rayon_galet": 0.006,
+      "angle_axe": 0.0
+    }
+  ],
+  "actions": [
+    {
+      "id": "A1",
+      "nom": "Ressort de rappel",
+      "type": "ressort",
+      "actif": true,
+      "solide_a": "S0",
+      "point_a": "P3",
+      "solide_b": "S2",
+      "point_b": "P2",
+      "raideur": 400.0,
+      "amortissement": 1.0,
+      "longueur_libre": 0.07
+    }
+  ],
+  "moteurs": [
+    {
+      "id": "M1",
+      "nom": "Moteur came",
+      "liaison": "L1",
+      "relatif": true,
+      "actif": true,
+      "loi": {
+        "type": "vitesse_constante",
+        "parametres": {
+          "vitesse": 6.283185307179586,
+          "position_initiale": 0.0
+        }
+      }
+    }
+  ],
+  "etude": {
+    "type": "cinematique",
+    "duree": 2.0,
+    "pas": 0.005,
+    "pesanteur": true,
+    "gravite": [
+      0.0,
+      -9.81
+    ],
+    "inertie": true,
+    "tolerance": 1e-10,
+    "precision": 1e-08,
+    "methode": "Radau"
+  },
+  "affichage": {
+    "grille": true,
+    "pas_grille": 0.01,
+    "aimantation": true,
+    "noms_points": true,
+    "noms_liaisons": false,
+    "centres_gravite": true,
+    "echelle_forces": 0.0
+  }
+}
