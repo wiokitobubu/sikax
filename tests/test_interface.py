@@ -13,7 +13,7 @@ from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QComboBox, QToolBar
 from openpyxl import load_workbook
 
-from sikax.application import creer_application
+from sikax.application import creer_application, detruire_fenetre
 from sikax.calcul import residu_de_fermeture
 from sikax.chemins import dossier_exemples
 from sikax.fichiers import ErreurLecture, charger, depuis_json, vers_json
@@ -54,6 +54,10 @@ def fenetre(application):
     f.doc.modifie = False
     f.close()
     traiter()
+    # Comme l'application en quittant : la fenêtre est détruite, pas seulement fermée.
+    # Sans cela, chaque test laisse une fenêtre complète en mémoire (plus de soixante-dix
+    # à la fin de la suite), ce que Windows supporte mal.
+    detruire_fenetre(f)
     assert sorted(traducteur.cles_manquantes) == [], "textes non traduits"
 
 
@@ -911,6 +915,7 @@ def test_theme_sombre_par_defaut(application):
     f = FenetrePrincipale(persistant=False)
     assert f.commandes["theme_sombre"].isChecked()
     f.close()
+    detruire_fenetre(f)
     theme.appliquer("clair")
 
 

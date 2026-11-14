@@ -199,7 +199,7 @@ class FenetrePrincipale(QMainWindow):
         self.proprietes.outil_demande.connect(self.vue.choisir_outil)
         self.proprietes.detection_demandee.connect(self.detecter_formes)
         aide.ouvrir.connect(self.ouvrir_cours)
-        theme.change.connect(lambda _: self._icones())
+        theme.change.connect(self._theme_change)  # méthode liée : déconnectée d'office à la destruction
         traducteur.abonner(self.traduire)
 
         self._restaurer()
@@ -208,6 +208,9 @@ class FenetrePrincipale(QMainWindow):
         self.vue.choisir_outil("selection")
 
     # ------------------------------------------------------------ construction
+    def _theme_change(self, _nom: str) -> None:
+        self._icones()
+
     def _onglets(self, *noms: str) -> QTabWidget:
         """Regroupe plusieurs panneaux sous des onglets."""
         groupe = QTabWidget()

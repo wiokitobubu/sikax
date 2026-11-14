@@ -80,8 +80,11 @@ class PanneauCours(QWidget):
         disposition.addWidget(separateur, 1)
 
         traducteur.abonner(self.traduire)
-        theme.change.connect(lambda _: self.afficher(self.fiche))
+        theme.change.connect(self._sur_theme)  # méthode liée : déconnectée d'office à la destruction
         self.traduire()
+
+    def _sur_theme(self, _nom: str) -> None:
+        self.afficher(self.fiche)
 
     def traduire(self) -> None:
         self.introduction.setText(tr("cours.introduction"))

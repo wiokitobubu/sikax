@@ -65,9 +65,12 @@ class BarreLecture(QFrame):
         document.resultats_change.connect(self._sur_resultats)
         document.temps_change.connect(self._sur_temps)
         traducteur.abonner(self.traduire)
-        theme.change.connect(lambda _: self._icones())
+        theme.change.connect(self._sur_theme)  # méthode liée : déconnectée d'office à la destruction
         self.traduire()
         self._sur_resultats()
+
+    def _sur_theme(self, _nom: str) -> None:
+        self._icones()
 
     @property
     def en_lecture(self) -> bool:

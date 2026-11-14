@@ -22,7 +22,10 @@ class PanneauJournal(QWidget):
         disposition = QVBoxLayout(self)
         disposition.setContentsMargins(4, 4, 4, 4)
         disposition.addWidget(self.liste)
-        theme.change.connect(lambda _: self._recolorer())
+        theme.change.connect(self._sur_theme)  # méthode liée : déconnectée d'office à la destruction
+
+    def _sur_theme(self, _nom: str) -> None:
+        self._recolorer()
 
     def ajouter(self, niveau: str, texte: str) -> None:
         heure = datetime.now().strftime("%H:%M:%S")

@@ -78,15 +78,28 @@ def test_gros_classeur_ecrit_en_flux(resultats, tmp_path, monkeypatch):
 
 
 def test_ecriture_impossible_sans_fichier_partiel(resultats, tmp_path):
-    dossier = tmp_path / "protege"
-    dossier.mkdir()
-    os.chmod(dossier, 0o500)
-    try:
-        with pytest.raises(ErreurEcriture):
-            exporter_excel(resultats, str(dossier / "res.xlsx"))
-        assert list(dossier.iterdir()) == []
-    finally:
-        os.chmod(dossier, 0o700)
+    # « dossier » est en réalité un fichier : l'écriture échoue sous Windows comme ailleurs
+    # (chmod ne protège pas un dossier sous Windows).
+    faux_dossier = tmp_path / "dossier"
+    faux_dossier.write_bytes(b"")
+    with pytest.raises(ErreurEcriture):
+        exporter_excel(resultats, str(faux_dossier / "res.xlsx"))
+    assert [p.name for p in tmp_path.iterdir()] == ["dossier"]  # aucun fichier partiel ni temporaire
+    assert faux_dossier.read_bytes() == b""
+
+
+def test_echec_au_moment_d_enregistrer_ne_laisse_rien(resultats, tmp_path, monkeypatch):
+    """Disque plein ou classeur verrouillé : le fichier temporaire est supprimé, l'ancien gardé."""
+    chemin = tmp_path / "res.xlsx"
+    chemin.write_bytes(b"ancien")
+
+    def refuser(source, cible):
+        raise PermissionError(13, "fichier verrouillé")
+
+    monkeypatch.setattr(excel.os, "replace", refuser)
+    with pytest.raises(ErreurEcriture):
+        exporter_excel(resultats, str(chemin))
+    assert [p.name for p in tmp_path.iterdir()] == ["res.xlsx"] and chemin.read_bytes() == b"ancien"
 
 
 def test_remplacement_d_un_classeur_existant(resultats, tmp_path):

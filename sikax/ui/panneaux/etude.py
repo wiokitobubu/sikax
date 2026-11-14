@@ -139,8 +139,11 @@ class PanneauEtude(QWidget):
 
         document.modele_change.connect(self.actualiser)
         traducteur.abonner(self.traduire)
-        theme.change.connect(lambda _: self._icones())
+        theme.change.connect(self._sur_theme)  # méthode liée : déconnectée d'office à la destruction
         self.traduire()
+
+    def _sur_theme(self, _nom: str) -> None:
+        self._icones()
 
     @staticmethod
     def _avec_aide(composant: QWidget, fiche: str, section: str) -> QWidget:

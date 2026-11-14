@@ -38,6 +38,25 @@ def aplatir(donnees: Dict[str, Any], prefixe: str = "") -> Dict[str, str]:
     return resultat
 
 
+def _vivant(rappel: Callable[[], None]) -> bool:
+    """Faux si le rappel est une méthode d'un objet Qt déjà détruit.
+
+    Le traducteur ne dépend pas de Qt : shiboken6 n'est consulté que s'il est
+    présent, et un objet ordinaire est toujours considéré comme vivant.
+    """
+    objet = getattr(rappel, "__self__", None)
+    if objet is None:
+        return True
+    try:
+        import shiboken6
+    except ImportError:
+        return True
+    try:
+        return bool(shiboken6.isValid(objet))
+    except TypeError:
+        return True
+
+
 class Traducteur:
     def __init__(self, dossier: Optional[Path] = None) -> None:
         self._dossier = dossier
@@ -86,6 +105,10 @@ class Traducteur:
         self.langue = code if trouve else LANGUE_PAR_DEFAUT
         self._pret = True
         for abonne in list(self._abonnes):
+            if not _vivant(abonne):
+                # widget détruit (fenêtre fermée) : on l'oublie au lieu de l'appeler
+                self._abonnes.remove(abonne)
+                continue
             abonne()
         return trouve
 

@@ -110,7 +110,10 @@ class GrapheLiaisons(QWidget):
         self.setMinimumSize(220, 160)
         self.setMouseTracking(True)
         document.selection_change.connect(self.update)
-        theme.change.connect(lambda _: self.update())
+        theme.change.connect(self._sur_theme)  # méthode liée : déconnectée d'office à la destruction
+
+    def _sur_theme(self, _nom: str) -> None:
+        self.update()
 
     def sizeHint(self) -> QSize:
         return QSize(320, 220)

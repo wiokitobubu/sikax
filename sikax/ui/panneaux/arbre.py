@@ -38,7 +38,10 @@ class PanneauArbre(QWidget):
         document.modele_change.connect(self.reconstruire)
         document.selection_change.connect(self._suivre_selection)
         traducteur.abonner(self.reconstruire)
-        theme.change.connect(lambda _: self.reconstruire())
+        theme.change.connect(self._sur_theme)  # méthode liée : déconnectée d'office à la destruction
+        self.reconstruire()
+
+    def _sur_theme(self, _nom: str) -> None:
         self.reconstruire()
 
     def _groupe(self, cle: str, pictogramme: str, nombre: int) -> QTreeWidgetItem:

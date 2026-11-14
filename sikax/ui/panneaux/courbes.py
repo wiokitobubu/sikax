@@ -206,11 +206,14 @@ class PanneauCourbes(QWidget):
         document.selection_change.connect(self._sur_selection)
         document.temps_change.connect(lambda _: self._placer_reperes())
         traducteur.abonner(self.reconstruire)
-        theme.change.connect(lambda _: self._habiller())
+        theme.change.connect(self._sur_theme)  # méthode liée : déconnectée d'office à la destruction
         self._habiller()
         self.reconstruire()
 
     # ------------------------------------------------------------ présentation
+    def _sur_theme(self, _nom: str) -> None:
+        self._habiller()
+
     @property
     def mode(self) -> str:
         return "ensemble" if self.pages.currentIndex() == 0 else "personnalise"
