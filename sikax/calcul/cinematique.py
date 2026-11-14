@@ -79,6 +79,31 @@ def assembler_ou_echouer(systeme: SystemeMecanique, q: np.ndarray, t: float, tol
     return resultat.q
 
 
+def _orienter(directions: np.ndarray) -> np.ndarray:
+    """Sens conventionnel des directions de départ d'un point mort.
+
+    Au point mort, les deux sens de rotation sont possibles ; le signe d'un
+    vecteur singulier, lui, dépend de la bibliothèque d'algèbre linéaire
+    (macOS et Windows ne donnent pas le même). Pour qu'un projet tourne de la
+    même façon sur tous les ordinateurs, chaque direction est orientée pour
+    que le premier solide qui y tourne nettement tourne dans le sens
+    trigonométrique (ou, sans rotation, que sa plus grande composante soit
+    positive).
+    """
+    orientees = directions.copy()
+    for k in range(orientees.shape[1]):
+        d = orientees[:, k]
+        angles = d[2::3]
+        reference = float(np.max(np.abs(angles))) if angles.size else 0.0
+        if reference > 1e-12 * max(float(np.max(np.abs(d))), 1e-300):
+            premier = angles[int(np.argmax(np.abs(angles) > 0.5 * reference))]
+        else:
+            premier = d[int(np.argmax(np.abs(d)))]
+        if premier < 0.0:
+            orientees[:, k] = -d
+    return orientees
+
+
 def _avancer(
     systeme: SystemeMecanique,
     q: np.ndarray,
@@ -303,7 +328,7 @@ def analyse_cinematique(
         rangs.append(rang_q)
         if conditionnement > SEUIL_DERIVATION:
             petites = int(np.sum(sv < TOL_SINGULIERE * sv[0])) + max(0, n - sv.size) if sv.size else n
-            directions = (Vt[n - max(petites, 1):].T / w[:, None]) if Vt.size else None
+            directions = _orienter((Vt[n - max(petites, 1):].T / w[:, None])) if Vt.size else None
         else:
             directions = None
         qd_s, _, _ = resoudre(Js, -systeme.phi_t(q, t))

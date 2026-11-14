@@ -38,6 +38,27 @@ def test_piston_pilote_franchit_les_points_morts():
     assert res.zones_singulieres  # signalées aux courbes
 
 
+def test_sens_de_depart_identique_sur_tous_les_ordinateurs(monkeypatch):
+    """Au point mort, le sens choisi ne dépend pas du signe des vecteurs singuliers.
+
+    Ce signe varie d'une bibliothèque d'algèbre linéaire à l'autre (macOS,
+    Windows) : on l'inverse ici volontairement, le mouvement doit rester le même.
+    """
+    from sikax.calcul import cinematique
+
+    reference = np.degrees(lancer_etude(piston_pilote()).valeurs("solide/S1/angle"))
+    decomposer = cinematique.decomposer
+
+    def signes_inverses(*arguments, **options):
+        U, sv, Vt, rang = decomposer(*arguments, **options)
+        return -U, sv, -Vt, rang
+
+    monkeypatch.setattr(cinematique, "decomposer", signes_inverses)
+    inverse = np.degrees(lancer_etude(piston_pilote()).valeurs("solide/S1/angle"))
+    assert inverse == pytest.approx(reference, abs=1e-6)
+    assert inverse[-1] - inverse[0] == pytest.approx(720.0, abs=1e-3)  # sens trigonométrique
+
+
 def test_position_exacte_au_point_mort():
     """La manivelle suit exactement la loi géométrique, y compris aux points morts."""
     res = lancer_etude(piston_pilote(1.0, 0.01))
